@@ -134,4 +134,63 @@ defmodule DjRumble.RoomsTest do
       assert %Ecto.Changeset{} = Rooms.change_video(video)
     end
   end
+
+  describe "rooms_videos" do
+    alias DjRumble.Rooms.RoomVideo
+
+    def room_video_fixture(attrs \\ %{}) do
+      room = room_fixture()
+      video = video_fixture()
+      {:ok, room_video} =
+        attrs
+        |> Enum.into(%{room_id: room.id, video_id: video.id})
+        |> Rooms.create_room_video()
+
+      room_video
+    end
+
+    test "list_rooms_videos/0 returns all rooms_videos" do
+      room_video = room_video_fixture()
+      assert Rooms.list_rooms_videos() == [room_video]
+    end
+
+    test "get_room_video!/1 returns the room_video with given id" do
+      room_video = room_video_fixture()
+      assert Rooms.get_room_video!(room_video.id) == room_video
+    end
+
+    test "create_room_video/1 with valid data creates a room_video" do
+      room = room_fixture()
+      video = video_fixture()
+      assert {:ok, %RoomVideo{} = _room_video} = Rooms.create_room_video(%{room_id: room.id, video_id: video.id})
+    end
+
+    test "create_room_video/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Rooms.create_room_video(@invalid_attrs)
+    end
+
+    test "update_room_video/2 with valid data updates the room_video" do
+      room_video = room_video_fixture()
+      room = room_fixture()
+      video = video_fixture()
+      assert {:ok, %RoomVideo{} = _room_video} = Rooms.update_room_video(room_video, %{room_id: room.id, video_id: video.id})
+    end
+
+    test "update_room_video/2 with invalid data returns error changeset" do
+      room_video = room_video_fixture()
+      assert {:error, %Ecto.Changeset{}} = Rooms.update_room_video(room_video, @invalid_attrs)
+      assert room_video == Rooms.get_room_video!(room_video.id)
+    end
+
+    test "delete_room_video/1 deletes the room_video" do
+      room_video = room_video_fixture()
+      assert {:ok, %RoomVideo{}} = Rooms.delete_room_video(room_video)
+      assert_raise Ecto.NoResultsError, fn -> Rooms.get_room_video!(room_video.id) end
+    end
+
+    test "change_room_video/1 returns a room_video changeset" do
+      room_video = room_video_fixture()
+      assert %Ecto.Changeset{} = Rooms.change_room_video(room_video)
+    end
+  end
 end

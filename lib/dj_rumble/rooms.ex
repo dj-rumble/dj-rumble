@@ -197,4 +197,100 @@ defmodule DjRumble.Rooms do
   def change_video(%Video{} = video, attrs \\ %{}) do
     Video.changeset(video, attrs)
   end
+
+  alias DjRumble.Rooms.RoomVideo
+
+  @doc """
+  Returns the list of rooms_videos.
+
+  ## Examples
+
+      iex> list_rooms_videos()
+      [%RoomVideo{}, ...]
+
+  """
+  def list_rooms_videos do
+    Repo.all(RoomVideo)
+  end
+
+  @doc """
+  Gets a single room_video.
+
+  Raises `Ecto.NoResultsError` if the Room video does not exist.
+
+  ## Examples
+
+      iex> get_room_video!(123)
+      %RoomVideo{}
+
+      iex> get_room_video!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_room_video!(id), do: Repo.get!(RoomVideo, id)
+
+  @doc """
+  Creates a room_video.
+
+  ## Examples
+
+      iex> create_room_video(%{field: value})
+      {:ok, %RoomVideo{}}
+
+      iex> create_room_video(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_room_video(attrs \\ %{}) do
+    %RoomVideo{}
+    |> RoomVideo.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a room_video.
+
+  ## Examples
+
+      iex> update_room_video(room_video, %{field: new_value})
+      {:ok, %RoomVideo{}}
+
+      iex> update_room_video(room_video, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_room_video(%RoomVideo{} = room_video, attrs) do
+    room_video
+    |> RoomVideo.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a room_video.
+
+  ## Examples
+
+      iex> delete_room_video(room_video)
+      {:ok, %RoomVideo{}}
+
+      iex> delete_room_video(room_video)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_room_video(%RoomVideo{} = room_video) do
+    Repo.delete(room_video)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking room_video changes.
+
+  ## Examples
+
+      iex> change_room_video(room_video)
+      %Ecto.Changeset{data: %RoomVideo{}}
+
+  """
+  def change_room_video(%RoomVideo{} = room_video, attrs \\ %{}) do
+    RoomVideo.changeset(room_video, attrs)
+  end
 end

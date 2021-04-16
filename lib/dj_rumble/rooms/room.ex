@@ -6,6 +6,8 @@ defmodule DjRumble.Rooms.Room do
     field :name, :string
     field :slug, :string
 
+    many_to_many :videos, DjRumble.Rooms.Video, join_through: "rooms_videos"
+
     timestamps()
   end
 
