@@ -1,7 +1,10 @@
 {
-  "repository": {},
-  "description": " ",
-  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dj-rumble/dj-rumble.git"
+  },
+  "description": "Web client application for the DjRumble server.",
+  "license": "agpl-3.0",
   "scripts": {
     "deploy": "webpack --mode production",
     "watch": "webpack --mode development --watch"
