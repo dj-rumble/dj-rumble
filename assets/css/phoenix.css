@@ -1,3 +1,7 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
 /* Includes some default style for the starter application.
  * This can be safely deleted to start fresh.
  */
