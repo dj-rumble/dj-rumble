@@ -29,6 +29,11 @@ defmodule DjRumble.RoomsTest do
       assert Rooms.get_room!(room.id) == room
     end
 
+    test "get_room_by_slug/1 returns the room with given slug" do
+      room = room_fixture()
+      assert Rooms.get_room_by_slug(room.slug) == room
+    end
+
     test "create_room/1 with valid data creates a room" do
       assert {:ok, %Room{} = room} = Rooms.create_room(@valid_attrs)
       assert room.name == "some name"
