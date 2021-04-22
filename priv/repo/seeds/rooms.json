@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Test Room 1",
+    "slug": "test-room-1",
+    "inserted_at": "2020-12-21 13:58:55",
+    "updated_at": "2020-12-21 20:02:31"
+  },
+  {
+    "name": "Test Room 2",
+    "slug": "test-room-2",
+    "inserted_at": "2020-12-21 13:58:55",
+    "updated_at": "2020-12-21 20:02:31"
+  },
+  {
+    "name": "Test Room 3",
+    "slug": "test-room-3",
+    "inserted_at": "2020-12-21 13:58:55",
+    "updated_at": "2020-12-21 20:02:31"
+  }
+]

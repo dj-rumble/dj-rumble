@@ -9,3 +9,20 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+require Logger
+
+try do
+  seeds = [
+    "rooms",
+  ]
+  for seed <- seeds do
+    Code.require_file("seeds/#{seed}.exs", __DIR__)
+  end
+rescue
+  error ->
+    Logger.error(error)
+    Logger.info("❌ Stopped seeds population due to errors.")
+else
+  _ ->
+    Logger.info("🌱 Seeds population finished succesfully")
+end
