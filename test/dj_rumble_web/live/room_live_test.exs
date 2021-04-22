@@ -86,14 +86,14 @@ defmodule DjRumbleWeb.RoomLiveTest do
     setup [:create_room]
 
     test "displays room", %{conn: conn, room: room} do
-      {:ok, _show_live, html} = live(conn, Routes.room_show_path(conn, :show, room))
+      {:ok, _show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
 
       # assert html =~ "Show Room"
       # assert html =~ room.name
     end
 
     test "updates room within modal", %{conn: conn, room: room} do
-      {:ok, show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+      {:ok, _show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
 
       # assert show_live |> element("a", "Edit") |> render_click() =~
       #          "Edit Room"

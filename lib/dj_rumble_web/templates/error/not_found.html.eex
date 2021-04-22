@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Dj Rumble</title>
+    <link rel="stylesheet" href="/css/app.css">
+  </head>
+
+  <body>
+    <header class="bg-gradient-to-r from-blue-900 via-indigo-300 to-pink-300 border-0">
+      <h1 class="text-gray-50 text-5xl font-bold text-center py-4 m-0">Dj Rumble</h1>
+    </header>
+
+    <div class="p-4">
+      <div class="bg-white rounded-md hero-wrapper grid grid-cols-1 md:grid-cols-12 gap-8 items-center center">
+
+        <div class="hero-text col-span-6">
+          <h1
+            class="p-8 font-bold text-4xl md:text-5xl max-w-xl text-gray-900 leading-tight">
+            Oops!
+          </h1>
+          <hr class="w-24 h-1 bg-primary rounded-full mt-4">
+          <p class="p-8 text-gray-800 leading-relaxed mt-8 font-semibold text-2xl">
+            The page you were looking for doesn't exist or the link you clicked may be broken.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </body>
+</html>

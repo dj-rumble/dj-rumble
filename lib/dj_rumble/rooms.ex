@@ -38,6 +38,24 @@ defmodule DjRumble.Rooms do
   def get_room!(id), do: Repo.get!(Room, id)
 
   @doc """
+  Gets a single room by slug.
+
+  Raises `Ecto.NoResultsError` if the User room does not exist.
+
+  ## Examples
+
+      iex> get_room_by_slug(slug)
+      %Room{}
+
+      iex> get_room_by_slug(bad_value)
+      ** nil
+
+  """
+  def get_room_by_slug(slug) do
+    Repo.get_by(Room, %{slug: slug})
+  end
+
+  @doc """
   Creates a room.
 
   ## Examples
