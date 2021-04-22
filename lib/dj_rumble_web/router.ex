@@ -22,7 +22,7 @@ defmodule DjRumbleWeb.Router do
     live "/rooms/new", RoomLive.Index, :new
     live "/rooms/:id/edit", RoomLive.Index, :edit
 
-    live "/rooms/:id", RoomLive.Show, :show
+    live "/rooms/:slug", RoomLive.Show, :show
     live "/rooms/:id/show/edit", RoomLive.Show, :edit
   end
 
