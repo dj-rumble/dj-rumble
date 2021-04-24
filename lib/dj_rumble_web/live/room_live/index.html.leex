@@ -1,4 +1,4 @@
-<h1>Listing Rooms</h1>
+<h3 class="text-gray-50 p-4">Dj Rooms</h3>
 
 <%= if @live_action in [:new, :edit] do %>
   <%= live_modal @socket, DjRumbleWeb.RoomLive.FormComponent,
@@ -9,29 +9,40 @@
     return_to: Routes.room_index_path(@socket, :index) %>
 <% end %>
 
-<table>
-  <thead>
-    <tr>
-      <th>Slug</th>
-      <th>Name</th>
+<div
+  class="rooms-container new-live-rooms-list text-gray-50"
+>
+  <%= if @rooms != [] do %>
 
-      <th></th>
-    </tr>
-  </thead>
-  <tbody id="rooms">
+  <div class="mb-4">
+    <ul class="like-list grid gap-2 grid-cols-1 lg:grid-cols-2 m-2">
     <%= for room <- @rooms do %>
-      <tr id="room-<%= room.id %>">
-        <td><%= room.slug %></td>
-        <td><%= room.name %></td>
+      <li class="room-item col-span-1 hover-card px-2 cursor-pointer">
+        <div class="flex grid grid-cols-8 xl:grid-cols-12">
 
-        <td>
-          <span><%= live_redirect "Show", to: Routes.room_show_path(@socket, :show, room.slug) %></span>
-          <span><%= live_patch "Edit", to: Routes.room_index_path(@socket, :edit, room) %></span>
-          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: room.id, data: [confirm: "Are you sure?"] %></span>
-        </td>
-      </tr>
+          <div class="
+            col-span-2 row-span-1 sm:col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-2 self-center justify-self-center">
+            <img src="<%= Enum.at(room.videos, 0).img_url %>" />
+          </div>
+
+          <div
+            class="
+              p-4
+              col-span-6 row-span-1
+              sm:col-span-5 md:col-span-6 lg:col-span-6 xl:col-span-10
+            "
+            phx-click="redirect_room"
+            phx-value-slug="<%= room.slug %>"
+          >
+            <p class="text-2xl"><%= room.name %></p>
+          </div>
+        </div>
+      </li>
     <% end %>
-  </tbody>
-</table>
+    </ul>
+  </div>
 
-<span><%= live_patch "New Room", to: Routes.room_index_path(@socket, :new) %></span>
+  <% else %>
+    <p><span>Go ahead, create the first room!</span></p>
+  <% end %>
+</div>

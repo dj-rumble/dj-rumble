@@ -1,19 +1,19 @@
 [
   {
-    "name": "Test Room 1",
-    "slug": "test-room-1",
+    "name": "Lofi Room 🍸",
+    "slug": "lofi-room",
     "inserted_at": "2020-12-21 13:58:55",
     "updated_at": "2020-12-21 20:02:31"
   },
   {
-    "name": "Test Room 2",
-    "slug": "test-room-2",
+    "name": "The Boiler Room 🔥",
+    "slug": "the-boiler-room",
     "inserted_at": "2020-12-21 13:58:55",
     "updated_at": "2020-12-21 20:02:31"
   },
   {
-    "name": "Test Room 3",
-    "slug": "test-room-3",
+    "name": "Jazzy Room 🎷",
+    "slug": "jazzy-room",
     "inserted_at": "2020-12-21 13:58:55",
     "updated_at": "2020-12-21 20:02:31"
   }

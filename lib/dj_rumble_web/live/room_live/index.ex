@@ -1,12 +1,14 @@
 defmodule DjRumbleWeb.RoomLive.Index do
   use DjRumbleWeb, :live_view
 
+  alias DjRumble.Repo
   alias DjRumble.Rooms
   alias DjRumble.Rooms.Room
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :rooms, list_rooms())}
+    rooms = list_rooms() |> Enum.map(fn room -> Repo.preload(room, [:videos]) end)
+    {:ok, assign(socket, :rooms, rooms)}
   end
 
   @impl true
@@ -38,6 +40,12 @@ defmodule DjRumbleWeb.RoomLive.Index do
     {:ok, _} = Rooms.delete_room(room)
 
     {:noreply, assign(socket, :rooms, list_rooms())}
+  end
+
+  def handle_event("redirect_room", %{"slug" => slug}, socket) do
+    {:noreply,
+      socket
+      |> redirect(to: Routes.room_show_path(socket, :show, slug))}
   end
 
   defp list_rooms do
