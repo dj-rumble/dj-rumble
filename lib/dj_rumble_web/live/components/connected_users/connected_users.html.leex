@@ -5,7 +5,7 @@ Connected Users: <%= @connected_users |> length %>
     <ul>
       <%= for user <- @connected_users do %>
         <li style="list-style: none;">
-          <%= user.uuid %>
+          <%= hd(user.metas).username %>
         </li>
       <% end %>
     </ul>
