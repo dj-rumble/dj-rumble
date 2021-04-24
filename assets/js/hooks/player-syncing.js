@@ -80,13 +80,39 @@ const PlayerSyncing = initPlayer => ({
     const startTimeTrackerElem = document.getElementById('yt-video-start-time')
     const endTimeTrackerElem = document.getElementById('yt-video-end-time')
     const timeSliderElem = document.getElementById('video-time-control')
+
+    const onPlayerReady = () => {
+      /**
+       * player_is_ready
+       * 
+       * Tells the server the player is ready to receive events
+       */
+      this.pushEvent('player_is_ready')
+    }
+
     const player = await initPlayer(
       onStateChange(
         this,
         startTimeTrackerElem, endTimeTrackerElem, timeSliderElem
       ),
+      onPlayerReady
     )
-    player.playVideo()
+
+    /**
+     * receive_player_state
+     * 
+     * Receives an update state of the video player
+     */
+    this.handleEvent('receive_player_state', ({shouldPlay, time = 0, videoId}) => {
+      player.loadVideoById({ videoId, startSeconds: time })
+      udpateTimeDisplays(
+        startTimeTrackerElem,
+        endTimeTrackerElem,
+        timeSliderElem,
+        player,
+      )
+      !shouldPlay && player.pauseVideo()
+    })
   }
 })
 

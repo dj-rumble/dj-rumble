@@ -1,9 +1,9 @@
-export default (container, {onStateChange}) => {
+export default (container, {onStateChange, onPlayerReady}) => {
   return new Promise((resolve) => {
     new YT.Player(container, {
-      height: "100%",
-      width: "100%",
-      videoId: 'YPkp-oESVMM',
+      height: '100%',
+      width: '100%',
+      videoId: '',
       playerVars: {
         controls: 0,
         disablekb: 1,
@@ -15,6 +15,7 @@ export default (container, {onStateChange}) => {
       events: {
         onReady: event => {
           const player = event.target
+          onPlayerReady()
           resolve(player)
         },
         onStateChange,
