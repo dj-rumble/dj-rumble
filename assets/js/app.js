@@ -27,9 +27,9 @@ function onIframeReady() {
   initLiveview()
 }
 
-function initPlayer(onStateChange, onVolumeChange) {
+function initPlayer(onStateChange, onPlayerReady) {
   const playerContainer = document.getElementById("video-player")
-  return createPlayer(playerContainer, {onStateChange, onVolumeChange})
+  return createPlayer(playerContainer, {onStateChange, onPlayerReady})
 }
 
 function initLiveview() {

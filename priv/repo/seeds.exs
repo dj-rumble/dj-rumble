@@ -14,6 +14,8 @@ require Logger
 try do
   seeds = [
     "rooms",
+    "videos",
+    "rooms_videos",
   ]
   for seed <- seeds do
     Code.require_file("seeds/#{seed}.exs", __DIR__)

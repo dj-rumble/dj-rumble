@@ -28,7 +28,7 @@ defmodule DjRumbleWeb.RoomLive.Index do
 
   defp apply_action(socket, :index, _params) do
     socket
-    |> assign(:page_title, "Listing Rooms")
+    |> assign(:page_title, "Rooms")
     |> assign(:room, nil)
   end
 

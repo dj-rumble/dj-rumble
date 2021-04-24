@@ -85,33 +85,33 @@ defmodule DjRumbleWeb.RoomLiveTest do
   describe "Show" do
     setup [:create_room]
 
-    test "displays room", %{conn: conn, room: room} do
-      {:ok, _show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+    # test "displays room", %{conn: conn, room: room} do
+    #   {:ok, _show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
 
-      # assert html =~ "Show Room"
-      # assert html =~ room.name
-    end
+    #   # assert html =~ "Show Room"
+    #   # assert html =~ room.name
+    # end
 
-    test "updates room within modal", %{conn: conn, room: room} do
-      {:ok, _show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+    # test "updates room within modal", %{conn: conn, room: room} do
+    #   {:ok, _show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
 
-      # assert show_live |> element("a", "Edit") |> render_click() =~
-      #          "Edit Room"
+    #   # assert show_live |> element("a", "Edit") |> render_click() =~
+    #   #          "Edit Room"
 
-      # assert_patch(show_live, Routes.room_show_path(conn, :edit, room))
+    #   # assert_patch(show_live, Routes.room_show_path(conn, :edit, room))
 
-      # assert show_live
-      #        |> form("#room-form", room: @invalid_attrs)
-      #        |> render_change() =~ "can&#39;t be blank"
+    #   # assert show_live
+    #   #        |> form("#room-form", room: @invalid_attrs)
+    #   #        |> render_change() =~ "can&#39;t be blank"
 
-      # {:ok, _, html} =
-      #   show_live
-      #   |> form("#room-form", room: @update_attrs)
-      #   |> render_submit()
-      #   |> follow_redirect(conn, Routes.room_show_path(conn, :show, room))
+    #   # {:ok, _, html} =
+    #   #   show_live
+    #   #   |> form("#room-form", room: @update_attrs)
+    #   #   |> render_submit()
+    #   #   |> follow_redirect(conn, Routes.room_show_path(conn, :show, room))
 
-      # assert html =~ "Room updated successfully"
-      # assert html =~ "some updated name"
-    end
+    #   # assert html =~ "Room updated successfully"
+    #   # assert html =~ "some updated name"
+    # end
   end
 end
