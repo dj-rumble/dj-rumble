@@ -3,6 +3,28 @@
 @import "./themes.scss";
 @import "./progressive-range.scss";
 
+.rooms-container {
+
+  .room-item {
+    margin-bottom: 0px;
+  
+    &.separator {
+      border-bottom-style: groove;
+      border-bottom-width: 1px;
+      border-bottom-color: $primary;
+    }
+
+    &.separator:last-child {
+      border-bottom-width: 0px;
+    }
+  }
+}
+
+.hover-card:hover {
+  border-radius: 5px;
+  background-color: $neutral-darker;
+}
+
 /* LiveView specific classes for your customizations */
 .phx-no-feedback.invalid-feedback,
 .phx-no-feedback .invalid-feedback {
