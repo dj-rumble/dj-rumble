@@ -14,9 +14,10 @@ defmodule DjRumble.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: DjRumble.PubSub},
       # Start the Endpoint (http/https)
-      DjRumbleWeb.Endpoint
+      DjRumbleWeb.Endpoint,
       # Start a worker by calling: DjRumble.Worker.start_link(arg)
       # {DjRumble.Worker, arg}
+      DjRumbleWeb.Presence
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

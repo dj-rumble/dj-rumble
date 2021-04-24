@@ -3,6 +3,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   alias DjRumble.Repo
   alias DjRumble.Rooms
+  alias DjRumbleWeb.Presence
+
+  def get_list_from_slug(slug) do
+    Presence.list("room:#{slug}")
+            |> Enum.map(fn {uuid, %{metas: metas}} -> %{uuid: uuid, metas: metas} end)
+  end
 
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
@@ -15,13 +21,32 @@ defmodule DjRumbleWeb.RoomLive.Show do
         }
       room ->
         video = Enum.at(Repo.preload(room, [:videos]).videos, 0)
+
+        # before subscribing, let's get the current_reader_count
+        topic = "room:#{slug}"
+        connected_users = get_list_from_slug(slug)
+
+        # Subscribe to the topic
+        DjRumbleWeb.Endpoint.subscribe(topic)
+
+        # Track changes to the topic
+        Presence.track(
+          self(),
+          topic,
+          socket.id,
+          %{}
+        )
+
         {:ok,
           socket
           |> assign(:page_title, page_title(video.title))
           |> assign(:room, room)
-          |> assign(:video, video)}
+          |> assign(:video, video)
+          |> assign(:connected_users, connected_users)}
     end
   end
+
+
 
   @impl true
   def handle_params(_params, _, socket) do
@@ -36,8 +61,20 @@ defmodule DjRumbleWeb.RoomLive.Show do
         %{video: video} = socket.assigns
         {:noreply,
           socket
-          |> push_event("receive_player_state", %{videoId: video.video_id, shouldPlay: true, time: 0})}
+          |> push_event("receive_player_state", %{videoId: video.video_id, shouldPlay: false, time: 0})}
     end
+  end
+
+  @impl true
+  def handle_info(
+        %{event: "presence_diff", payload: %{joins: _joins, leaves: _leaves}},
+        %{assigns: %{room: %{slug: slug}}} = socket
+      ) do
+
+    connected_users = get_list_from_slug(slug)
+
+    {:noreply,
+      assign(socket, :connected_users, connected_users) }
   end
 
   defp page_title(:show), do: "Show Room"
