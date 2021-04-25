@@ -41,7 +41,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
           |> push_redirect(to: Routes.room_index_path(socket, :index))
         }
       room ->
-        video = Enum.at(Repo.preload(room, [:videos]).videos, 0)
+        room = Repo.preload(room, [:videos])
+        video = Enum.at(room.videos, 0)
 
         # before subscribing, let's get the current_reader_count
         topic = "room:#{slug}"
@@ -60,8 +61,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
         {:ok,
           socket
-          |> assign(:page_title, page_title(video.title))
+          |> assign(:page_title, page_title(video))
           |> assign(:room, room)
+          # FIXME: should be a list of videos
           |> assign(:video, video)
           |> assign(:connected_users, connected_users)}
     end
@@ -100,5 +102,10 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   defp page_title(:show), do: "Show Room"
   defp page_title(:edit), do: "Edit Room"
-  defp page_title(title), do: title
+  defp page_title(video) do
+    case video do
+      nil -> ""
+      _ -> video.title
+    end
+  end
 end

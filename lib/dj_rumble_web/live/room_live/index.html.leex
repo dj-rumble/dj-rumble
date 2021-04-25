@@ -21,8 +21,14 @@
         <div class="flex grid grid-cols-8 xl:grid-cols-12">
 
           <div class="
-            col-span-2 row-span-1 sm:col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-2 self-center justify-self-center">
-            <img src="<%= Enum.at(room.videos, 0).img_url %>" />
+            col-span-2 row-span-1
+            sm:col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-2
+            self-center justify-self-center
+          ">
+            <%= Phoenix.View.render DjRumbleWeb.AlbumCoverGridView,
+              "album_cover_grid.html",
+              videos: room.videos
+            %>
           </div>
 
           <div
