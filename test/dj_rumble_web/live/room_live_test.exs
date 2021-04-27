@@ -65,7 +65,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
     test "displays room with a video", %{conn: conn} do
       %{room: room} = room_videos_fixture(
         %{room: room_fixture(), videos: videos_fixture()}, %{preload: true})
-      {:ok, show_live, html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+      {:ok, _show_live, html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
       assert html =~ Enum.at(room.videos, 0).title
     end
 

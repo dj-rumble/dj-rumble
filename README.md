@@ -18,12 +18,14 @@
 Configure un archivo `.env` en la raíz del proyecto, utilizando como base el archivo `.env.example`. Luego, asigne los valores correspondientes a cada variable.
 
 ```bash
-cp .env .env.example
+cp .env.example .env
 ```
 
 + `APP_HOST`: su IP de host. **Ejemplo:** `127.0.0.1` (local), `192.168.0.xxx` (lan), `0.0.0.0` (lan)
 + `DB_USERNAME`: nombre de usuarix con permisos root para la base de datos del contenedor de `postgres`.
 + `DB_PASSWORD`: contraseña de usuarix con permisos root para la base de datos del contenedor de `postgres`.
++ `DB_USERNAME_TEST`: simil a `DB_USERNAME` pero se utiliza para correr pruebas.
++ `DB_PASSWORD_TEST`: simil a `DB_PASSWORD` pero se utiliza para correr pruebas.
 + `PGADMIN_DEFAULT_EMAIL`: email para acceder a la instancia de Postgres admin en el contenedor de `pgadmin`.
 + `PGADMIN_DEFAULT_PASSWORD`: contraseña para acceder a la instancia de Postgres admin en el contenedor de `pgadmin`.
 
@@ -61,14 +63,13 @@ make ecto.reset
 make server
 ```
 
-*Ejecuta todas las pruebas*
+*Ejecuta todas las pruebas.*
 
 ```bash
 make test
 ```
 
 *Corre únicamente las pruebas con el tag `wip` asignado ([Documentación sobre utilización de tags](https://hexdocs.pm/phoenix/testing.html#running-tests-using-tags)).*
-
 
 ```bash
 make test.wip
@@ -78,6 +79,12 @@ make test.wip
 
 ```bash
 make test.drop
+```
+
+*Corre las pruebas y genera un reporte de coverage.*
+
+```bash
+make test.cover
 ```
 
 ### Servidor de desarrollo
