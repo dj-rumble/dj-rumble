@@ -74,6 +74,12 @@ test: SHELL:=/bin/bash
 test:
 	source .env && mix test
 
+#test.cover: @ Runs mix tests and generates coverage
+test.cover: MIX_ENV=test
+test.cover: SHELL:=/bin/bash
+test.cover:
+	source .env && mix coveralls.html
+
 #test.drop: @ Drops the test database. Usually used after schemas change.
 test.drop: MIX_ENV=test
 test.drop: SHELL:=/bin/bash
