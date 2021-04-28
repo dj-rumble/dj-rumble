@@ -1,4 +1,4 @@
-name: DjRumble CI
+name: Test Coverage CI
 
 on:
   push:
