@@ -76,4 +76,22 @@ config :phoenix, :stacktrace_depth, 20
 config :phoenix, :plug_init_mode, :runtime
 
 # Configures git pre-commit hook to run the formatter
-config :pre_commit, commands: ["format --check-formatted", "format"], verbose: true
+config :git_hooks,
+  auto_install: true,
+  verbose: true,
+  hooks: [
+    pre_commit: [
+      tasks: [
+        {:cmd, "mix format --check-formatted"},
+        {:cmd, "mix format"}
+      ]
+    ],
+    pre_push: [
+      verbose: false,
+      tasks: [
+        {:cmd, "mix dialyzer"},
+        {:cmd, "source .env && mix test"},
+        {:cmd, "echo '🎉 Success!'"}
+      ]
+    ]
+  ]
