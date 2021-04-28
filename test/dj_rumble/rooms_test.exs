@@ -37,7 +37,7 @@ defmodule DjRumble.RoomsTest do
     test "create_room/1 with valid data creates a room" do
       assert {:ok, %Room{} = room} = Rooms.create_room(@valid_attrs)
       assert room.name == "some name"
-      assert room.slug == "some slug"
+      assert room.slug == "some-slug"
     end
 
     test "create_room/1 with invalid data returns error changeset" do
@@ -48,7 +48,7 @@ defmodule DjRumble.RoomsTest do
       room = room_fixture()
       assert {:ok, %Room{} = room} = Rooms.update_room(room, @update_attrs)
       assert room.name == "some updated name"
-      assert room.slug == "some updated slug"
+      assert room.slug == "some-updated-slug"
     end
 
     test "update_room/2 with invalid data returns error changeset" do

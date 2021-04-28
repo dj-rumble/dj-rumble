@@ -34,7 +34,7 @@ docker.services.up:
 ecto.reset: SHELL:=/bin/bash
 ecto.reset: docker.services.up
 ecto.reset: 
-	POOL_SIZE=2 mix ecto.reset
+	source .env && POOL_SIZE=2 mix ecto.reset
 
 #help: @ Displays this message
 help:
@@ -65,8 +65,8 @@ server:
 #setup: @ Installs all dependencies, recreates the database, runs migrations and loads database seeds up.
 setup: SHELL:=/bin/bash
 setup: docker.services.up
-setup: 
-	POOL_SIZE=2 mix setup
+setup:
+	source .env && POOL_SIZE=2 mix setup
 
 #test: @ Runs all test suites
 test: MIX_ENV=test
@@ -74,11 +74,17 @@ test: SHELL:=/bin/bash
 test:
 	source .env && mix test
 
+#test.cover: @ Runs mix tests and generates coverage
+test.cover: MIX_ENV=test
+test.cover: SHELL:=/bin/bash
+test.cover:
+	source .env && mix coveralls.html
+
 #test.drop: @ Drops the test database. Usually used after schemas change.
 test.drop: MIX_ENV=test
 test.drop: SHELL:=/bin/bash
 test.drop:
-	source .env && mix ecto.drop
+	source .env && DB_DATABASE=dj_rumble_test && mix ecto.drop
 
 #test.wip: @ Runs test suites that match the wip tag
 test.wip: MIX_ENV=test

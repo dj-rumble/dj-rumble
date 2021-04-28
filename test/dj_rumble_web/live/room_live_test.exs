@@ -1,33 +1,27 @@
 defmodule DjRumbleWeb.RoomLiveTest do
   use DjRumbleWeb.ConnCase
 
-  # import Phoenix.LiveViewTest
+  import DjRumble.RoomsFixtures
+  import Phoenix.LiveViewTest
 
-  alias DjRumble.Rooms
-
-  @create_attrs %{name: "some name", slug: "some slug"}
+  # @create_attrs %{name: "some name", slug: "some slug"}
   # @update_attrs %{name: "some updated name", slug: "some updated slug"}
   # @invalid_attrs %{name: nil, slug: nil}
 
-  defp fixture(:room) do
-    {:ok, room} = Rooms.create_room(@create_attrs)
-    room
-  end
-
-  defp create_room(_) do
-    room = fixture(:room)
-    %{room: room}
-  end
-
   describe "Index" do
-    setup [:create_room]
+    setup do
+      rooms = rooms_fixture(10)
+      %{rooms: rooms}
+    end
 
-    # test "lists all rooms", %{conn: conn, room: room} do
-    #   {:ok, _index_live, html} = live(conn, Routes.room_index_path(conn, :index))
+    test "lists all rooms", %{conn: conn, rooms: rooms} do
+      {:ok, _index_live, html} = live(conn, Routes.room_index_path(conn, :index))
 
-    #   assert html =~ "Listing Rooms"
-    #   assert html =~ room.name
-    # end
+      assert html =~ "Dj Rooms"
+      for room <- rooms do
+        assert html =~ room.name
+      end
+    end
 
     # @tag wip: true
     # test "saves new room", %{conn: conn} do
@@ -52,28 +46,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
     #   assert html =~ "some name"
     # end
 
-    # test "updates room in listing", %{conn: conn, room: room} do
-    #   {:ok, index_live, _html} = live(conn, Routes.room_index_path(conn, :index))
-
-    #   assert index_live |> element("#room-#{room.id} a", "Edit") |> render_click() =~
-    #            "Edit Room"
-
-    #   assert_patch(index_live, Routes.room_index_path(conn, :edit, room))
-
-    #   assert index_live
-    #          |> form("#room-form", room: @invalid_attrs)
-    #          |> render_change() =~ "can&#39;t be blank"
-
-    #   {:ok, _, html} =
-    #     index_live
-    #     |> form("#room-form", room: @update_attrs)
-    #     |> render_submit()
-    #     |> follow_redirect(conn, Routes.room_index_path(conn, :index))
-
-    #   assert html =~ "Room updated successfully"
-    #   assert html =~ "some updated name"
-    # end
-
     # test "deletes room in listing", %{conn: conn, room: room} do
     #   {:ok, index_live, _html} = live(conn, Routes.room_index_path(conn, :index))
 
@@ -83,14 +55,19 @@ defmodule DjRumbleWeb.RoomLiveTest do
   end
 
   describe "Show" do
-    setup [:create_room]
 
-    # test "displays room", %{conn: conn, room: room} do
-    #   {:ok, _show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+    test "displays room with no videos", %{conn: conn} do
+      room = room_fixture()
+      {:ok, show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+      assert page_title(show_live) == nil
+    end
 
-    #   # assert html =~ "Show Room"
-    #   # assert html =~ room.name
-    # end
+    test "displays room with a video", %{conn: conn} do
+      %{room: room} = room_videos_fixture(
+        %{room: room_fixture(), videos: videos_fixture()}, %{preload: true})
+      {:ok, _show_live, html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+      assert html =~ Enum.at(room.videos, 0).title
+    end
 
     # test "updates room within modal", %{conn: conn, room: room} do
     #   {:ok, _show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))

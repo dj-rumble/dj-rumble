@@ -11,10 +11,24 @@ defmodule DjRumble.Rooms.Room do
     timestamps()
   end
 
+  @fields [:name, :slug]
+
   @doc false
   def changeset(room, attrs) do
     room
-    |> cast(attrs, [:name, :slug])
-    |> validate_required([:name, :slug])
+    |> cast(attrs, @fields)
+    |> validate_required(@fields)
+    |> format_slug()
+    |> unique_constraint(:slug)
   end
+
+  defp format_slug(%Ecto.Changeset{changes: %{slug: _}} = changeset) do
+    changeset
+    |> update_change(:slug, fn slug ->
+      slug
+      |> String.downcase()
+      |> String.replace(" ", "-")
+    end)
+  end
+  defp format_slug(changeset), do: changeset
 end
