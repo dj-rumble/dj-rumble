@@ -1,4 +1,8 @@
 defmodule DjRumbleWeb.RoomLive.Show do
+  @moduledoc """
+  Responsible for controlling the Show room live view
+  """
+
   use DjRumbleWeb, :live_view
 
   alias DjRumble.Repo
@@ -11,7 +15,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
             |> Enum.map(fn {uuid, %{metas: metas}} -> %{uuid: uuid, metas: metas} end)
   end
 
-  def create_random_name() do
+  def create_random_name do
     adjectives = [
       fn -> Faker.Superhero.descriptor end,
       fn -> Faker.Pizza.cheese end,
@@ -26,8 +30,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
       fn -> Faker.Food.ingredient end,
       fn -> Faker.Superhero.name end,
     ]
-    descriptor  = Enum.at(adjectives, Enum.random(0..length(adjectives)-1))
-    name = Enum.at(nouns, Enum.random(0..length(nouns)-1))
+    descriptor  = Enum.at(adjectives, Enum.random(0..length(adjectives) - 1))
+    name = Enum.at(nouns, Enum.random(0..length(nouns) - 1))
     "#{descriptor.()} #{name.()}"
   end
 
@@ -56,7 +60,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
           self(),
           topic,
           socket.id,
-          %{ username: create_random_name() }
+          %{username: create_random_name()}
         )
 
         {:ok,
@@ -68,8 +72,6 @@ defmodule DjRumbleWeb.RoomLive.Show do
           |> assign(:connected_users, connected_users)}
     end
   end
-
-
 
   @impl true
   def handle_params(_params, _, socket) do
