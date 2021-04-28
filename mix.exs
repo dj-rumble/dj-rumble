@@ -70,13 +70,6 @@ defmodule DjRumble.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      quality: ["format --dry-run", "credo --strict", "sobelow --verbose", "dialyzer --format dialyxir"],
-      "quality.ci": [
-        "dialyzer --format dialyxir",
-        "format --check-formatted",
-        "credo --strict",
-        "sobelow --exit",
-      ],
       setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
       "ecto.setup": ["ecto.drop", "ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],

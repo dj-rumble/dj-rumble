@@ -21,6 +21,10 @@ clean.deps:
 clean.npm:
 	@npm clean-install --prefix assets
 
+#dialyzer: @ Performs static code analysis.
+dialyzer:
+	@mix dialyzer --format dialyxir
+
 #docker.services.down: @ Shuts down docker-compose services
 docker.services.down:
 	@docker-compose down
@@ -51,18 +55,28 @@ install.deps:
 install.npm:
 	@npm i --prefix assets
 
-#lint: @ Runs a code formatter, analyzes code consistency, performs security checks and static code analysis.
+#lint: @ Runs a code formatter and code consistency analysis
 lint:
-	@mix quality
+	@mix format
+	@mix credo --strict
 
-#lint: @ Runs a static code analysis and strictly checks code format, code style and security checks.
+#lint.ci: @ Strictly runs a code formatter and code consistency analysis
 lint.ci:
-	@mix quality.ci
+	@mix format --check-formatted
+	@mix credo --strict
 
 #reset: @ Shuts down docker services and cleans all dependencies, then runs setup
 reset: docker.services.down
 reset: clean
 reset: setup
+
+#security.check: @ Performs security checks
+security.check:
+	@mix sobelow --verbose
+
+#security.check.ci: @ Performs security checks
+security.check.ci:
+	@mix sobelow --exit
 
 #server: @ Starts a server with an interactive elixir shell.
 server: SHELL:=/bin/bash
