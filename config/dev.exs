@@ -74,3 +74,6 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Configures git pre-commit hook to run the formatter
+config :pre_commit, commands: ["format --check-formatted"], verbose: true

@@ -1,4 +1,4 @@
-name: Code analysis CI
+name: Code linting CI
 
 on:
   push:
@@ -11,26 +11,17 @@ on:
 jobs:
   lint:
 
-    name: Lint and static analysis
+    name: Code linting
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set mix file hash
-        id: set_vars
-        run: |
-          mix_hash="${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}"
-          echo "::set-output name=mix_hash::$mix_hash"
-      - name: Cache PLT files
-        id: cache-plt
+      - name: Restore dependencies cache
         uses: actions/cache@v2
         with:
-          path: |
-            _build/dev/*.plt
-            _build/dev/*.plt.hash
-          key: plt-cache-${{ steps.set_vars.outputs.mix_hash }}
-          restore-keys: |
-            plt-cache-
+          path: deps
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
       - name: Set up Elixir
         uses: erlef/setup-elixir@v1
         with:
@@ -41,6 +32,6 @@ jobs:
           mix local.rebar --force
           mix local.hex --force
           mix deps.get
-      - name: Run code analysis
+      - name: Run formatter
         run: |
           make lint.ci
