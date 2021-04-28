@@ -51,6 +51,14 @@ install.deps:
 install.npm:
 	@npm i --prefix assets
 
+#lint: @ Runs a code formatter, analyzes code consistency, performs security checks and static code analysis.
+lint:
+	@mix quality
+
+#lint: @ Runs a static code analysis and strictly checks code format, code style and security checks.
+lint.ci:
+	@mix quality.ci
+
 #reset: @ Shuts down docker services and cleans all dependencies, then runs setup
 reset: docker.services.down
 reset: clean
