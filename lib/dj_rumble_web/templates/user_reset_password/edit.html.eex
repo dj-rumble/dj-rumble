@@ -1,0 +1,34 @@
+<div class="my-10">
+  <div class="flex flex-wrap justify-center items-stretch mx-auto my-24 live-inside-box">
+    <%= form_for @changeset, Routes.user_reset_password_path(@conn, :update, @token), [class: "p-4 live-section-box"], fn f -> %>
+      <div class="flex items-start section-title">
+        <span class="rounded text-white p-2 leading-none flex items-center title-pill full-width">
+          Password reset
+        </span>
+      </div>
+
+      <div class="flex flex-col items-center text-white px-4 py-6">
+        <%= if @changeset.action do %>
+          <p class="mb-4">Oops, something went wrong!</p>
+          <p class="mb-4">Please check the errors below.</p>
+        <% end %>
+
+        <div class="mb-4">
+          <%= label f, :password, "New password" %>
+          <%= password_input f, :password, required: true %>
+          <%= error_tag f, :password %>
+        </div>
+
+        <div class="mb-4">
+          <%= label f, :password_confirmation, "Confirm new password" %>
+          <%= password_input f, :password_confirmation, required: true %>
+          <%= error_tag f, :password_confirmation %>
+        </div>
+      </div>
+
+      <div class="mt-auto flex items-center px-4" style="width: 100%">
+        <%= submit "Reset password", class: "modal-button modal-submit-button full-width" %>
+      </div>
+    <% end %>
+  </div>
+</div>
