@@ -76,4 +76,4 @@ config :phoenix, :stacktrace_depth, 20
 config :phoenix, :plug_init_mode, :runtime
 
 # Configures git pre-commit hook to run the formatter
-config :pre_commit, commands: ["format --check-formatted"], verbose: true
+config :pre_commit, commands: ["format --check-formatted", "format"], verbose: true
