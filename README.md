@@ -39,7 +39,9 @@ Este proyecto utiliza **Makefile** para interactuar con el servidor, los servici
 make help
 ```
 
-*Instala el ambiente de desarrollo completo.*
+### Comandos de configuración
+
+*Instala el ambiente de desarrollo completo. Útil cada vez que se realiza un cambio de rama o se testea un pull request.*
 
 ```bash
 make setup
@@ -57,11 +59,15 @@ make reset
 make ecto.reset
 ```
 
+### Comandos de servidor
+
 *Inicia el servidor de desarrollo con una terminal interactiva de Elixir.*
 
 ```bash
 make server
 ```
+
+### Comandos de testing
 
 *Ejecuta todas las pruebas.*
 
@@ -87,6 +93,20 @@ make test.drop
 make test.cover
 ```
 
+### Comandos de linting
+
+*Formatea código, analiza su consistencia, realiza análisis de seguridad y análisis estático de código.*
+
+```bash
+make lint
+```
+
+*Similar a* `make lint` *pero corta la ejecución ante fallas. Útil para simular localmente el proceso de linting de la integración contínua.*
+
+```bash
+make lint.ci
+```
+
 ### Servidor de desarrollo
 
 Una vez configuradas las variables de entorno e instalado el ambiente de desarrollo es posible iniciar el servidor utilizando el comando `make server`.
@@ -96,7 +116,7 @@ Una vez configuradas las variables de entorno e instalado el ambiente de desarro
 
 ### Administración de bases de datos
 
-Los servicios de docker incluyen un contenedor de [`PostgreSql`](https://www.postgresql.org/) y una instancia de [`pgAdmin`](https://www.pgadmin.org/).
+Los servicios de Docker incluyen un contenedor de [`PostgreSql`](https://www.postgresql.org/) y una instancia de [`pgAdmin`](https://www.pgadmin.org/).
 
 + Visite [`localhost:5050`](http://localhost:5050/) desde su navegador e ingrese las credenciales configuradas en `.env` para acceder al panel de administración.
 + Ingrese al menú `Object` => `Create` => `Server` y otorgue un nombre de fantasía al servidor.
