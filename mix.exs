@@ -41,6 +41,7 @@ defmodule DjRumble.MixProject do
   defp deps do
     [
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:phoenix, "~> 1.5.8"},
       {:phoenix_ecto, "~> 4.1"},
       {:ecto_sql, "~> 3.4"},
@@ -50,6 +51,7 @@ defmodule DjRumble.MixProject do
       {:phoenix_html, "~> 2.11"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_dashboard, "~> 0.4"},
+      {:sobelow, "~> 0.11", only: [:dev, :test], runtime: false},
       {:telemetry_metrics, "~> 0.4"},
       {:telemetry_poller, "~> 0.4"},
       {:gettext, "~> 0.11"},
@@ -68,6 +70,13 @@ defmodule DjRumble.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
+      quality: ["format --dry-run", "credo --strict", "sobelow --verbose", "dialyzer --format dialyxir"],
+      "quality.ci": [
+        "dialyzer --format dialyxir",
+        "format --check-formatted",
+        "credo --strict",
+        "sobelow --exit",
+      ],
       setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
       "ecto.setup": ["ecto.drop", "ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
