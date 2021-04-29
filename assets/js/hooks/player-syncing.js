@@ -18,12 +18,16 @@ const updateVideoSlider = (
 }
 
 
-const udpateTimeDisplays = (startTimeTrackerElem, endTimeTrackerElem, timeSliderElem, player) => {
+const updateTimeDisplays = (startTimeTrackerElem, endTimeTrackerElem, timeSliderElem, player) => {
   const currentTime = player.getCurrentTime()
   const totalTime = player.getDuration()
   updateTimeDisplay(startTimeTrackerElem, currentTime)
   updateTimeDisplay(endTimeTrackerElem, totalTime)
   updateVideoSlider(timeSliderElem, currentTime, totalTime)
+}
+
+const playNextVideo = (hookContext) => {
+  hookContext.pushEvent('next_video')
 }
 
 const onStateChange = (
@@ -39,12 +43,13 @@ const onStateChange = (
     case 0: {
       const { trackTimeInterval } = hookContext.el.dataset
       clearInterval(trackTimeInterval)
+      playNextVideo(hookContext)
       break
     }
     case 1: {
       const { target: player } = event
       const trackTimeInterval = setInterval(() => {
-        udpateTimeDisplays(
+        updateTimeDisplays(
           startTimeTrackerElem,
           endTimeTrackerElem,
           timeSliderElem,
@@ -58,12 +63,12 @@ const onStateChange = (
       const { trackTimeInterval } = hookContext.el.dataset
       clearInterval(trackTimeInterval)
       const { target: player } = event
-      udpateTimeDisplays(
+      updateTimeDisplays(
         startTimeTrackerElem,
         endTimeTrackerElem,
         timeSliderElem,
         player,
-      )
+        )
       break
     }
     case 3: {
@@ -105,7 +110,7 @@ const PlayerSyncing = initPlayer => ({
      */
     this.handleEvent('receive_player_state', ({shouldPlay, time = 0, videoId}) => {
       player.loadVideoById({ videoId, startSeconds: time })
-      udpateTimeDisplays(
+      updateTimeDisplays(
         startTimeTrackerElem,
         endTimeTrackerElem,
         timeSliderElem,
