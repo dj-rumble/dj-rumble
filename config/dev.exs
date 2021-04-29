@@ -82,16 +82,7 @@ config :git_hooks,
   hooks: [
     pre_commit: [
       tasks: [
-        {:cmd, "mix format --check-formatted"},
-        {:cmd, "mix format"}
-      ]
-    ],
-    pre_push: [
-      verbose: false,
-      tasks: [
-        {:cmd, "mix dialyzer"},
-        {:cmd, "source .env && mix test"},
-        {:cmd, "echo '🎉 Success!'"}
+        {:mix_task, :format, ["--check-formatted"]}
       ]
     ]
   ]
