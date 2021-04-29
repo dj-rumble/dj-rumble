@@ -101,11 +101,15 @@ defmodule DjRumbleWeb.RoomLive.Show do
             %{videos: videos, index_playing: index_playing} = socket.assigns
             next_index_playing = index_playing + 1
             next_video = Enum.at(videos, next_index_playing)
-            {:noreply,
-              socket
-              |> assign(:video, next_video)
-              |> assign(:index_playing, next_index_playing)
-              |> push_event("receive_player_state", %{videoId: next_video.video_id, shouldPlay: true, time: 0})}
+            case next_video != nil do
+              false -> {:noreply, socket}
+              true ->
+                {:noreply,
+                  socket
+                  |> assign(:video, next_video)
+                  |> assign(:index_playing, next_index_playing)
+                  |> push_event("receive_player_state", %{videoId: next_video.video_id, shouldPlay: true, time: 0})}
+            end
         end
     end
   end
