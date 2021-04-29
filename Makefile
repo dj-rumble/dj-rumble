@@ -3,9 +3,6 @@
 export MIX_ENV ?= dev
 export SECRET_KEY_BASE ?= $(shell mix phx.gen.secret)
 
-# Enables bash commands in the whole document
-# SHELL := /bin/bash
-
 APP_NAME ?= `grep 'app:' mix.exs | sed -e 's/\[//g' -e 's/ //g' -e 's/app://' -e 's/[:,]//g'`
 
 default: help
@@ -16,6 +13,7 @@ clean: clean.npm clean.deps
 #clean.deps: @ Cleans server dependencies from mix.exs
 clean.deps:
 	@mix deps.clean --all
+	@mix deps.get
 
 #clean.npm: @ Cleans client dependencies from assets/package.json
 clean.npm:
@@ -65,10 +63,11 @@ lint.ci:
 	@mix format --check-formatted
 	@mix credo --strict
 
-#reset: @ Shuts down docker services and cleans all dependencies, then runs setup
+#reset: @ Shuts down docker services and cleans all dependencies, then resets the database and re-installs all dependencies
 reset: docker.services.down
-reset: clean
-reset: setup
+reset: docker.services.up
+reset: clean.npm
+reset: ecto.reset
 
 #security.check: @ Performs security checks
 security.check:
@@ -106,7 +105,7 @@ test.cover:
 test.drop: MIX_ENV=test
 test.drop: SHELL:=/bin/bash
 test.drop:
-	source .env && DB_DATABASE=dj_rumble_test && mix ecto.drop
+	source .env && mix ecto.drop
 
 #test.wip: @ Runs test suites that match the wip tag
 test.wip: MIX_ENV=test

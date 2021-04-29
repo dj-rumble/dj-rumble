@@ -20,8 +20,6 @@
 + [ElixirLS](https://marketplace.visualstudio.com/items?itemName=JakeBecker.elixir-ls) brinda soporte de debugging, análisis estático, formateo, highlight de código, entre otras características.
 + [Elixir Linter (Credo)](https://marketplace.visualstudio.com/items?itemName=pantajoe.vscode-elixir-credo) recomienda formateo de código, oportunidades de refactoring y promueve consistencia de estilo.
 
-Utilizamos
-
 ### Variables de ambiente
 
 Configure un archivo `.env` en la raíz del proyecto, utilizando como base el archivo `.env.example`. Luego, asigne los valores correspondientes a cada variable.
