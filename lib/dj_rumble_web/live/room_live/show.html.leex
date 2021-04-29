@@ -21,8 +21,13 @@
   <div class="rounded-lg bg-gray-800 col-start-2 col-span-4 text-center">
     <%= live_component @socket, DjRumbleWeb.Live.Components.ConnectedUsers,
       id: "djrumble-connected-users-list",
-      connected_users: @connected_users,
-      slug: @room.slug
+      connected_users: @connected_users
+    %>
+  </div>
+  <div class="rounded-lg bg-gray-800 col-start-2 col-span-4 text-center">
+    <%= live_component @socket, DjRumbleWeb.Live.Components.Playlist,
+      id: "djrumble-playlist",
+      videos: @videos
     %>
   </div>
   <%# <div class="bg-gray-500 col-start-1 col-end-3 text-center""></div> %>
