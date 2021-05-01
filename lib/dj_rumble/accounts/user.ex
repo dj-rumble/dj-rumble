@@ -1,6 +1,9 @@
 defmodule DjRumble.Accounts.User do
   use Ecto.Schema
+
   import Ecto.Changeset
+
+  alias Faker
 
   @derive {Inspect, except: [:password]}
   schema "users" do
@@ -11,7 +14,7 @@ defmodule DjRumble.Accounts.User do
     field :confirmed_at, :naive_datetime
 
     many_to_many :rooms, DjRumble.Rooms.Room, join_through: DjRumble.Rooms.UserRoom
-    many_to_many :videos, DjRumble.Rooms.Video, join_through: DjRumble.Rooms.UserVideo
+    # many_to_many :videos, DjRumble.Rooms.Video, join_through: DjRumble.Rooms.UserVideo
 
     timestamps()
   end
@@ -145,5 +148,25 @@ defmodule DjRumble.Accounts.User do
       nil -> username
       _ -> String.replace(String.trim(username), ~r/\s+/, " ")
     end
+  end
+
+  def create_random_name do
+    adjectives = [
+      fn -> Faker.Superhero.descriptor end,
+      fn -> Faker.Pizza.cheese end,
+      fn -> Faker.Pizza.style end,
+      fn -> Faker.Commerce.product_name_material end,
+      fn -> Faker.Cannabis.strain end,
+      fn -> Faker.Commerce.product_name_adjective end,
+    ]
+    nouns = [
+      fn -> Faker.StarWars.character end,
+      fn -> Faker.Pokemon.name end,
+      fn -> Faker.Food.ingredient end,
+      fn -> Faker.Superhero.name end,
+    ]
+    descriptor  = Enum.at(adjectives, Enum.random(0..length(adjectives)-1))
+    name = Enum.at(nouns, Enum.random(0..length(nouns)-1))
+    "#{descriptor.()} #{name.()}"
   end
 end

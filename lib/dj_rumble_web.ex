@@ -90,6 +90,7 @@ defmodule DjRumbleWeb do
 
       import DjRumbleWeb.ErrorHelpers
       import DjRumbleWeb.Gettext
+      import DjRumbleWeb.MountHelpers
       alias DjRumbleWeb.Router.Helpers, as: Routes
     end
   end

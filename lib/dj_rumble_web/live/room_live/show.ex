@@ -11,28 +11,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
             |> Enum.map(fn {uuid, %{metas: metas}} -> %{uuid: uuid, metas: metas} end)
   end
 
-  def create_random_name() do
-    adjectives = [
-      fn -> Faker.Superhero.descriptor end,
-      fn -> Faker.Pizza.cheese end,
-      fn -> Faker.Pizza.style end,
-      fn -> Faker.Commerce.product_name_material end,
-      fn -> Faker.Cannabis.strain end,
-      fn -> Faker.Commerce.product_name_adjective end,
-    ]
-    nouns = [
-      fn -> Faker.StarWars.character end,
-      fn -> Faker.Pokemon.name end,
-      fn -> Faker.Food.ingredient end,
-      fn -> Faker.Superhero.name end,
-    ]
-    descriptor  = Enum.at(adjectives, Enum.random(0..length(adjectives)-1))
-    name = Enum.at(nouns, Enum.random(0..length(nouns)-1))
-    "#{descriptor.()} #{name.()}"
-  end
-
   @impl true
-  def mount(%{"slug" => slug}, _session, socket) do
+  def mount(%{"slug" => slug} = params, session, socket) do
     case Rooms.get_room_by_slug(slug) do
       nil ->
         {:ok,
@@ -41,6 +21,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
           |> push_redirect(to: Routes.room_index_path(socket, :index))
         }
       room ->
+        %{assigns: %{user: user}} = socket = assign_defaults(socket, params, session)
         room = Repo.preload(room, [:videos])
         video = Enum.at(room.videos, 0)
 
@@ -56,7 +37,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
           self(),
           topic,
           socket.id,
-          %{ username: create_random_name() }
+          %{ username: user.username }
         )
 
         {:ok,
