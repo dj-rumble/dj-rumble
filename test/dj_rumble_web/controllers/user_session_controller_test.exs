@@ -11,7 +11,10 @@ defmodule DjRumbleWeb.UserSessionControllerTest do
     test "renders log in page", %{conn: conn} do
       conn = get(conn, Routes.user_session_path(conn, :new))
       response = html_response(conn, 200)
-      assert response =~ "Log In"
+      assert response =~ "Home"
+      assert response =~ "Register"
+      assert response =~ "Reset password"
+      assert response =~ "Sign in"
     end
 
     test "redirects if already logged in", %{conn: conn, user: user} do
@@ -58,7 +61,6 @@ defmodule DjRumbleWeb.UserSessionControllerTest do
         })
 
       response = html_response(conn, 200)
-      assert response =~ "Log In"
       assert response =~ "Invalid email or password"
     end
   end
