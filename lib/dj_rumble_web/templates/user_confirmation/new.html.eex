@@ -1,24 +1,27 @@
-<div class="my-24">
-  <h2 style="text-align: center">Resend confirmation instructions</h2>
+<div class="flex flex-wrap justify-center items-stretch mx-auto my-24">
+  <%= form_for :user, Routes.user_confirmation_path(@conn, :create),
+    [class: "flex flex-col bg-gray-800 rounded-lg max-w-1/4 p-4 m-6 shadow-card"],
+  fn f -> %>
+    <div class="flex items-start">
+      <span class="rounded text-white p-2 leading-none flex items-center bg-green-500 w-full font-black">
+        User confirmation
+      </span>
+    </div>
 
-  <div class="flex flex-wrap justify-center items-stretch mx-auto my-10 live-inside-box">
-    <%= form_for :user, Routes.user_confirmation_path(@conn, :create), [class: "p-4 m-6 live-section-box"], fn f -> %>
-      <div class="flex items-start section-title">
-        <span class="rounded text-white p-2 leading-none flex items-center title-pill full-width">
-          User confirmation
-        </span>
+    <div class="flex flex-col items-center text-white px-4 py-6">
+      <div class="mb-4">
+        <%= label f, :email %>
+        <%= email_input f, :email, required: true, class: "border-0 shadow-inner-input" %>
       </div>
+    </div>
 
-      <div class="flex flex-col items-center text-white px-4 py-6">
-        <div class="mb-4">
-          <%= label f, :email %>
-          <%= email_input f, :email, required: true, class: "text-input-effect" %>
-        </div>
-      </div>
-
-      <div class="mt-auto flex items-center px-4" style="width: 100%">
-        <%= submit "Resend confirmation instructions", class: "modal-button modal-submit-button full-width" %>
-      </div>
-    <% end %>
-  </div>
+    <div class="mt-auto flex items-center">
+      <%= submit "Resend confirmation instructions",
+        class: "
+          border-gray-700 bg-gray-700 w-full shadow-md
+          transition duration-500 ease-in-out border-gray-700 bg-gray-700 hover:bg-green-500
+        "
+      %>
+    </div>
+  <% end %>
 </div>

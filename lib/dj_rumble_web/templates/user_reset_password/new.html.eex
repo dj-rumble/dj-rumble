@@ -1,22 +1,51 @@
-<div class="my-10">
-  <div class="flex flex-wrap justify-center items-stretch mx-auto my-24 live-inside-box">
-    <%= form_for :user, Routes.user_reset_password_path(@conn, :create), [class: "p-4 live-section-box"], fn f -> %>
-      <div class="flex items-start section-title">
-        <span class="rounded text-white p-2 leading-none flex items-center title-pill full-width">
-          Forgot your password?
-        </span>
-      </div>
-
-      <div class="flex flex-col items-center text-white px-4 py-6">
-        <div class="mb-4">
-          <%= label f, :email %>
-          <%= email_input f, :email, required: true, class: "text-input-effect" %>
-        </div>
-      </div>
-
-      <div class="mt-auto flex items-center px-4" style="width: 100%">
-        <%= submit "Send instructions to reset password", class: "modal-button modal-submit-button full-width" %>
-      </div>
+<div class="flex flex-row-reverse text-gray-300 hover:text-green-300">
+  <div class="m-2">
+    <%= link to: Routes.user_registration_path(@conn, :new),
+      class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
+    do %>
+      Sign up
     <% end %>
   </div>
+  <div class="m-2">
+    <%= link to: Routes.user_session_path(@conn, :new),
+      class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
+    do %>
+      Sign in
+    <% end %>
+  </div>
+  <div class="m-2">
+    <%= link to: Routes.room_index_path(@conn, :index),
+      class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
+    do %>
+      Home
+    <% end %>
+  </div>
+</div>
+
+<div class="flex flex-wrap justify-center items-stretch mx-auto my-24">
+  <%= form_for :user, Routes.user_reset_password_path(@conn, :create),
+    [class: "flex flex-col bg-gray-800 rounded-lg max-w-1/4 p-4 m-6 shadow-card"],
+  fn f -> %>
+    <div class="flex items-start">
+      <span class="rounded text-white p-2 leading-none flex items-center bg-green-500 w-full font-black">
+        Forgot your password?
+      </span>
+    </div>
+
+    <div class="flex flex-col items-center text-white px-4 py-6">
+      <div class="mb-4">
+        <%= label f, :email %>
+        <%= email_input f, :email, required: true, class: "border-0 shadow-inner-input" %>
+      </div>
+    </div>
+
+    <div class="mt-auto flex items-center">
+      <%= submit "Send me instructions",
+        class: "
+          border-gray-700 bg-gray-700 w-full shadow-md
+          transition duration-500 ease-in-out border-gray-700 bg-gray-700 hover:bg-green-500
+        "
+      %>
+    </div>
+  <% end %>
 </div>
