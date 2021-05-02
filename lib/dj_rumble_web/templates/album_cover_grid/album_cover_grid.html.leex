@@ -14,7 +14,7 @@
       <%= if length(@videos) >= 4 do %>
         <div class="grid grid-cols-2 relative">
           <%= for chunk <- Enum.chunk_every(Enum.take(@videos, 4), 2) do %>
-            <%= for {track, _i} <- chunk do %>
+            <%= for track <- chunk do %>
               <img class="w-10 h-10" src="<%= track.img_url %>" />
             <% end %>
           <% end %>

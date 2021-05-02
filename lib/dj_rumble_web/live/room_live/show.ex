@@ -23,7 +23,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
       room ->
         %{assigns: %{user: user}} = socket = assign_defaults(socket, params, session)
         room = Repo.preload(room, [:videos])
-        video = Enum.at(room.videos, 0)
+        index_playing = 0
+        video = Enum.at(room.videos, index_playing)
 
         # before subscribing, let's get the current_reader_count
         topic = "room:#{slug}"
@@ -44,8 +45,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
           socket
           |> assign(:page_title, page_title(video))
           |> assign(:room, room)
-          # FIXME: should be a list of videos
           |> assign(:video, video)
+          |> assign(:videos, room.videos)
+          |> assign(:index_playing, index_playing)
           |> assign(:connected_users, connected_users)}
     end
   end
@@ -66,6 +68,30 @@ defmodule DjRumbleWeb.RoomLive.Show do
         {:noreply,
           socket
           |> push_event("receive_player_state", %{videoId: video.video_id, shouldPlay: true, time: 0})}
+    end
+  end
+
+  @impl true
+  def handle_event("next_video", _params, socket) do
+    case Map.has_key?(socket.assigns, :videos) do
+      false -> {:noreply, socket}
+      true ->
+        case Map.has_key?(socket.assigns, :videos) do
+          false -> {:noreply, socket}
+          true ->
+            %{videos: videos, index_playing: index_playing} = socket.assigns
+            next_index_playing = index_playing + 1
+            next_video = Enum.at(videos, next_index_playing)
+            case next_video != nil do
+              false -> {:noreply, socket}
+              true ->
+                {:noreply,
+                  socket
+                  |> assign(:video, next_video)
+                  |> assign(:index_playing, next_index_playing)
+                  |> push_event("receive_player_state", %{videoId: next_video.video_id, shouldPlay: true, time: 0})}
+            end
+        end
     end
   end
 
