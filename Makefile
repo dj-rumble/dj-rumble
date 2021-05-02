@@ -53,15 +53,17 @@ install.deps:
 install.npm:
 	@npm i --prefix assets
 
-#lint: @ Runs a code formatter and code consistency analysis
+#lint: @ Runs a code formatter, a code consistency analysis and eslint for js modules
 lint:
 	@mix format
 	@mix credo --strict
+	@mix eslint.fix
 
-#lint.ci: @ Strictly runs a code formatter and code consistency analysis
+#lint.ci: @ Strictly runs a code formatter, a code consistency analysis and eslint for js modules
 lint.ci:
 	@mix format --check-formatted
 	@mix credo --strict
+	@mix eslint
 
 #reset: @ Shuts down docker services and cleans all dependencies, then resets the database and re-installs all dependencies
 reset: docker.services.down
