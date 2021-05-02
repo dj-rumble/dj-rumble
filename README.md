@@ -15,10 +15,23 @@
 
 ### Editores y extensiones recomendadas
 
-+ [VSCodium](https://vscodium.com/#install) es la versión libre de Visual Studio Code.
++ [*VSCodium*](https://vscodium.com/#install) es la versión libre de Visual Studio Code.
 + [VSCode](https://code.visualstudio.com/Download)
 + [ElixirLS](https://marketplace.visualstudio.com/items?itemName=JakeBecker.elixir-ls) brinda soporte de debugging, análisis estático, formateo, highlight de código, entre otras características.
 + [Elixir Linter (Credo)](https://marketplace.visualstudio.com/items?itemName=pantajoe.vscode-elixir-credo) recomienda formateo de código, oportunidades de refactoring y promueve consistencia de estilo.
++ [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) promueve consistencia de estilo y buenas prácticas en los módulos Javascript.
+
+### Git hooks
+
+El proyecto utiliza [`elixir_git_hooks`](https://github.com/qgadrian/elixir_git_hooks) para evitar conflictos durante la integración contínua y simplificar las revisiones de Pull Requests.
+
+La implementación de cada git hook se encuentra en el archivo de configuración `dev.exs`.
+
+Los hooks se instalan automáticamente durante el `setup` cuando se instalan las dependencias de elixir: `mix deps.get` o `make install.deps`. Ante algún conflicto, es posible instalar o correr los hooks manualmente desde la terminal:
+
++ Instalación: `mix git_hooks.install`
++ Correr un hook específico: `mix git_hooks.run pre_commit`
++ Correr todos los hooks: `mix git_hooks.run all`
 
 ### Variables de ambiente
 
@@ -113,6 +126,8 @@ make test.cover
 ```
 
 ### Comandos de linting
+
+Los comandos de linting se utilizan en el workflow [`lint.yml`](.github/workflows.lint.yml). Es recomendable utilizar `make lint.ci` antes de aplicar cambios en la rama para evitar conflictos durante la integración contínua. De todos modos, los hooks de github notificarán errores de linting o de formato al realizar commits.
 
 *Formatea código, analiza su consistencia, realiza análisis de seguridad y análisis estático de código.*
 
