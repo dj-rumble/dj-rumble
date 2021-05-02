@@ -65,8 +65,7 @@ config :dj_rumble, DjRumbleWeb.Endpoint,
     ]
   ]
 
-config :dj_rumble, DjRumble.Mailer,
-  adapter: Bamboo.LocalAdapter
+config :dj_rumble, DjRumble.Mailer, adapter: Bamboo.LocalAdapter
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
@@ -85,7 +84,7 @@ config :git_hooks,
   hooks: [
     pre_commit: [
       tasks: [
-        {:mix_task, :format, ["--check-formatted"]},
+        {:mix_task, :format, []},
         {:mix_task, :"eslint.fix"}
       ]
     ]

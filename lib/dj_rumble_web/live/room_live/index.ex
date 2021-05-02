@@ -45,8 +45,8 @@ defmodule DjRumbleWeb.RoomLive.Index do
 
   def handle_event("redirect_room", %{"slug" => slug}, socket) do
     {:noreply,
-      socket
-      |> redirect(to: Routes.room_show_path(socket, :show, slug))}
+     socket
+     |> redirect(to: Routes.room_show_path(socket, :show, slug))}
   end
 
   defp list_rooms do

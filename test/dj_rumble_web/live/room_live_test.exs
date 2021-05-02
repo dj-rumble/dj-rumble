@@ -18,6 +18,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
       {:ok, _index_live, html} = live(conn, Routes.room_index_path(conn, :index))
 
       assert html =~ "Dj Rooms"
+
       for room <- rooms do
         assert html =~ room.name
       end
@@ -55,7 +56,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
   end
 
   describe "Show" do
-
     test "displays room with no videos", %{conn: conn} do
       room = room_fixture()
       {:ok, show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
@@ -63,8 +63,12 @@ defmodule DjRumbleWeb.RoomLiveTest do
     end
 
     test "displays room with a video", %{conn: conn} do
-      %{room: room} = room_videos_fixture(
-        %{room: room_fixture(), videos: videos_fixture()}, %{preload: true})
+      %{room: room} =
+        room_videos_fixture(
+          %{room: room_fixture(), videos: videos_fixture()},
+          %{preload: true}
+        )
+
       {:ok, _show_live, html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
       assert html =~ Enum.at(room.videos, 0).title
     end

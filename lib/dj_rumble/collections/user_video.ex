@@ -3,7 +3,6 @@ defmodule DjRumble.Collections.UserVideo do
   import Ecto.Changeset
 
   schema "users_videos" do
-
     belongs_to :user, DjRumble.Accounts.User
     belongs_to :video, DjRumble.Rooms.Video
 

@@ -13,6 +13,7 @@ defmodule DjRumble.RoomsFixtures do
 
   def room_fixture(attrs \\ %{}) do
     random_words = Enum.join(Faker.Lorem.words(5), " ")
+
     {:ok, room} =
       attrs
       |> Enum.into(%{
@@ -20,6 +21,7 @@ defmodule DjRumble.RoomsFixtures do
         slug: random_words
       })
       |> Rooms.create_room()
+
     room
   end
 
@@ -34,17 +36,20 @@ defmodule DjRumble.RoomsFixtures do
         channel_title: "some channel title",
         description: "some description",
         img_height: "420",
-        img_url: "https://millennialdiyer.com/wp1/wp-content/uploads/2018/11/Tips-Tricks-for-Assigning-Album-Cover-Art-to-your-Music-Library-Default-Image.jpg",
+        img_url:
+          "https://millennialdiyer.com/wp1/wp-content/uploads/2018/11/Tips-Tricks-for-Assigning-Album-Cover-Art-to-your-Music-Library-Default-Image.jpg",
         img_width: "420",
         title: "some title",
-        video_id: "YPkp-oESVMM",
+        video_id: "YPkp-oESVMM"
       })
       |> Rooms.create_video()
+
     video
   end
 
   def room_videos_fixture(%{room: room, videos: videos}, opts \\ %{preload: false}) do
-    for video <- videos, do: Rooms.create_room_video(%{room_id: room.id,video_id: video.id})
+    for video <- videos, do: Rooms.create_room_video(%{room_id: room.id, video_id: video.id})
+
     case opts.preload do
       false -> %{room: room}
       true -> %{room: Repo.preload(room, :videos)}
