@@ -14,7 +14,7 @@ defmodule DjRumble.Email do
   def new(to, body, subject) do
     new_email(
       to: to,
-      from: "djrumble@gmail.com",
+      from: System.get_env("FROM_EMAIL"),
       subject: subject,
       text_body: body
     )
