@@ -80,6 +80,7 @@ defmodule DjRumbleWeb do
     quote do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
+      use PhoenixInlineSvg.Helpers
 
       # Import LiveView helpers (live_render, live_component, live_patch, etc)
       import Phoenix.LiveView.Helpers
@@ -90,6 +91,7 @@ defmodule DjRumbleWeb do
 
       import DjRumbleWeb.ErrorHelpers
       import DjRumbleWeb.Gettext
+      import DjRumbleWeb.MountHelpers
       alias DjRumbleWeb.Router.Helpers, as: Routes
     end
   end

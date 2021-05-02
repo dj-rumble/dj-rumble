@@ -2,11 +2,11 @@
 Connected Users: <%= @connected_users |> length %>
 </div>
 <div class="bg-gray-50 p-4 m-6 mb-7 rounded-lg">
-    <ul>
-      <%= for user <- @connected_users do %>
-        <li style="list-style: none;">
-          <%= hd(user.metas).username %>
-        </li>
-      <% end %>
-    </ul>
-  </div>
+  <ul>
+    <%= for user <- @connected_users do %>
+      <li style="list-style: none;">
+        <%= hd(user.metas).username %>
+      </li>
+    <% end %>
+  </ul>
+</div>

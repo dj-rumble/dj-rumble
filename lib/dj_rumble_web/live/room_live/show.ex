@@ -15,28 +15,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
             |> Enum.map(fn {uuid, %{metas: metas}} -> %{uuid: uuid, metas: metas} end)
   end
 
-  def create_random_name() do
-    adjectives = [
-      fn -> Faker.Superhero.descriptor end,
-      fn -> Faker.Pizza.cheese end,
-      fn -> Faker.Pizza.style end,
-      fn -> Faker.Commerce.product_name_material end,
-      fn -> Faker.Cannabis.strain end,
-      fn -> Faker.Commerce.product_name_adjective end,
-    ]
-    nouns = [
-      fn -> Faker.StarWars.character end,
-      fn -> Faker.Pokemon.name end,
-      fn -> Faker.Food.ingredient end,
-      fn -> Faker.Superhero.name end,
-    ]
-    descriptor  = Enum.at(adjectives, Enum.random(0..length(adjectives) - 1))
-    name = Enum.at(nouns, Enum.random(0..length(nouns) - 1))
-    "#{descriptor.()} #{name.()}"
-  end
-
   @impl true
-  def mount(%{"slug" => slug}, _session, socket) do
+  def mount(%{"slug" => slug} = params, session, socket) do
     case Rooms.get_room_by_slug(slug) do
       nil ->
         {:ok,
@@ -45,8 +25,10 @@ defmodule DjRumbleWeb.RoomLive.Show do
           |> push_redirect(to: Routes.room_index_path(socket, :index))
         }
       room ->
+        %{assigns: %{user: user}} = socket = assign_defaults(socket, params, session)
         room = Repo.preload(room, [:videos])
-        video = Enum.at(room.videos, 0)
+        index_playing = 0
+        video = Enum.at(room.videos, index_playing)
 
         # before subscribing, let's get the current_reader_count
         topic = "room:#{slug}"
@@ -60,15 +42,16 @@ defmodule DjRumbleWeb.RoomLive.Show do
           self(),
           topic,
           socket.id,
-          %{ username: create_random_name() }
+          %{ username: user.username }
         )
 
         {:ok,
           socket
           |> assign(:page_title, page_title(video))
           |> assign(:room, room)
-          # FIXME: should be a list of videos
           |> assign(:video, video)
+          |> assign(:videos, room.videos)
+          |> assign(:index_playing, index_playing)
           |> assign(:connected_users, connected_users)}
     end
   end
@@ -89,6 +72,30 @@ defmodule DjRumbleWeb.RoomLive.Show do
         {:noreply,
           socket
           |> push_event("receive_player_state", %{videoId: video.video_id, shouldPlay: true, time: 0})}
+    end
+  end
+
+  @impl true
+  def handle_event("next_video", _params, socket) do
+    case Map.has_key?(socket.assigns, :videos) do
+      false -> {:noreply, socket}
+      true ->
+        case Map.has_key?(socket.assigns, :videos) do
+          false -> {:noreply, socket}
+          true ->
+            %{videos: videos, index_playing: index_playing} = socket.assigns
+            next_index_playing = index_playing + 1
+            next_video = Enum.at(videos, next_index_playing)
+            case next_video != nil do
+              false -> {:noreply, socket}
+              true ->
+                {:noreply,
+                  socket
+                  |> assign(:video, next_video)
+                  |> assign(:index_playing, next_index_playing)
+                  |> push_event("receive_player_state", %{videoId: next_video.video_id, shouldPlay: true, time: 0})}
+            end
+        end
     end
   end
 

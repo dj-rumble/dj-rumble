@@ -27,7 +27,7 @@ defmodule DjRumble.MixProject do
   def application do
     [
       mod: {DjRumble.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :bamboo]
     ]
   end
 
@@ -40,22 +40,25 @@ defmodule DjRumble.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:bamboo, "~> 1.6"},
+      {:bcrypt_elixir, "~> 2.0"},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ecto_sql, "~> 3.4"},
       {:excoveralls, "~> 0.10", only: :test},
       {:faker, "~> 0.16"},
-      {:floki, ">= 0.27.0", only: :test},
-      {:git_hooks, "~> 0.6.2", only: [:dev], runtime: false},
+      {:floki, ">= 0.27.0"},
       {:gettext, "~> 0.11"},
+      {:git_hooks, "~> 0.6.2", only: [:dev], runtime: false},
       {:jason, "~> 1.0"},
       {:phoenix, "~> 1.5.8"},
       {:phoenix_ecto, "~> 4.1"},
       {:postgrex, ">= 0.0.0"},
-      {:phoenix_live_view, "~> 0.15.1"},
       {:phoenix_html, "~> 2.11"},
-      {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:phoenix_inline_svg, "~> 1.4"},
       {:phoenix_live_dashboard, "~> 0.4"},
+      {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:phoenix_live_view, "~> 0.15.1"},
       {:plug_cowboy, "~> 2.0"},
       {:sobelow, "~> 0.11", only: [:dev, :test], runtime: false},
       {:telemetry_metrics, "~> 0.4"},

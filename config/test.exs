@@ -19,5 +19,8 @@ config :dj_rumble, DjRumbleWeb.Endpoint,
   http: [port: 4002],
   server: false
 
+config :dj_rumble, DjRumble.Mailer,
+  adapter: Bamboo.TestAdapter
+
 # Print only warnings and errors during test
 config :logger, level: :warn
