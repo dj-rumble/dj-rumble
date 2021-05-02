@@ -1,4 +1,7 @@
 defmodule DjRumbleWeb.LiveHelpers do
+  @moduledoc """
+  Responsible for implementing reusable helpers for live views
+  """
   import Phoenix.LiveView.Helpers
 
   @doc """

@@ -1,4 +1,7 @@
 defmodule DjRumble.Accounts.User do
+  @moduledoc """
+  Responsible for declaring the User schema and users management
+  """
   use Ecto.Schema
 
   import Ecto.Changeset

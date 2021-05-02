@@ -1,4 +1,7 @@
 defmodule DjRumbleWeb.PageLive do
+  @moduledoc """
+  Responsible for displaying the sample live view page
+  """
   use DjRumbleWeb, :live_view
 
   @impl true

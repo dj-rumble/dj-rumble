@@ -1,4 +1,7 @@
 defmodule DjRumbleWeb.ModalComponent do
+  @moduledoc """
+  Responsible for displaying a live modal component
+  """
   use DjRumbleWeb, :live_component
 
   @impl true

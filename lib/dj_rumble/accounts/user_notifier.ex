@@ -1,4 +1,7 @@
 defmodule DjRumble.Accounts.UserNotifier do
+  @moduledoc """
+  Responsible for managing emails and user notifications behaviour
+  """
   alias DjRumble.{Email, Mailer}
 
   # For simplicity, this module simply logs messages to the terminal.

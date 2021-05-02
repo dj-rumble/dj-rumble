@@ -1,4 +1,7 @@
 defmodule DjRumbleWeb.RoomLive.Index do
+  @moduledoc """
+  Responsible for controlling the Room list live view
+  """
   use DjRumbleWeb, :live_view
 
   alias DjRumble.Repo

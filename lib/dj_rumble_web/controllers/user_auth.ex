@@ -1,4 +1,7 @@
 defmodule DjRumbleWeb.UserAuth do
+  @moduledoc """
+  Responsible for managing user authentication and session
+  """
   import Plug.Conn
   import Phoenix.Controller
 

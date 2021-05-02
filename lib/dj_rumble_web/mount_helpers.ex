@@ -1,4 +1,7 @@
 defmodule DjRumbleWeb.MountHelpers do
+  @moduledoc """
+  Responsible for implementing reusable mount helpers
+  """
   import Phoenix.LiveView
 
   alias DjRumble.Accounts
