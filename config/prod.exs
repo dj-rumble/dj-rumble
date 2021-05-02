@@ -20,7 +20,6 @@ config :dj_rumble, DjRumble.Mailer,
     recv_timeout: :timer.minutes(1)
   ]
 
-
 # Do not print debug messages in production
 config :logger, level: :info
 

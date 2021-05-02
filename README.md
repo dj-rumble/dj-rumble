@@ -13,6 +13,26 @@
 + [Docker Compose](https://docs.docker.com/compose/install/)
 + [Elixir](https://elixir-lang.org/install.html)
 
+### Editores y extensiones recomendadas
+
++ [*VSCodium*](https://vscodium.com/#install) es la versión libre de Visual Studio Code.
++ [VSCode](https://code.visualstudio.com/Download)
++ [ElixirLS](https://marketplace.visualstudio.com/items?itemName=JakeBecker.elixir-ls) brinda soporte de debugging, análisis estático, formateo, highlight de código, entre otras características.
++ [Elixir Linter (Credo)](https://marketplace.visualstudio.com/items?itemName=pantajoe.vscode-elixir-credo) recomienda formateo de código, oportunidades de refactoring y promueve consistencia de estilo.
++ [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) promueve consistencia de estilo y buenas prácticas en los módulos Javascript.
+
+### Git hooks
+
+El proyecto utiliza [`elixir_git_hooks`](https://github.com/qgadrian/elixir_git_hooks) para evitar conflictos durante la integración contínua y simplificar las revisiones de Pull Requests.
+
+La implementación de cada git hook se encuentra en el archivo de configuración `dev.exs`.
+
+Los hooks se instalan automáticamente durante el `setup` cuando se instalan las dependencias de elixir: `mix deps.get` o `make install.deps`. Ante algún conflicto, es posible instalar o correr los hooks manualmente desde la terminal:
+
++ Instalación: `mix git_hooks.install`
++ Correr un hook específico: `mix git_hooks.run pre_commit`
++ Correr todos los hooks: `mix git_hooks.run all`
+
 ### Variables de ambiente
 
 Configure un archivo `.env` en la raíz del proyecto, utilizando como base el archivo `.env.example`. Luego, asigne los valores correspondientes a cada variable.
@@ -51,7 +71,9 @@ Este proyecto utiliza **Makefile** para interactuar con el servidor, los servici
 make help
 ```
 
-*Instala el ambiente de desarrollo completo.*
+### Comandos de configuración
+
+*Instala el ambiente de desarrollo completo. Útil cada vez que se realiza un cambio de rama o se testea un pull request.*
 
 ```bash
 make setup
@@ -69,11 +91,15 @@ make reset
 make ecto.reset
 ```
 
+### Comandos de servidor
+
 *Inicia el servidor de desarrollo con una terminal interactiva de Elixir.*
 
 ```bash
 make server
 ```
+
+### Comandos de testing
 
 *Ejecuta todas las pruebas.*
 
@@ -99,6 +125,22 @@ make test.drop
 make test.cover
 ```
 
+### Comandos de linting
+
+Los comandos de linting se utilizan en el workflow [`lint.yml`](.github/workflows.lint.yml). Es recomendable utilizar `make lint.ci` antes de aplicar cambios en la rama para evitar conflictos durante la integración contínua. De todos modos, los hooks de github notificarán errores de linting o de formato al realizar commits.
+
+*Formatea código, analiza su consistencia, realiza análisis de seguridad y análisis estático de código.*
+
+```bash
+make lint
+```
+
+*Similar a* `make lint` *pero corta la ejecución ante fallas. Útil para simular localmente el proceso de linting de la integración contínua.*
+
+```bash
+make lint.ci
+```
+
 ### Servidor de desarrollo
 
 Una vez configuradas las variables de entorno e instalado el ambiente de desarrollo es posible iniciar el servidor utilizando el comando `make server`.
@@ -108,7 +150,7 @@ Una vez configuradas las variables de entorno e instalado el ambiente de desarro
 
 ### Administración de bases de datos
 
-Los servicios de docker incluyen un contenedor de [`PostgreSql`](https://www.postgresql.org/) y una instancia de [`pgAdmin`](https://www.pgadmin.org/).
+Los servicios de Docker incluyen un contenedor de [`PostgreSql`](https://www.postgresql.org/) y una instancia de [`pgAdmin`](https://www.pgadmin.org/).
 
 + Visite [`localhost:5050`](http://localhost:5050/) desde su navegador e ingrese las credenciales configuradas en `.env` para acceder al panel de administración.
 + Ingrese al menú `Object` => `Create` => `Server` y otorgue un nombre de fantasía al servidor.

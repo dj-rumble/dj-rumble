@@ -1,5 +1,7 @@
 defmodule DjRumble.Accounts.UserNotifier do
-
+  @moduledoc """
+  Responsible for managing emails and user notifications behaviour
+  """
   alias DjRumble.{Email, Mailer}
 
   # For simplicity, this module simply logs messages to the terminal.
@@ -22,59 +24,71 @@ defmodule DjRumble.Accounts.UserNotifier do
   Deliver instructions to confirm account.
   """
   def deliver_confirmation_instructions(user, url) do
-    deliver(user.email, """
+    deliver(
+      user.email,
+      """
 
-    ==============================
+      ==============================
 
-    Hi #{user.email},
+      Hi #{user.email},
 
-    You can confirm your account by visiting the URL below:
+      You can confirm your account by visiting the URL below:
 
-    #{url}
+      #{url}
 
-    If you didn't create an account with us, please ignore this.
+      If you didn't create an account with us, please ignore this.
 
-    ==============================
-    """, "DjRumble: Account confirmation")
+      ==============================
+      """,
+      "DjRumble: Account confirmation"
+    )
   end
 
   @doc """
   Deliver instructions to reset a user password.
   """
   def deliver_reset_password_instructions(user, url) do
-    deliver(user.email, """
+    deliver(
+      user.email,
+      """
 
-    ==============================
+      ==============================
 
-    Hi #{user.email},
+      Hi #{user.email},
 
-    You can reset your password by visiting the URL below:
+      You can reset your password by visiting the URL below:
 
-    #{url}
+      #{url}
 
-    If you didn't request this change, please ignore this.
+      If you didn't request this change, please ignore this.
 
-    ==============================
-    """, "DjRumble: Password reset request")
+      ==============================
+      """,
+      "DjRumble: Password reset request"
+    )
   end
 
   @doc """
   Deliver instructions to update a user email.
   """
   def deliver_update_email_instructions(user, url) do
-    deliver(user.email, """
+    deliver(
+      user.email,
+      """
 
-    ==============================
+      ==============================
 
-    Hi #{user.email},
+      Hi #{user.email},
 
-    You can change your email by visiting the URL below:
+      You can change your email by visiting the URL below:
 
-    #{url}
+      #{url}
 
-    If you didn't request this change, please ignore this.
+      If you didn't request this change, please ignore this.
 
-    ==============================
-    """, "DjRumble: Email update verification")
+      ==============================
+      """,
+      "DjRumble: Email update verification"
+    )
   end
 end

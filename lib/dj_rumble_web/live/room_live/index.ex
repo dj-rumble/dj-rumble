@@ -1,4 +1,7 @@
 defmodule DjRumbleWeb.RoomLive.Index do
+  @moduledoc """
+  Responsible for controlling the Room list live view
+  """
   use DjRumbleWeb, :live_view
 
   alias DjRumble.Repo
@@ -45,8 +48,8 @@ defmodule DjRumbleWeb.RoomLive.Index do
 
   def handle_event("redirect_room", %{"slug" => slug}, socket) do
     {:noreply,
-      socket
-      |> redirect(to: Routes.room_show_path(socket, :show, slug))}
+     socket
+     |> redirect(to: Routes.room_show_path(socket, :show, slug))}
   end
 
   defp list_rooms do

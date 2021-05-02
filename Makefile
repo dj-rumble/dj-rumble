@@ -3,9 +3,6 @@
 export MIX_ENV ?= dev
 export SECRET_KEY_BASE ?= $(shell mix phx.gen.secret)
 
-# Enables bash commands in the whole document
-# SHELL := /bin/bash
-
 APP_NAME ?= `grep 'app:' mix.exs | sed -e 's/\[//g' -e 's/ //g' -e 's/app://' -e 's/[:,]//g'`
 
 default: help
@@ -16,10 +13,15 @@ clean: clean.npm clean.deps
 #clean.deps: @ Cleans server dependencies from mix.exs
 clean.deps:
 	@mix deps.clean --all
+	@mix deps.get
 
 #clean.npm: @ Cleans client dependencies from assets/package.json
 clean.npm:
 	@npm clean-install --prefix assets
+
+#dialyzer: @ Performs static code analysis.
+dialyzer:
+	@mix dialyzer --format dialyxir
 
 #docker.services.down: @ Shuts down docker-compose services
 docker.services.down:
@@ -51,10 +53,31 @@ install.deps:
 install.npm:
 	@npm i --prefix assets
 
-#reset: @ Shuts down docker services and cleans all dependencies, then runs setup
+#lint: @ Runs a code formatter, a code consistency analysis and eslint for js modules
+lint:
+	@mix format
+	@mix credo --strict
+	@mix eslint.fix
+
+#lint.ci: @ Strictly runs a code formatter, a code consistency analysis and eslint for js modules
+lint.ci:
+	@mix format --check-formatted
+	@mix credo --strict
+	@mix eslint
+
+#reset: @ Shuts down docker services and cleans all dependencies, then resets the database and re-installs all dependencies
 reset: docker.services.down
-reset: clean
-reset: setup
+reset: docker.services.up
+reset: clean.npm
+reset: ecto.reset
+
+#security.check: @ Performs security checks
+security.check:
+	@mix sobelow --verbose
+
+#security.check.ci: @ Performs security checks
+security.check.ci:
+	@mix sobelow --exit
 
 #server: @ Starts a server with an interactive elixir shell.
 server: SHELL:=/bin/bash
@@ -84,7 +107,7 @@ test.cover:
 test.drop: MIX_ENV=test
 test.drop: SHELL:=/bin/bash
 test.drop:
-	source .env && DB_DATABASE=dj_rumble_test && mix ecto.drop
+	source .env && mix ecto.drop
 
 #test.wip: @ Runs test suites that match the wip tag
 test.wip: MIX_ENV=test

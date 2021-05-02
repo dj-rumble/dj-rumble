@@ -1,4 +1,7 @@
 defmodule DjRumble.Rooms.RoomVideo do
+  @moduledoc """
+  Responsible for declaring the RoomVideo schema and rooms videos management
+  """
   use Ecto.Schema
   import Ecto.Changeset
   alias DjRumble.Rooms.{Room, Video}

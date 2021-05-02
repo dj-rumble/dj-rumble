@@ -1,4 +1,7 @@
 defmodule DjRumbleWeb.Telemetry do
+  @moduledoc """
+  Responsible for displaying server performance and metrics
+  """
   use Supervisor
   import Telemetry.Metrics
 

@@ -42,23 +42,27 @@ defmodule DjRumble.MixProject do
     [
       {:bamboo, "~> 1.6"},
       {:bcrypt_elixir, "~> 2.0"},
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:ecto_sql, "~> 3.4"},
+      {:excoveralls, "~> 0.10", only: :test},
+      {:faker, "~> 0.16"},
+      {:floki, ">= 0.27.0"},
+      {:gettext, "~> 0.11"},
+      {:git_hooks, "~> 0.6.2", only: [:dev], runtime: false},
+      {:jason, "~> 1.0"},
       {:phoenix, "~> 1.5.8"},
       {:phoenix_ecto, "~> 4.1"},
-      {:ecto_sql, "~> 3.4"},
       {:postgrex, ">= 0.0.0"},
-      {:phoenix_live_view, "~> 0.15.1"},
-      {:floki, ">= 0.27.0"},
       {:phoenix_html, "~> 2.11"},
       {:phoenix_inline_svg, "~> 1.4"},
-      {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_dashboard, "~> 0.4"},
-      {:telemetry_metrics, "~> 0.4"},
-      {:telemetry_poller, "~> 0.4"},
-      {:gettext, "~> 0.11"},
-      {:jason, "~> 1.0"},
+      {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:phoenix_live_view, "~> 0.15.1"},
       {:plug_cowboy, "~> 2.0"},
-      {:faker, "~> 0.16"},
-      {:excoveralls, "~> 0.10", only: :test}
+      {:sobelow, "~> 0.11", only: [:dev, :test], runtime: false},
+      {:telemetry_metrics, "~> 0.4"},
+      {:telemetry_poller, "~> 0.4"}
     ]
   end
 
@@ -71,9 +75,11 @@ defmodule DjRumble.MixProject do
   defp aliases do
     [
       setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
-      "ecto.setup": ["ecto.drop", "ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      eslint: ["cmd npm run eslint --prefix assets"],
+      "eslint.fix": ["cmd npm run eslint-fix --prefix assets"]
     ]
   end
 end

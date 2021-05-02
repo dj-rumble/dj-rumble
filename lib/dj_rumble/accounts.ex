@@ -5,7 +5,7 @@ defmodule DjRumble.Accounts do
 
   import Ecto.Query, warn: false
   alias DjRumble.Repo
-  alias DjRumble.Accounts.{User, UserToken, UserNotifier}
+  alias DjRumble.Accounts.{User, UserNotifier, UserToken}
 
   ## Database getters
 

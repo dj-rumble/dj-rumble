@@ -1,4 +1,7 @@
 defmodule DjRumbleWeb.UserAuth do
+  @moduledoc """
+  Responsible for managing user authentication and session
+  """
   import Plug.Conn
   import Phoenix.Controller
 
@@ -92,14 +95,15 @@ defmodule DjRumbleWeb.UserAuth do
     {user_token, conn} = ensure_user_token(conn)
     user = user_token && Accounts.get_user_by_session_token(user_token)
 
-    %{user: user, visitor: visitor} = case user do
-      nil -> %{user: %{username: ""}, visitor: true}
-      user -> %{user: user, visitor: false}
-    end
+    %{user: user, visitor: visitor} =
+      case user do
+        nil -> %{user: %{username: ""}, visitor: true}
+        user -> %{user: user, visitor: false}
+      end
 
     conn
-      |> assign(:current_user, user)
-      |> assign(:visitor, visitor)
+    |> assign(:current_user, user)
+    |> assign(:visitor, visitor)
   end
 
   defp ensure_user_token(conn) do

@@ -1,4 +1,7 @@
 defmodule DjRumble.Rooms.Video do
+  @moduledoc """
+  Responsible for declaring the Video schema and videos management
+  """
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -20,7 +23,23 @@ defmodule DjRumble.Rooms.Video do
   @doc false
   def changeset(video, attrs) do
     video
-    |> cast(attrs, [:video_id, :title, :description, :channel_title, :img_url, :img_height, :img_width])
-    |> validate_required([:video_id, :title, :description, :channel_title, :img_url, :img_height, :img_width])
+    |> cast(attrs, [
+      :video_id,
+      :title,
+      :description,
+      :channel_title,
+      :img_url,
+      :img_height,
+      :img_width
+    ])
+    |> validate_required([
+      :video_id,
+      :title,
+      :description,
+      :channel_title,
+      :img_url,
+      :img_height,
+      :img_width
+    ])
   end
 end

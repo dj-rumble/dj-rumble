@@ -1,4 +1,7 @@
 defmodule DjRumble.Rooms.UserRoom do
+  @moduledoc """
+  Responsible for declaring the UserRoom schema and users rooms management
+  """
   use Ecto.Schema
   import Ecto.Changeset
 

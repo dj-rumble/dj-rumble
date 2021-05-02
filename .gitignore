@@ -33,6 +33,15 @@ npm-debug.log
 # this depending on your deployment strategy.
 /priv/static/
 
+# Environment
 .env
 
+# Interactive shell setup
 .iex.exs
+
+# Dialyzer
+/priv/plts/*.plt
+/priv/plts/*.plt.hash
+
+# Sobelow
+.sobelow

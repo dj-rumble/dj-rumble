@@ -72,9 +72,33 @@ defmodule DjRumble.RoomsTest do
   describe "videos" do
     alias DjRumble.Rooms.Video
 
-    @valid_attrs %{channel_title: "some channel_title", description: "some description", img_height: "some img_height", img_url: "some img_url", img_width: "some img_width", title: "some title", video_id: "some video_id"}
-    @update_attrs %{channel_title: "some updated channel_title", description: "some updated description", img_height: "some updated img_height", img_url: "some updated img_url", img_width: "some updated img_width", title: "some updated title", video_id: "some updated video_id"}
-    @invalid_attrs %{channel_title: nil, description: nil, img_height: nil, img_url: nil, img_width: nil, title: nil, video_id: nil}
+    @valid_attrs %{
+      channel_title: "some channel_title",
+      description: "some description",
+      img_height: "some img_height",
+      img_url: "some img_url",
+      img_width: "some img_width",
+      title: "some title",
+      video_id: "some video_id"
+    }
+    @update_attrs %{
+      channel_title: "some updated channel_title",
+      description: "some updated description",
+      img_height: "some updated img_height",
+      img_url: "some updated img_url",
+      img_width: "some updated img_width",
+      title: "some updated title",
+      video_id: "some updated video_id"
+    }
+    @invalid_attrs %{
+      channel_title: nil,
+      description: nil,
+      img_height: nil,
+      img_url: nil,
+      img_width: nil,
+      title: nil,
+      video_id: nil
+    }
 
     def video_fixture(attrs \\ %{}) do
       {:ok, video} =
@@ -146,6 +170,7 @@ defmodule DjRumble.RoomsTest do
     def room_video_fixture(attrs \\ %{}) do
       room = room_fixture()
       video = video_fixture()
+
       {:ok, room_video} =
         attrs
         |> Enum.into(%{room_id: room.id, video_id: video.id})
@@ -167,7 +192,9 @@ defmodule DjRumble.RoomsTest do
     test "create_room_video/1 with valid data creates a room_video" do
       room = room_fixture()
       video = video_fixture()
-      assert {:ok, %RoomVideo{} = _room_video} = Rooms.create_room_video(%{room_id: room.id, video_id: video.id})
+
+      assert {:ok, %RoomVideo{} = _room_video} =
+               Rooms.create_room_video(%{room_id: room.id, video_id: video.id})
     end
 
     test "create_room_video/1 with invalid data returns error changeset" do
@@ -178,7 +205,9 @@ defmodule DjRumble.RoomsTest do
       room_video = room_video_fixture()
       room = room_fixture()
       video = video_fixture()
-      assert {:ok, %RoomVideo{} = _room_video} = Rooms.update_room_video(room_video, %{room_id: room.id, video_id: video.id})
+
+      assert {:ok, %RoomVideo{} = _room_video} =
+               Rooms.update_room_video(room_video, %{room_id: room.id, video_id: video.id})
     end
 
     test "update_room_video/2 with invalid data returns error changeset" do
