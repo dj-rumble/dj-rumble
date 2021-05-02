@@ -13,6 +13,14 @@ config :dj_rumble, DjRumbleWeb.Endpoint,
   url: [host: "example.com", port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
+config :dj_rumble, DjRumble.Mailer,
+  adapter: Bamboo.SendGridAdapter,
+  api_key: System.get_env("SENDGRID_API_KEY"),
+  hackney_opts: [
+    recv_timeout: :timer.minutes(1)
+  ]
+
+
 # Do not print debug messages in production
 config :logger, level: :info
 

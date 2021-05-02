@@ -21,11 +21,23 @@ Configure un archivo `.env` en la raíz del proyecto, utilizando como base el ar
 cp .env.example .env
 ```
 
+#### App
+
 + `APP_HOST`: su IP de host. **Ejemplo:** `127.0.0.1` (local), `192.168.0.xxx` (lan), `0.0.0.0` (lan)
+
+#### Database
+
 + `DB_USERNAME`: nombre de usuarix con permisos root para la base de datos del contenedor de `postgres`.
 + `DB_PASSWORD`: contraseña de usuarix con permisos root para la base de datos del contenedor de `postgres`.
 + `DB_USERNAME_TEST`: simil a `DB_USERNAME` pero se utiliza para correr pruebas.
 + `DB_PASSWORD_TEST`: simil a `DB_PASSWORD` pero se utiliza para correr pruebas.
+
+#### Mailing Service
+
++ `SENDGRID_API_KEY`: Api key del servicio de mailing de Sendgrid.
+
+#### PgAdmin
+
 + `PGADMIN_DEFAULT_EMAIL`: email para acceder a la instancia de Postgres admin en el contenedor de `pgadmin`.
 + `PGADMIN_DEFAULT_PASSWORD`: contraseña para acceder a la instancia de Postgres admin en el contenedor de `pgadmin`.
 

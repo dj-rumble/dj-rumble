@@ -12,6 +12,7 @@ defmodule DjRumble.Rooms.Video do
     field :video_id, :string
 
     many_to_many :rooms, DjRumble.Rooms.Room, join_through: "rooms_videos"
+    many_to_many :users, DjRumble.Accounts.User, join_through: "users_videos"
 
     timestamps()
   end

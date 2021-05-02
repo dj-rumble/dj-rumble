@@ -65,6 +65,9 @@ config :dj_rumble, DjRumbleWeb.Endpoint,
     ]
   ]
 
+config :dj_rumble, DjRumble.Mailer,
+  adapter: Bamboo.LocalAdapter
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 

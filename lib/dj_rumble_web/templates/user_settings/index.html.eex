@@ -1,0 +1,37 @@
+<div class="flex flex-row-reverse text-gray-300 hover:text-green-300">
+  <div class="m-2">
+    <%= link to: Routes.user_session_path(@conn, :delete), method: :delete,
+      class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
+    do %>
+      Log out
+    <% end %>
+  </div>
+  <div class="m-2">
+    <%= link to: Routes.room_index_path(@conn, :index),
+      class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
+    do %>
+      Home
+    <% end %>
+  </div>
+</div>
+
+<div class="flex flex-wrap justify-center items-stretch mx-auto my-24">
+  <%= link to: Routes.user_settings_path(@conn, :edit),
+    class: "
+      flex flex-col flex-1 items-center sm:flex-initial
+      mx-8 mb-8 mb-8 md:mb-8
+      border-r-8 rounded-r-md rounded-l-lg
+      bg-gray-800 text-white hover:text-green-300
+      shadow-card
+    ", style: "border-right-color: #34D399" do %>
+    <div class="
+      flex flex-col flex-1 items-center
+      p-8 mb-0
+    ">
+      <h1 class="text-4xl my-4 font-black">Account</h1>
+      <p class="text-justify px-8 mb-8 font-black">
+        Manage your username, email or password.
+      </p>
+    </div>
+  <% end %>
+</div>

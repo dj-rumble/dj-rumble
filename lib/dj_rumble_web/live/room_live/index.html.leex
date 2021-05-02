@@ -1,3 +1,37 @@
+<div class="flex flex-row-reverse text-gray-300 hover:text-green-300">
+  <%= if !@visitor do %>
+    <div class="m-2">
+      <%= link to: Routes.user_session_path(@socket, :delete), method: :delete,
+        class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
+      do %>
+        Log out
+      <% end %>
+    </div>
+    <div class="m-2">
+      <%= link to: Routes.user_settings_path(@socket, :index),
+        class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
+      do %>
+        Settings
+      <% end %>
+    </div>
+  <% else %>
+    <div class="m-2">
+      <%= link to: Routes.user_registration_path(@socket, :new),
+        class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
+      do %>
+        Sign up
+      <% end %>
+    </div>
+    <div class="m-2">
+      <%= link to: Routes.user_session_path(@socket, :new),
+        class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
+      do %>
+        Sign in
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
 <h3 class="text-gray-50 p-4 m-4">Dj Rooms</h3>
 
 <%= if @live_action in [:new, :edit] do %>

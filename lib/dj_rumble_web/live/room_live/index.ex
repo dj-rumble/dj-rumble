@@ -6,7 +6,8 @@ defmodule DjRumbleWeb.RoomLive.Index do
   alias DjRumble.Rooms.Room
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, session, socket) do
+    socket = assign_defaults(socket, params, session)
     rooms = list_rooms() |> Enum.map(fn room -> Repo.preload(room, [:videos]) end)
     {:ok, assign(socket, :rooms, rooms)}
   end
