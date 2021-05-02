@@ -339,9 +339,10 @@ defmodule DjRumble.Rooms do
   def list_users_rooms_by(user_id, is_owner) do
     from(ur in UserRoom,
       where:
-        ur.user_id  == ^user_id  and
-        ur.is_owner == ^is_owner
-    ) |> Repo.all()
+        ur.user_id == ^user_id and
+          ur.is_owner == ^is_owner
+    )
+    |> Repo.all()
   end
 
   @doc """

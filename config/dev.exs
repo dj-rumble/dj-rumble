@@ -66,8 +66,7 @@ config :dj_rumble, DjRumbleWeb.Endpoint,
     ]
   ]
 
-config :dj_rumble, DjRumble.Mailer,
-  adapter: Bamboo.LocalAdapter
+config :dj_rumble, DjRumble.Mailer, adapter: Bamboo.LocalAdapter
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
@@ -78,3 +77,16 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Configures git pre-commit hook to run the formatter
+config :git_hooks,
+  auto_install: true,
+  verbose: true,
+  hooks: [
+    pre_commit: [
+      tasks: [
+        {:mix_task, :format, []},
+        {:mix_task, :"eslint.fix"}
+      ]
+    ]
+  ]

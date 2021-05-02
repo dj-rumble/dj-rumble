@@ -1,4 +1,7 @@
 defmodule DjRumbleWeb.MountHelpers do
+  @moduledoc """
+  Responsible for implementing reusable mount helpers
+  """
   import Phoenix.LiveView
 
   alias DjRumble.Accounts
@@ -16,7 +19,9 @@ defmodule DjRumbleWeb.MountHelpers do
       case user do
         nil ->
           %{user: %User{username: User.create_random_name()}, visitor: true}
-        user -> %{user: user, visitor: false}
+
+        user ->
+          %{user: user, visitor: false}
       end
 
     socket

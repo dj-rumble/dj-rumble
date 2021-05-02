@@ -75,6 +75,7 @@ defmodule DjRumbleWeb.UserSettingsControllerTest do
     @tag :capture_log
     test "updates the user username", %{conn: conn, user: user} do
       username = unique_user_username()
+
       conn =
         put(conn, Routes.user_settings_path(conn, :update_username), %{
           "current_password" => valid_user_password(),

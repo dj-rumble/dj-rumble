@@ -13,6 +13,5 @@ defmodule DjRumble.Repo.Migrations.CreateVideos do
 
       timestamps()
     end
-
   end
 end

@@ -1,9 +1,11 @@
 defmodule DjRumble.Collections.UserVideo do
+  @moduledoc """
+  Responsible for declaring the UserVideo schema and users videos management
+  """
   use Ecto.Schema
   import Ecto.Changeset
 
   schema "users_videos" do
-
     belongs_to :user, DjRumble.Accounts.User
     belongs_to :video, DjRumble.Rooms.Video
 

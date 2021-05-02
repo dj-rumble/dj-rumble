@@ -1,4 +1,7 @@
 defmodule DjRumbleWeb.RoomLive.FormComponent do
+  @moduledoc """
+  Responsible for displaying a a live form component
+  """
   use DjRumbleWeb, :live_component
 
   alias DjRumble.Rooms

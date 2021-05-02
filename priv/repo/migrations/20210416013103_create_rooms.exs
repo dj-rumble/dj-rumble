@@ -8,6 +8,5 @@ defmodule DjRumble.Repo.Migrations.CreateRooms do
 
       timestamps()
     end
-
   end
 end

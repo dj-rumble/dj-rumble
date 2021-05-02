@@ -18,6 +18,7 @@ try do
     "users",
     "rooms_videos"
   ]
+
   for seed <- seeds do
     Code.require_file("seeds/#{seed}.exs", __DIR__)
   end

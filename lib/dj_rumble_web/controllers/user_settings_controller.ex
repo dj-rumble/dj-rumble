@@ -29,6 +29,7 @@ defmodule DjRumbleWeb.UserSettingsController do
           {:error, changeset} ->
             render(conn, "edit.html", username_changeset: changeset)
         end
+
       {:error, changeset} ->
         render(conn, "edit.html", username_changeset: changeset)
     end
@@ -87,10 +88,12 @@ defmodule DjRumbleWeb.UserSettingsController do
   end
 
   defp assign_initial_changesets(conn, _opts) do
-    user = case conn.assigns.visitor do
-      true -> nil
-      false -> conn.assigns.current_user
-    end
+    user =
+      case conn.assigns.visitor do
+        true -> nil
+        false -> conn.assigns.current_user
+      end
+
     conn
     |> assign(:username_changeset, Accounts.change_user_username(user))
     |> assign(:email_changeset, Accounts.change_user_email(user))

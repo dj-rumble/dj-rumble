@@ -7,6 +7,8 @@
   "license": "agpl-3.0",
   "scripts": {
     "deploy": "NODE_ENV=production webpack --mode production",
+    "eslint": "node_modules/.bin/eslint -c .eslintrc.json js/",
+    "eslint-fix": "node_modules/.bin/eslint --fix -c .eslintrc.json js/",
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
@@ -22,6 +24,8 @@
     "babel-loader": "^8.0.0",
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^3.4.2",
+    "eslint": "^7.25.0",
+    "eslint-plugin-react": "^7.23.2",
     "hard-source-webpack-plugin": "^0.13.1",
     "mini-css-extract-plugin": "^0.9.0",
     "node-sass": "^4.13.1",

@@ -1,4 +1,7 @@
 defmodule DjRumble.Rooms.Room do
+  @moduledoc """
+  Responsible for declaring the Room schema and rooms management
+  """
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -32,5 +35,6 @@ defmodule DjRumble.Rooms.Room do
       |> String.replace(" ", "-")
     end)
   end
+
   defp format_slug(changeset), do: changeset
 end
