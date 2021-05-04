@@ -5,26 +5,37 @@ alias DjRumble.Rooms
 schema_upper = "RoomVideo"
 schema_plural = "rooms videos"
 
+# This script assumes the videos and rooms seeds have already been loaded.
 try do
-  rooms = Rooms.list_rooms()
-  videos = Rooms.list_videos()
-  single_video_rooms = Enum.with_index(Enum.take(rooms, 3))
-  multi_video_room = Enum.at(rooms, -1)
-  vulf_videos = Enum.with_index(Enum.take(videos, -6))
+  # Fetches current rooms and videos
+  room_ids = Rooms.list_rooms() |> Enum.map(fn room -> room.id end)
+  video_ids = Rooms.list_videos() |> Enum.map(fn video -> video.id end)
+  single_video_rooms = Enum.with_index(Enum.take(room_ids, 3))
+  vulf_video_ids = Enum.slice(video_ids, length(single_video_rooms), 6)
+  short_video_ids = Enum.slice(video_ids, length(single_video_rooms) + length(vulf_video_ids), 10)
 
-  for {video, video_index} <- vulf_videos do
-    Rooms.create_room_video(%{room_id: multi_video_room.id, video_id: video.id})
+  for room_id <- room_ids do
+    video_ids =
+      case room_id do
+        1 -> [Enum.at(video_ids, 0)]
+        2 -> [Enum.at(video_ids, 1)]
+        3 -> [Enum.at(video_ids, 2)]
+        4 -> vulf_video_ids
+        5 -> short_video_ids
+      end
+    for video_id <- video_ids, do: {room_id, video_id}
   end
-
-  for {room, room_index} <- single_video_rooms do
-    video = Enum.at(videos, room_index)
-    Rooms.create_room_video(%{room_id: room.id, video_id: video.id})
-  end
+  |> List.flatten()
+  |> Enum.map(fn {room_id, video_id} ->
+    {:ok, room_video} = Rooms.create_room_video(%{room_id: room_id, video_id: video_id})
+    room_video
+  end)
   |> length()
 rescue
   Postgrex.Error ->
     Logger.info("#{schema_plural} seeds were already loaded in the database. Skipping execution.")
   error ->
+    IO.inspect(error)
     Logger.error("❌ Unexpected error while loading #{schema_upper} seeds.")
     Logger.error(error)
     raise error
