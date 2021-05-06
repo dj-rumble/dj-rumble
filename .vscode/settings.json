@@ -1,0 +1,16 @@
+{
+  "[elixir]": {
+    "editor.defaultFormatter": "JakeBecker.elixir-ls"
+  },
+  "elixir.credo.enableDebug": true,
+  "elixir.credo.ignoreWarningMessages": true,
+  "editor.tabSize": 2,
+  "files.associations": {
+    "*.config": "properties",
+    "*.dump": "log",
+		".env*": "properties"
+  },
+  "markdownlint.config": {
+		"MD033": false
+	}
+}
