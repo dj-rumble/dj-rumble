@@ -45,3 +45,7 @@ npm-debug.log
 
 # Sobelow
 .sobelow
+
+# Editors and IDEs
+.vscode/*
+!.vscode/settings.json
