@@ -1,5 +1,58 @@
 # Dj Rumble
 
+<p align="center">
+  <a
+    href="https://dj-rumble.herokuapp.com/"
+    target="_blank" rel="noopener noreferrer"
+  >
+    <img
+      width="150px" src="assets/static/svg/generic/logo/dj-rumble.svg"
+      alt="DjRumble logo"
+    />
+  </a>
+</p>
+
+<h4 align="center">
+  Descubre y comparte música en tiempo real con personas de todo el mundo
+</h4>
+
+---
+
+<p align="center" style="margin-top: 14px;">
+  <a href="https://github.com/dj-rumble/dj-rumble/actions/workflows/dialyzer.yml">
+    <img
+      src="https://github.com/dj-rumble/dj-rumble/actions/workflows/dialyzer.yml/badge.svg"
+      alt="Build Status"
+    >
+  </a>
+  <a href="https://github.com/dj-rumble/dj-rumble/actions/workflows/test.yml">
+    <img
+      src="https://github.com/dj-rumble/dj-rumble/actions/workflows/test.yml/badge.svg"
+      alt="Build Status"
+    >
+  </a>
+  <a href="https://github.com/dj-rumble/dj-rumble/actions/workflows/lint.yml">
+    <img
+      src="https://github.com/dj-rumble/dj-rumble/actions/workflows/lint.yml/badge.svg"
+      alt="Build Status"
+    >
+  </a>
+  <a href='https://coveralls.io/github/dj-rumble/dj-rumble'>
+    <img
+      src='https://coveralls.io/repos/github/dj-rumble/dj-rumble/badge.svg'
+      alt='Coverage Status'
+    />
+  </a>
+  <a
+    href="https://github.com/dj-rumble/dj-rumble/blob/main/LICENSE"
+  >
+    <img
+      src="https://img.shields.io/badge/License-GPL%20v3-blue.svg"
+      alt="License"
+    >
+  </a>
+</p>
+
 ## Documentación
 
 + [Wiki](https://github.com/dj-rumble/dj-rumble-app/wiki)
