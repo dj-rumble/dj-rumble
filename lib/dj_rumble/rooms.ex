@@ -6,7 +6,9 @@ defmodule DjRumble.Rooms do
   import Ecto.Query, warn: false
   alias DjRumble.Repo
 
-  alias DjRumble.Rooms.Room
+  alias DjRumble.Rooms.{Room, Supervisor}
+
+  defdelegate child_spec(init_arg), to: Supervisor
 
   @doc """
   Returns the list of rooms.
