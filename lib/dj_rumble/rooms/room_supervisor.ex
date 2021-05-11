@@ -9,10 +9,12 @@ defmodule DjRumble.Rooms.RoomSupervisor do
 
   def start_link(init_arg) do
     {:ok, pid} = DynamicSupervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
+
     Rooms.list_rooms()
     |> Enum.each(fn room ->
       DynamicSupervisor.start_child(__MODULE__, {RoomServer, {room.id}})
     end)
+
     {:ok, pid}
   end
 
