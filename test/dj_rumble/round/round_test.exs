@@ -1,4 +1,4 @@
-defmodule DjRumble.Rounds.RoundTest do
+defmodule DjRumble.Round.RoundTest do
   @moduledoc """
   Round tests
   """
