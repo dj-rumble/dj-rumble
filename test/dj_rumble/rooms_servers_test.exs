@@ -29,10 +29,12 @@ defmodule DjRumble.RoomsServersTest do
 
     test "get_room_server/2 returns a room server pid and state", %{pid: pid, room: room} do
       {^pid, room_id} = RoomSupervisor.get_room_server(RoomSupervisor, room.id)
+      assert Process.alive?(pid)
       assert room_id == room.id
     end
 
     test "terminate_room_server/2 shuts down a room server process", %{pid: pid} do
+      assert Process.alive?(pid)
       :ok = RoomSupervisor.terminate_room_server(RoomSupervisor, pid)
       refute Process.alive?(pid)
     end
