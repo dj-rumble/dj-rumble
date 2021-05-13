@@ -23,7 +23,7 @@ defmodule DjRumble.Rooms.Room do
   def changeset(room, attrs) do
     room
     |> cast(attrs, @fields)
-    |> validate_required(@fields)
+    |> validate_required([:name, :slug])
     |> format_slug()
     |> unique_constraint(:slug)
   end
