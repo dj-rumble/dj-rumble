@@ -127,6 +127,11 @@ const PlayerSyncing = initPlayer => ({
       )
       !shouldPlay && player.pauseVideo()
     })
+
+    setInterval(() => {
+      const currentTime = player.getCurrentTime()
+      this.pushEvent('receive_current_video_time', currentTime)
+    }, 500)
   }
 })
 
