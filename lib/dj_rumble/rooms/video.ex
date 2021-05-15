@@ -35,7 +35,6 @@ defmodule DjRumble.Rooms.Video do
     |> validate_required([
       :video_id,
       :title,
-      :description,
       :channel_title,
       :img_url,
       :img_height,
