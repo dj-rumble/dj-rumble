@@ -5,7 +5,7 @@ defmodule DjRumbleWeb.Live.Components.Playlist do
 
   use DjRumbleWeb, :live_component
 
-  def update(%{ videos: videos } = assigns, socket) do
+  def update(%{videos: videos} = assigns, socket) do
     {:ok,
      socket
      |> assign(assigns)
