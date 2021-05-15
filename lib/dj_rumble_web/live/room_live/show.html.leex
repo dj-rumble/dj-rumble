@@ -7,30 +7,31 @@
     return_to: Routes.room_show_path(@socket, :show, @room) %>
 <% end %>
 
-<div class="grid grid-cols-6 gap-4">
-  <div class="rounded-lg bg-black col-start-2 col-span-4 text-center p-4">
+<div class="grid grid-cols-12 gap-4">
+  <div class="rounded-lg bg-black col-start-1 col-end-9 text-center p-4">
     <%= live_component @socket, DjRumbleWeb.Live.Components.VideoPlayer,
       id: "djrumble-video-player"
     %>
-  </div>
-  <div class="rounded-lg bg-gray-800 col-start-2 col-span-4 text-center">
     <%= live_component @socket, DjRumbleWeb.Live.Components.PlayerControls,
       id: "djrumble-player-controls"
     %>
   </div>
-  <div class="rounded-lg bg-gray-800 col-start-2 col-span-4 text-center">
+  <div class="rounded-lg bg-gray-800 col-start-9 col-end-13 text-center align-middle">
     <%= live_component @socket, DjRumbleWeb.Live.Components.ConnectedUsers,
       id: "djrumble-connected-users-list",
       connected_users: @connected_users
     %>
   </div>
-  <div class="rounded-lg bg-gray-800 col-start-2 col-span-4 text-center">
+  <div class="rounded-lg bg-gray-800 col-start-1 col-end-7 text-center">
     <%= live_component @socket, DjRumbleWeb.Live.Components.Playlist,
       id: "djrumble-playlist",
       videos: @videos
     %>
   </div>
-  <%# <div class="bg-gray-500 col-start-1 col-end-3 text-center""></div> %>
-  <%# <div class="bg-gray-500 col-end-7 col-span-2 text-center""></div> %>
-  <%# <div class="bg-gray-500 col-start-1 col-end-7 text-center"">4</div> %>
+  <div class="rounded-lg bg-gray-800 col-start-7 col-end-13 text-center">
+    <%= live_component @socket, DjRumbleWeb.Live.Components.Searchbox,
+      id: "djrumble-searchbox",
+      videos: @videos
+    %>
+  </div>
 </div>

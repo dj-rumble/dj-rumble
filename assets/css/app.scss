@@ -112,3 +112,14 @@
   display: block;
   margin: -1rem 0 2rem;
 }
+
+.clickeable {
+  cursor: pointer;
+}
+
+.search_result {
+  border: #000000 solid 1px;
+  border-radius: 5px;
+  margin: 1rem 0;
+  padding: 1rem
+}
