@@ -3,8 +3,14 @@
 </div>
 <div class="bg-gray-400 p-4 m-6 rounded-lg">
   <ul>
-    <%= for video <- @videos do %>
-      <li style="list-style: none;">
+    <%= for { video, index } <- @videos do %>
+      <li style="list-style: none; color:
+        <%= if @index_playing == index do %>
+          violet
+        <% else %>
+          white
+        <% end %>
+      ;">
         <%= video.title %>
       </li>
     <% end %>

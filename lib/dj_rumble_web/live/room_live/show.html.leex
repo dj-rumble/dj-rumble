@@ -25,7 +25,8 @@
   <div class="rounded-lg bg-gray-800 col-start-1 col-end-7 text-center">
     <%= live_component @socket, DjRumbleWeb.Live.Components.Playlist,
       id: "djrumble-playlist",
-      videos: @videos
+      videos: @videos,
+      index_playing: @index_playing
     %>
   </div>
   <div class="rounded-lg bg-gray-800 col-start-7 col-end-13 text-center">
