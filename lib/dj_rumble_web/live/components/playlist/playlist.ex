@@ -11,4 +11,9 @@ defmodule DjRumbleWeb.Live.Components.Playlist do
      |> assign(assigns)
      |> assign(:videos, Enum.with_index(videos))}
   end
+
+  def parse_int(str) do
+    {int, _} = Integer.parse(str)
+    int
+  end
 end

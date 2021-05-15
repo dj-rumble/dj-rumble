@@ -4,7 +4,7 @@
 
 <div class="text-white px-6 mt-3">
   <form
-      style="margin-bottom: 0px;"
+      class="search-input"
       id="search-form"
       phx-change="search"
       phx-submit="submit"
@@ -24,19 +24,17 @@
 <div class="bg-gray-400 p-2 mx-6 mb-7 rounded-lg">
   <ul>
     <%= for {video, index} <- @search_results do %>
-      <div class="grid grid-cols-4 gap-2 search_result separator">
+      <div class="grid grid-cols-4 gap-2 search-result separator">
         <div class="align-center">
           <%= img_tag(video.thumbnails["default"]["url"], width: video.thumbnails["default"]["width"] * 1.2) %>
         </div>
-        <div class="col-span-3 grid grid-rows-2">
+        <div class="col-span-2 grid grid-rows-2">
           <div class="row-span-2">
             <p class="font-bold"><%= video.title %></p>
           </div>
-          <div class="row-span-1 grid grid-rows-1 grid-cols-8 gap-2">
-            <div class="col-span-1 self-end justify-self-center">
-              <%= render_button("add", index, @myself) %>
-            </div>
-          </div>
+        </div>
+        <div class="col-span-1 add-button-container">
+            <%= render_button("add", index, @myself) %>
         </div>
       </div>
     <% end %>
