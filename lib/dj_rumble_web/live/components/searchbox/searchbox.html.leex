@@ -21,10 +21,10 @@
     </form>
 </div>
 
-<div class="bg-gray-400 p-2 mx-6 mb-7 rounded-lg">
+<div class="p-2 mx-6 mb-7 rounded-lg">
   <ul>
     <%= for {video, index} <- @search_results do %>
-      <div class="grid grid-cols-4 gap-2 search-result separator">
+      <div class="grid grid-cols-4 gap-2 search-result separator bg-gray-400">
         <div class="align-center">
           <%= img_tag(video.thumbnails["default"]["url"], width: video.thumbnails["default"]["width"] * 1.2) %>
         </div>
