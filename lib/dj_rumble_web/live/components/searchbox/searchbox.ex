@@ -210,15 +210,15 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
           {selected_video, _} = Integer.parse(selected_video["video_id"])
           index == selected_video
         end
-        )
+      )
 
     Phoenix.PubSub.broadcast(
       DjRumble.PubSub,
       "room:" <> slug,
       {:add_to_queue,
-      %{
-        video_to_add: selected_video
-      }}
+       %{
+         video_to_add: selected_video
+       }}
     )
 
     {:noreply, socket}
