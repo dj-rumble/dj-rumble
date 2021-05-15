@@ -178,32 +178,50 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
 
         {:error, %{"error" => %{"errors" => errors}}} ->
           for error <- errors do
-            IO.inspect(error["message"])
             # Logger.error(error["message"])
           end
 
           []
       end
 
-    IO.inspect(search_result)
-
     search_result =
       search_result
       |> Enum.with_index()
-
-    #   Enum.map(search_result, fn search ->
-    #     video = QueueItem.from_tubex_video(search)
-    #     # is_queued = Queue.is_queued(video, video_queue)
-    #     # QueueItem.update(video, %{is_queued: is_queued})
-    #   end)
-    #
-
-    # send(self(), {:receive_search_results, search_result})
 
     {:noreply,
      socket
      |> assign(:search_results, search_result)
      |> push_event("receive_search_completed_signal", %{})}
+  end
+
+  @impl true
+  def handle_event("add_to_queue", selected_video, socket) do
+    %{
+      assigns: %{
+        search_results: search_results,
+        slug: slug
+      }
+    } = socket
+
+    {selected_video, _index} =
+      Enum.find(
+        search_results,
+        fn {_search, index} ->
+          {selected_video, _} = Integer.parse(selected_video["video_id"])
+          index == selected_video
+        end
+        )
+
+    Phoenix.PubSub.broadcast(
+      DjRumble.PubSub,
+      "room:" <> slug,
+      {:add_to_queue,
+      %{
+        video_to_add: selected_video
+      }}
+    )
+
+    {:noreply, socket}
   end
 
   defp render_button("add", video_index, assigns) do

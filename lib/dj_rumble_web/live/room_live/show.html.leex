@@ -31,7 +31,8 @@
   <div class="rounded-lg bg-gray-800 col-start-7 col-end-13 text-center">
     <%= live_component @socket, DjRumbleWeb.Live.Components.Searchbox,
       id: "djrumble-searchbox",
-      videos: @videos
+      videos: @videos,
+      slug: @room.slug
     %>
   </div>
 </div>
