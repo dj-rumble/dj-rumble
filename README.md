@@ -114,6 +114,10 @@ cp .env.example .env
 + `PGADMIN_DEFAULT_EMAIL`: email para acceder a la instancia de Postgres admin en el contenedor de `pgadmin`.
 + `PGADMIN_DEFAULT_PASSWORD`: contraseña para acceder a la instancia de Postgres admin en el contenedor de `pgadmin`.
 
+#### YouTube
+
++ `YOUTUBE_API_KEY:` Api key del servicio de búsqueda de YouTube. [*Cómo conseguir una API key*](https://console.developers.google.com/apis/api/youtube.googleapis.com/credentials)
+
 ### Comandos útiles
 
 Este proyecto utiliza **Makefile** para interactuar con el servidor, los servicios de postgres, la base de datos e instalación del entorno.
