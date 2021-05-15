@@ -16,6 +16,8 @@ config :dj_rumble, DjRumbleWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json",
   check_origin: false
 
+config :tubex, Tubex, api_key: System.get_env("YOUTUBE_API_KEY")
+
 config :dj_rumble, DjRumble.Mailer,
   adapter: Bamboo.SendGridAdapter,
   api_key: System.get_env("SENDGRID_API_KEY"),
