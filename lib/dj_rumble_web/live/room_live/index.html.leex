@@ -1,36 +1,8 @@
-<div class="flex flex-row-reverse text-gray-300 hover:text-green-300">
-  <%= if !@visitor do %>
-    <div class="m-2">
-      <%= link to: Routes.user_session_path(@socket, :delete), method: :delete,
-        class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
-      do %>
-        Log out
-      <% end %>
-    </div>
-    <div class="m-2">
-      <%= link to: Routes.user_settings_path(@socket, :index),
-        class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
-      do %>
-        Settings
-      <% end %>
-    </div>
-  <% else %>
-    <div class="m-2">
-      <%= link to: Routes.user_registration_path(@socket, :new),
-        class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
-      do %>
-        Sign up
-      <% end %>
-    </div>
-    <div class="m-2">
-      <%= link to: Routes.user_session_path(@socket, :new),
-        class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
-      do %>
-        Sign in
-      <% end %>
-    </div>
-  <% end %>
-</div>
+<%= live_component @socket, DjRumbleWeb.Live.Components.Navbar,
+  visitor: @visitor,
+  username: @user.username,
+  homepage: false
+%>
 
 <h3 class="text-gray-50 p-4 m-4">Dj Rooms</h3>
 
@@ -44,15 +16,15 @@
 <% end %>
 
 <div
-  class="rooms-container new-live-rooms-list text-gray-50"
+  class="rooms-container text-gray-50"
 >
   <%= if @rooms != [] do %>
 
   <div class="mb-4">
     <ul class="like-list grid gap-2 grid-cols-1 lg:grid-cols-2 m-2">
     <%= for room <- @rooms do %>
-      <li class="room-item col-span-1 hover-card px-2 cursor-pointer">
-        <div class="flex grid grid-cols-8 xl:grid-cols-12">
+      <li class="room-item col-span-1 hover:text-green-300 px-2 cursor-pointer round">
+        <div class="flex grid grid-cols-8 xl:grid-cols-12 shadow-card">
 
           <div class="
             col-span-2 row-span-1
