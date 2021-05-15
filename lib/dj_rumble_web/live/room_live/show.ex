@@ -220,6 +220,18 @@ defmodule DjRumbleWeb.RoomLive.Show do
      |> assign(:current_video_time, time)}
   end
 
+  def handle_info({:add_to_queue, params}, %{assigns: assigns} = socket) do
+    %{new_video: new_video} = params
+
+    %{videos: videos} = assigns
+
+    videos = videos ++ [new_video]
+
+    {:noreply,
+     socket
+     |> assign(:videos, videos)}
+  end
+
   defp page_title(:show), do: "Show Room"
   defp page_title(:edit), do: "Edit Room"
 
