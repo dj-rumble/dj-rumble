@@ -33,7 +33,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
         connected_users = get_list_from_slug(slug)
 
         # Subscribe to the topic
-        DjRumbleWeb.Endpoint.subscribe(topic)
+        Phoenix.PubSub.subscribe(DjRumble.PubSub, topic)
 
         # Track changes to the topic
         Presence.track(
@@ -45,10 +45,11 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
         {:ok,
          socket
-         |> assign(:room, room)
          |> assign(:videos, room.videos)
+         |> assign_tracker(room)
          |> assign(:index_playing, index_playing)
-         |> assign(:connected_users, connected_users)}
+         |> assign(:connected_users, connected_users)
+         |> assign(:current_video_time, 0)}
     end
   end
 
@@ -59,19 +60,40 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   @impl true
   def handle_event("player_is_ready", _params, socket) do
-    case Enum.at(socket.assigns.videos, 0) do
-      nil ->
-        {:noreply, socket}
+    %{room: %{slug: slug}} = socket.assigns
+    presence = list_filtered_present(slug, socket.id)
 
-      video ->
-        {:noreply,
-         socket
-         |> assign(:page_title, page_title(video))
-         |> push_event("receive_player_state", %{
-           videoId: video.video_id,
-           shouldPlay: true,
-           time: 0
-         })}
+    case presence do
+      [] ->
+        %{videos: videos} = socket.assigns
+
+        case Enum.at(videos, 0) do
+          nil ->
+            {:noreply, socket}
+
+          video ->
+            {:noreply,
+             socket
+             |> assign(:page_title, page_title(video))
+             |> push_event("receive_player_state", %{
+               videoId: video.video_id,
+               shouldPlay: true,
+               time: 0
+             })}
+        end
+
+      _ps ->
+        Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:" <> slug <> ":request_initial_state")
+        # Tells every node the requester node needs an initial state
+        :ok =
+          Phoenix.PubSub.broadcast_from(
+            DjRumble.PubSub,
+            self(),
+            "room:" <> socket.assigns.room.slug,
+            {:request_initial_state, %{}}
+          )
+
+        {:noreply, socket}
     end
   end
 
@@ -99,23 +121,103 @@ defmodule DjRumbleWeb.RoomLive.Show do
   end
 
   @impl true
+  def handle_event("receive_current_video_time", current_time, socket) do
+    %{room: room} = socket.assigns
+
+    case socket.id == room.video_tracker do
+      true ->
+        Phoenix.PubSub.broadcast(
+          DjRumble.PubSub,
+          "room:" <> room.slug,
+          {:receive_current_video_time, %{time: current_time}}
+        )
+
+        {:noreply, socket}
+
+      false ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_info({:request_initial_state, _params}, socket) do
+    %{videos: videos, index_playing: index_playing, current_video_time: current_video_time} =
+      socket.assigns
+
+    :ok =
+      Phoenix.PubSub.broadcast_from(
+        DjRumble.PubSub,
+        self(),
+        "room:" <> socket.assigns.room.slug <> ":request_initial_state",
+        {:receive_initial_state,
+         %{
+           videos: videos,
+           index_playing: index_playing,
+           current_video_time: current_video_time
+         }}
+      )
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:receive_initial_state, params}, socket) do
+    %{room: %{slug: slug}} = socket.assigns
+    Phoenix.PubSub.unsubscribe(DjRumble.PubSub, "room:" <> slug <> ":request_initial_state")
+
+    %{videos: videos, index_playing: index_playing, current_video_time: current_video_time} =
+      params
+
+    socket =
+      socket
+      |> assign(:videos, videos)
+      |> assign(:index_playing, index_playing)
+      |> assign(:current_video_time, current_video_time)
+
+    case videos do
+      [] ->
+        {:noreply, socket}
+
+      _xs ->
+        %{video_id: video_id} = Enum.at(videos, index_playing)
+
+        {:noreply,
+         socket
+         |> push_event("receive_player_state", %{
+           shouldPlay: true,
+           time: current_video_time,
+           videoId: video_id
+         })}
+    end
+  end
+
+  @impl true
   def handle_info(
-        %{event: "presence_diff", payload: %{joins: _joins, leaves: _leaves}},
+        %{event: "presence_diff", payload: payload},
         %{assigns: %{room: %{slug: slug}}} = socket
       ) do
     connected_users = get_list_from_slug(slug)
 
-    {:noreply, assign(socket, :connected_users, connected_users)}
+    room = handle_video_tracker_activity(slug, connected_users, payload)
+
+    socket =
+      socket
+      |> assign(:connected_users, connected_users)
+      |> assign(:room, room)
+
+    case is_my_presence(socket.id, payload) do
+      false ->
+        {:noreply,
+         socket
+         |> push_event("presence-changed", %{})}
+
+      true ->
+        {:noreply, socket}
+    end
   end
 
-  defp page_title(:show), do: "Show Room"
-  defp page_title(:edit), do: "Edit Room"
-
-  defp page_title(video) do
-    case video do
-      nil -> ""
-      _ -> video.title
-    end
+  def handle_info({:receive_current_video_time, %{time: time}}, socket) do
+    {:noreply,
+     socket
+     |> assign(:current_video_time, time)}
   end
 
   def handle_info({:add_to_queue, params}, %{assigns: assigns} = socket) do
@@ -128,5 +230,63 @@ defmodule DjRumbleWeb.RoomLive.Show do
     {:noreply,
      socket
      |> assign(:videos, videos)}
+  end
+
+  defp page_title(:show), do: "Show Room"
+  defp page_title(:edit), do: "Edit Room"
+
+  defp page_title(video) do
+    case video do
+      nil -> ""
+      _ -> video.title
+    end
+  end
+
+  defp list_filtered_present(slug, uuid) do
+    Presence.list("room:" <> slug)
+    |> Enum.filter(fn {k, _} -> k !== uuid end)
+    |> Enum.map(fn {k, _} -> k end)
+  end
+
+  defp assign_tracker(socket, room) do
+    current_user = socket.id
+
+    case list_filtered_present(room.slug, current_user) do
+      [] ->
+        {:ok, updated_room} = Rooms.update_room(room, %{video_tracker: current_user})
+
+        socket
+        |> assign(:room, updated_room)
+
+      _xs ->
+        socket
+        |> assign(:room, room)
+    end
+  end
+
+  defp handle_video_tracker_activity(slug, presence, %{leaves: leaves}) do
+    room = Rooms.get_room_by_slug(slug)
+    video_tracker = room.video_tracker
+
+    case video_tracker in Map.keys(leaves) do
+      false ->
+        room
+
+      true ->
+        case presence do
+          [] ->
+            {:ok, updated_room} = Rooms.update_room(room, %{video_tracker: ""})
+            updated_room
+
+          [p | _ps] ->
+            {:ok, updated_room} = Rooms.update_room(room, %{video_tracker: p.uuid})
+            updated_room
+        end
+    end
+  end
+
+  defp is_my_presence(id, presence_payload) do
+    Enum.any?(Map.to_list(presence_payload.joins), fn {x, _} -> x == id end) ||
+      Enum.any?(Map.to_list(presence_payload.leaves), fn {x, _} -> x == id end)
   end
 end
