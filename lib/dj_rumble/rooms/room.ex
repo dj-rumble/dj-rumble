@@ -8,6 +8,7 @@ defmodule DjRumble.Rooms.Room do
   schema "rooms" do
     field :name, :string
     field :slug, :string
+    field :video_tracker, :string, default: ""
 
     many_to_many :videos, DjRumble.Rooms.Video, join_through: "rooms_videos"
 
@@ -16,13 +17,13 @@ defmodule DjRumble.Rooms.Room do
     timestamps()
   end
 
-  @fields [:name, :slug]
+  @fields [:name, :slug, :video_tracker]
 
   @doc false
   def changeset(room, attrs) do
     room
     |> cast(attrs, @fields)
-    |> validate_required(@fields)
+    |> validate_required([:name, :slug])
     |> format_slug()
     |> unique_constraint(:slug)
   end
