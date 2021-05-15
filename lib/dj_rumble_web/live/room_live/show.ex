@@ -119,22 +119,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
   end
 
   def handle_info({:add_to_queue, params}, %{assigns: assigns} = socket) do
-    %{video_to_add: selected_video} = params
+    %{new_video: new_video} = params
 
-    %{videos: videos, room: room} = assigns
-
-    {:ok, new_video} =
-      Rooms.create_video(%{
-        channel_title: room.slug,
-        description: selected_video.description,
-        img_url: selected_video.thumbnails["default"]["url"],
-        img_width: "#{selected_video.thumbnails["default"]["width"]}",
-        img_height: "#{selected_video.thumbnails["default"]["height"]}",
-        title: selected_video.title,
-        video_id: selected_video.video_id
-      })
-
-    Rooms.create_room_video(%{room_id: room.id, video_id: new_video.id})
+    %{videos: videos} = assigns
 
     videos = videos ++ [new_video]
 

@@ -1,9 +1,14 @@
 defmodule DjRumbleWeb.Live.Components.Searchbox do
   @moduledoc """
-  Responsible for making queries to Youtube API, displaying the results and adding a selected video to the room playlist.
+  Responsible for making querying the Youtube API, displaying the results and
+  adding a selected video to the room playlist.
   """
 
   use DjRumbleWeb, :live_component
+
+  alias DjRumble.Rooms
+
+  require Logger
 
   @impl true
   def update(assigns, socket) do
@@ -25,7 +30,6 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
         _params,
         %{assigns: %{search_query: query}} = socket
       ) do
-    # video_queue = Enum.map(video_queue, fn {v, _} -> v end)
     opts = [maxResults: 5]
 
     search_result =
@@ -35,7 +39,7 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
 
         {:error, %{"error" => %{"errors" => errors}}} ->
           for error <- errors do
-            # Logger.error(error["message"])
+            Logger.error(error["message"])
           end
 
           []
@@ -55,6 +59,7 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
   def handle_event("add_to_queue", selected_video, socket) do
     %{
       assigns: %{
+        room: room,
         search_results: search_results,
         slug: slug
       }
@@ -69,12 +74,25 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
         end
       )
 
+    {:ok, new_video} =
+      Rooms.create_video(%{
+        channel_title: selected_video.channel_title,
+        description: selected_video.description,
+        img_url: selected_video.thumbnails["default"]["url"],
+        img_width: "#{selected_video.thumbnails["default"]["width"]}",
+        img_height: "#{selected_video.thumbnails["default"]["height"]}",
+        title: selected_video.title,
+        video_id: selected_video.video_id
+      })
+
+    {:ok, _room_video} = Rooms.create_room_video(%{room_id: room.id, video_id: new_video.id})
+
     Phoenix.PubSub.broadcast(
       DjRumble.PubSub,
       "room:" <> slug,
       {:add_to_queue,
        %{
-         video_to_add: selected_video
+         new_video: new_video
        }}
     )
 
@@ -87,8 +105,6 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
     props = %{
       classes: "search-control-enabled clickeable add-button",
       click_event: "add_to_queue",
-      icon: "icons/search/add",
-      icon_classes: "show-add-button",
       id: id,
       value: video_index
     }
@@ -99,8 +115,6 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
   defp render_button(
          %{
            classes: classes,
-           icon: icon,
-           icon_classes: icon_classes,
            id: id,
            value: value,
            click_event: click_event
@@ -118,9 +132,5 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
         +
       </a>
     """
-  end
-
-  defp render_svg(icon, classes) do
-    PhoenixInlineSvg.Helpers.svg_image(DjRumbleWeb.Endpoint, icon, class: classes)
   end
 end
