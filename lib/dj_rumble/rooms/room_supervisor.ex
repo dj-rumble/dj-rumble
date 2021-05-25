@@ -4,22 +4,27 @@ defmodule DjRumble.Rooms.RoomSupervisor do
   """
   use DynamicSupervisor
 
+  require Logger
+
   alias DjRumble.Rooms
   alias DjRumble.Rooms.RoomServer
 
   def start_link(init_arg) do
     {:ok, pid} = DynamicSupervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
 
+    Logger.info(fn -> "RoomSupervisor started with pid: #{inspect(pid)}" end)
+
     Rooms.list_rooms()
     |> Enum.each(fn room ->
-      DynamicSupervisor.start_child(__MODULE__, {RoomServer, {room.id}})
+      room = DjRumble.Repo.preload(room, :videos)
+      {:ok, _pid} = DynamicSupervisor.start_child(__MODULE__, {RoomServer, {room}})
     end)
 
     {:ok, pid}
   end
 
-  def start_room_server(supervisor \\ __MODULE__, room_id) do
-    DynamicSupervisor.start_child(supervisor, {RoomServer, {room_id}})
+  def start_room_server(supervisor \\ __MODULE__, room) do
+    DynamicSupervisor.start_child(supervisor, {RoomServer, {room}})
   end
 
   def list_room_servers(supervisor \\ __MODULE__) do
@@ -34,7 +39,7 @@ defmodule DjRumble.Rooms.RoomSupervisor do
   def get_room_server(supervisor \\ __MODULE__, id) do
     list_room_servers(supervisor)
     |> Enum.map(&{&1, RoomServer.get_room(&1)})
-    |> Enum.find(fn {_, room_id} -> room_id == id end)
+    |> Enum.find(fn {_, room} -> room.id == id end)
   end
 
   def terminate_room_server(supervisor \\ __MODULE__, pid) do
