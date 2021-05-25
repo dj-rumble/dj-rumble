@@ -35,7 +35,6 @@ rescue
   Postgrex.Error ->
     Logger.info("#{schema_plural} seeds were already loaded in the database. Skipping execution.")
   error ->
-    IO.inspect(error)
     Logger.error("❌ Unexpected error while loading #{schema_upper} seeds.")
     Logger.error(error)
     raise error
