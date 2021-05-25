@@ -17,9 +17,10 @@ defmodule DjRumble.Application do
       DjRumbleWeb.Endpoint,
       # Starts the Presence service
       DjRumbleWeb.Presence,
-      # Starts the Rooms service
-      DjRumble.Rooms,
-      DjRumble.Rounds
+      # Starts the Rounds services
+      DjRumble.Rounds,
+      # Starts the Rooms services
+      DjRumble.Rooms
       # Start a worker by calling: DjRumble.Worker.start_link(arg)
       # {DjRumble.Worker, arg}
     ]
