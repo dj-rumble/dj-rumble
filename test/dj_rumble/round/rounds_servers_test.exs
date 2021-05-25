@@ -14,9 +14,14 @@ defmodule DjRumble.Round.RoundServerTest do
     alias DjRumble.Rounds.RoundSupervisor
 
     setup do
-      room = room_fixture()
+      room = room_fixture(%{}, %{preload: true})
       round_time = 5
-      {:ok, pid} = RoundSupervisor.start_round_server(RoundSupervisor, {room.id, round_time})
+      {:ok, pid} = RoundSupervisor.start_round_server(RoundSupervisor, {room.slug, round_time})
+
+      on_exit(fn ->
+        RoundSupervisor.terminate_round_server(RoundSupervisor, pid)
+      end)
+
       %{pid: pid, room: room}
     end
 
@@ -30,9 +35,9 @@ defmodule DjRumble.Round.RoundServerTest do
     end
 
     test "get_round_server/2 returns a round server pid and state", %{pid: pid, room: room} do
-      {^pid, room_id} = RoundSupervisor.get_round_server(RoundSupervisor, room.id)
+      {^pid, room_slug} = RoundSupervisor.get_round_server(RoundSupervisor, room.slug)
       assert Process.alive?(pid)
-      assert room_id == room.id
+      assert room_slug == room.slug
     end
 
     test "terminate_room_server/2 shuts down a round server process", %{pid: pid} do
@@ -49,7 +54,7 @@ defmodule DjRumble.Round.RoundServerTest do
     setup do
       room = room_fixture()
       round_time = 2
-      round_genserver_pid = start_supervised!({RoundServer, {room.id, round_time}})
+      round_genserver_pid = start_supervised!({RoundServer, {room.slug, round_time}})
       %{room: room, round_time: round_time, pid: round_genserver_pid}
     end
 
@@ -58,8 +63,8 @@ defmodule DjRumble.Round.RoundServerTest do
       assert Process.alive?(pid)
     end
 
-    test "get_room/1 returns a room id", %{pid: pid, room: room} do
-      assert RoundServer.get_room(pid) == room.id
+    test "get_room_slug/1 returns a room slug", %{pid: pid, room: room} do
+      assert RoundServer.get_room_slug(pid) == room.slug
     end
 
     test "start_round/1 returns :ok", %{pid: pid} do
