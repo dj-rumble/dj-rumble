@@ -13,8 +13,9 @@ defmodule DjRumble.Room.RoomSupervisorTest do
     alias DjRumble.Rooms.RoomSupervisor
 
     setup do
-      room = room_fixture()
-      {:ok, pid} = RoomSupervisor.start_room_server(RoomSupervisor, room.id)
+      room = room_fixture(%{}, %{preload: true})
+      {:ok, pid} = RoomSupervisor.start_room_server(RoomSupervisor, room)
+      on_exit(fn -> RoomSupervisor.terminate_room_server(RoomSupervisor, pid) end)
       %{pid: pid, room: room}
     end
 
@@ -28,9 +29,8 @@ defmodule DjRumble.Room.RoomSupervisorTest do
     end
 
     test "get_room_server/2 returns a room server pid and state", %{pid: pid, room: room} do
-      {^pid, room_id} = RoomSupervisor.get_room_server(RoomSupervisor, room.id)
+      {^pid, ^room} = RoomSupervisor.get_room_server(RoomSupervisor, room.id)
       assert Process.alive?(pid)
-      assert room_id == room.id
     end
 
     test "terminate_room_server/2 shuts down a room server process", %{pid: pid} do
