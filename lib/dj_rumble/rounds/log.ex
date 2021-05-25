@@ -7,7 +7,7 @@ defmodule DjRumble.Rounds.Log do
   alias DjRumble.Rounds
 
   defdata do
-    actions :: [Rounds.Actions.t()] \\ []
+    actions :: [Rounds.Action.t()] \\ []
     narrations :: [String.t()] \\ []
   end
 

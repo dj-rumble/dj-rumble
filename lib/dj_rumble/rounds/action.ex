@@ -7,8 +7,14 @@ defmodule DjRumble.Rounds.Action do
   alias DjRumble.Rounds.Action
 
   # Just placeholder actions for now
-  defdata CountTime do
-    time :: non_neg_integer() \\ 1
+  defsum do
+    defdata CountTime do
+      time :: non_neg_integer() \\ 1
+    end
+
+    defdata Score do
+      time :: non_neg_integer() \\ 1
+    end
   end
 
   def apply(%Action.CountTime{time: time} = _action, round) do
