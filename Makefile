@@ -32,13 +32,13 @@ docker.services.down:
 
 #docker.services.up: @ 🐳 Starts docker-compose services
 docker.services.up: SHELL:=/bin/bash
-docker.services.up: 
+docker.services.up:
 	source .env && docker-compose up -d
 
 #ecto.reset: @ 🧹 Drops the database, then runs setup
 ecto.reset: SHELL:=/bin/bash
 ecto.reset: docker.services.up
-ecto.reset: 
+ecto.reset:
 	source .env && POOL_SIZE=2 mix ecto.reset
 
 #help: @ ❓ Displays this message
@@ -101,6 +101,12 @@ test:
 	@echo "🧪 Running all test suites..."
 	source .env && mix test
 
+#test.watch: @ 🧪👁️ Runs and watches all test suites
+test.watch: SHELL:=/bin/bash
+test.watch:
+	@echo "🧪👁️  Watching all test suites..."
+	source .env && mix test.watch
+
 #test.cover: @ 📉 Runs mix tests and generates coverage
 test.cover: MIX_ENV=test
 test.cover: SHELL:=/bin/bash
@@ -118,3 +124,9 @@ test.wip: MIX_ENV=test
 test.wip: SHELL:=/bin/bash
 test.wip:
 	source .env && mix test --only wip
+
+#test.wip.watch: @ 🧪👁️ Runs and watches test suites that match the wip tag
+test.wip.watch: SHELL:=/bin/bash
+test.wip.watch:
+	@echo "🧪👁️  Watching test suites tagged with wip..."
+	source .env && mix test.watch --only wip

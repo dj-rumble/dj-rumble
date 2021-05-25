@@ -52,6 +52,7 @@ defmodule DjRumble.MixProject do
       {:gettext, "~> 0.11"},
       {:git_hooks, "~> 0.6.2", only: [:dev], runtime: false},
       {:jason, "~> 1.0"},
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:phoenix, "~> 1.5.8"},
       {:phoenix_ecto, "~> 4.1"},
       {:postgrex, ">= 0.0.0"},

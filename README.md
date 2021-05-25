@@ -126,6 +126,13 @@ make test.drop
 make test.cover
 ```
 
+> *Corre y observa todas las pruebas o aquellas con el tag `wip`*
+
+```bash
+make test.watch
+make test.wip.watch
+```
+
 ### Comandos de análisis
 
 #### Análisis de linting y estilo
