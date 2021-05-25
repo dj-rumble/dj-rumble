@@ -14,7 +14,6 @@ defmodule DjRumble.Round.LogTest do
       ["Some", "Narration"] = Log.narrate(log)
     end
 
-    @tag wip: true
     test "append/2 returns a log with a new action and a new narration" do
       %Log{actions: [], narrations: []} = log = Log.new()
       action_time = 1
