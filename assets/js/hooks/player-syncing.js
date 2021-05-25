@@ -94,7 +94,7 @@ const PlayerSyncing = initPlayer => ({
     const onPlayerReady = () => {
       /**
        * player_is_ready
-       * 
+       *
        * Tells the server the player is ready to receive events
        */
       this.pushEvent('player_is_ready')
@@ -110,13 +110,13 @@ const PlayerSyncing = initPlayer => ({
 
     /**
      * receive_player_state
-     * 
+     *
      * Receives an update state of the video player
      */
     this.handleEvent('receive_player_state', ({
-      shouldPlay,
+      shouldPlay = false,
       time = 0,
-      videoId
+      videoId = ''
     }) => {
       player.loadVideoById({ startSeconds: time, videoId })
       updateTimeDisplays(
