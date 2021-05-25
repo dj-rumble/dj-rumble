@@ -2,14 +2,27 @@
   "[elixir]": {
     "editor.defaultFormatter": "JakeBecker.elixir-ls"
   },
+  // Provides smart completion for "do" and "fn ->" blocks. Does not run the Elixir formatter.
+  "editor.formatOnType": true,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  // Misc
+  "editor.wordBasedSuggestions": false,
+  "editor.trimAutoWhitespace": false,
   "elixir.credo.enableDebug": true,
   "elixir.credo.ignoreWarningMessages": true,
-  "editor.tabSize": 2,
+  "emmet.includeLanguages": {
+    "html-eex": "html"
+  },
   "files.associations": {
     "*.config": "properties",
     "*.dump": "log",
 		".env*": "properties"
   },
+  // Based on Elixir formatter's style
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
   "markdownlint.config": {
 		"MD033": false
 	}
