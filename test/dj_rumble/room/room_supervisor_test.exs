@@ -1,6 +1,6 @@
 defmodule DjRumble.Room.RoomSupervisorTest do
   @moduledoc """
-  Rooms context tests
+  Room Supervisor tests
   """
   use DjRumble.DataCase
   use ExUnit.Case

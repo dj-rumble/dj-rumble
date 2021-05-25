@@ -11,8 +11,8 @@ defmodule DjRumble.Room.RoomServerTest do
     alias DjRumble.Rooms.RoomServer
 
     setup do
-      room = room_fixture()
-      room_genserver_pid = start_supervised!({RoomServer, {room.id}})
+      room = room_fixture(%{}, %{preload: true})
+      room_genserver_pid = start_supervised!({RoomServer, {room}})
       %{room: room, pid: room_genserver_pid}
     end
 
@@ -21,12 +21,12 @@ defmodule DjRumble.Room.RoomServerTest do
       assert Process.alive?(pid)
     end
 
-    test "get_room/1 returns a room id", %{pid: pid, room: room} do
-      assert RoomServer.get_room(pid) == room.id
+    test "get_room/1 returns a room", %{pid: pid, room: room} do
+      assert RoomServer.get_room(pid) == room
     end
 
-    test "get_narration/1 returns a room id", %{pid: pid, room: room} do
-      assert RoomServer.get_narration(pid) == room.id
+    test "join/1 returns :ok", %{pid: pid} do
+      assert RoomServer.join(pid) == :ok
     end
 
     test "start_round/1 returns :ok", %{pid: pid} do
