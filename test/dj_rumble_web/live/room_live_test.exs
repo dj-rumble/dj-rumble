@@ -1,4 +1,6 @@
 defmodule DjRumbleWeb.RoomLiveTest do
+  @moduledoc false
+
   use DjRumbleWeb.ConnCase
 
   import DjRumble.RoomsFixtures
@@ -24,7 +26,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
       end
     end
 
-    # @tag wip: true
     # test "saves new room", %{conn: conn} do
     #   {:ok, index_live, _html} = live(conn, Routes.room_index_path(conn, :index))
 
@@ -56,8 +57,16 @@ defmodule DjRumbleWeb.RoomLiveTest do
   end
 
   describe "Show" do
+    alias DjRumble.Rooms.RoomSupervisor
+
+    defp start_room_server(room) do
+      {:ok, _pid} = RoomSupervisor.start_room_server(RoomSupervisor, room)
+      :ok
+    end
+
     test "displays room with no videos", %{conn: conn} do
-      room = room_fixture()
+      room = room_fixture(%{}, %{preload: true})
+      :ok = start_room_server(room)
       {:ok, show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
       assert page_title(show_live) == nil
     end
@@ -69,6 +78,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
           %{preload: true}
         )
 
+      :ok = start_room_server(room)
       {:ok, _show_live, html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
       assert html =~ Enum.at(room.videos, 0).title
     end
