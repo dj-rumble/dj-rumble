@@ -12,7 +12,7 @@ defmodule DjRumbleWeb.Router do
 
     plug :put_secure_browser_headers, %{
       "content-security-policy" =>
-        "default-src 'self' 'unsafe-eval'; script-src-elem 'self' https://www.youtube.com/s/player/838cc154/www-widgetapi.vflset/www-widgetapi.js http://www.youtube.com/iframe_api https://www.youtube.com/s/player/*; img-src i.ytimg.com; frame-src 'self' https://www.youtube.com/; style-src 'unsafe-inline'; style-src-elem 'self'"
+        "default-src 'self' 'unsafe-eval'; script-src-elem 'self' https://www.youtube.com/ http://www.youtube.com/iframe_api https://www.youtube.com/s/player/*; img-src i.ytimg.com; frame-src 'self' https://www.youtube.com/; style-src 'unsafe-inline'; style-src-elem 'self'"
     }
 
     plug :fetch_current_user
