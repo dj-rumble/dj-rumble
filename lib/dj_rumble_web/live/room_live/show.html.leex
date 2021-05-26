@@ -1,10 +1,10 @@
-<%= live_component @socket, DjRumbleWeb.Live.Components.Navbar,
-  visitor: @visitor,
-  username: @user.username,
-  homepage: true
-%>
-
 <%= if connected?(@socket) do %>
+  <%= live_component @socket, DjRumbleWeb.Live.Components.Navbar,
+    visitor: @visitor,
+    username: @user.username,
+    homepage: true
+  %>
+
   <div class="grid grid-cols-12 gap-4 mb-12">
     <div class="rounded-lg bg-black col-start-1 col-end-9 text-center p-4">
       <%= live_component @socket, DjRumbleWeb.Live.Components.VideoPlayer,
