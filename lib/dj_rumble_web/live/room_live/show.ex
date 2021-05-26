@@ -5,8 +5,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   use DjRumbleWeb, :live_view
 
+  require Logger
+
   alias DjRumble.Repo
   alias DjRumble.Rooms
+  alias DjRumble.Rooms.{RoomServer, RoomSupervisor}
+  alias DjRumble.Rounds.Round
   alias DjRumbleWeb.Presence
   alias Faker
 
@@ -17,38 +21,48 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   @impl true
   def mount(%{"slug" => slug} = params, session, socket) do
-    case Rooms.get_room_by_slug(slug) do
-      nil ->
-        {:ok,
-         socket
-         |> put_flash(:error, "That room does not exist.")
-         |> push_redirect(to: Routes.room_index_path(socket, :index))}
+    case connected?(socket) do
+      true ->
+        case Rooms.get_room_by_slug(slug) do
+          nil ->
+            {:ok,
+             socket
+             |> put_flash(:error, "That room does not exist.")
+             |> push_redirect(to: Routes.room_index_path(socket, :index))}
 
-      room ->
-        %{assigns: %{user: user}} = socket = assign_defaults(socket, params, session)
-        room = Repo.preload(room, [:videos])
-        index_playing = 0
+          room ->
+            %{assigns: %{user: user}} = socket = assign_defaults(socket, params, session)
 
-        topic = "room:#{slug}"
-        connected_users = get_list_from_slug(slug)
+            {room_server, _room} = RoomSupervisor.get_room_server(RoomSupervisor, room.id)
 
-        # Subscribe to the topic
-        DjRumbleWeb.Endpoint.subscribe(topic)
+            room = Repo.preload(room, [:videos])
+            index_playing = 0
 
-        # Track changes to the topic
-        Presence.track(
-          self(),
-          topic,
-          socket.id,
-          %{username: user.username}
-        )
+            topic = "room:#{slug}"
+            connected_users = get_list_from_slug(slug)
 
-        {:ok,
-         socket
-         |> assign(:room, room)
-         |> assign(:videos, room.videos)
-         |> assign(:index_playing, index_playing)
-         |> assign(:connected_users, connected_users)}
+            # Subscribe to the topic
+            DjRumbleWeb.Endpoint.subscribe(topic)
+
+            # Track changes to the topic
+            Presence.track(
+              self(),
+              topic,
+              socket.id,
+              %{username: user.username}
+            )
+
+            {:ok,
+             socket
+             |> assign(:room, room)
+             |> assign(:videos, room.videos)
+             |> assign(:index_playing, index_playing)
+             |> assign(:connected_users, connected_users)
+             |> assign(:room_server, room_server)}
+        end
+
+      false ->
+        {:ok, socket}
     end
   end
 
@@ -59,20 +73,28 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   @impl true
   def handle_event("player_is_ready", _params, socket) do
-    case Enum.at(socket.assigns.videos, 0) do
-      nil ->
-        {:noreply, socket}
+    %{room: room} = socket.assigns
 
-      video ->
-        {:noreply,
-         socket
-         |> assign(:page_title, page_title(video))
-         |> push_event("receive_player_state", %{
-           videoId: video.video_id,
-           shouldPlay: true,
-           time: 0
-         })}
-    end
+    Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{room.slug}:ready")
+
+    :ok = RoomServer.join(socket.assigns.room_server)
+
+    {:noreply, socket}
+    # case Enum.at(socket.assigns.videos, 0) do
+    #   nil ->
+    #     {:noreply, socket}
+
+    #   video ->
+    #     {:noreply,
+    #      socket
+    #      |> assign(:page_title, page_title(video))
+    #      |> push_event("receive_player_state", %{
+    #        videoId: video.video_id,
+    #        shouldPlay: false,
+    #        time: 0
+    #      })
+    #     }
+    # end
   end
 
   @impl true
@@ -106,6 +128,52 @@ defmodule DjRumbleWeb.RoomLive.Show do
     connected_users = get_list_from_slug(slug)
 
     {:noreply, assign(socket, :connected_users, connected_users)}
+  end
+
+  def handle_info({:welcome, params}, socket), do: handle_welcome_message(params, socket)
+
+  def handle_info({:receive_playback_details, params}, socket),
+    do: handle_playback_details(params, socket)
+
+  def handle_info({:round_started, params}, socket), do: handle_round_start(params, socket)
+
+  @doc """
+  Receives a welcoming message when joining a room.
+
+  * **From:** `Matchmaking`
+  * **Topic:** Direct message
+  * **Args:** `String`
+  """
+  def handle_welcome_message(_message, socket) do
+    {:noreply, socket}
+  end
+
+  @doc """
+  Receives video details when a round is prepared.
+
+  * **From:** `Matchmaking`
+  * **Topic:** `"room:<room_id>:ready"`
+  * **Args:** `%{videoId: video_id, time: 0}`
+  """
+  def handle_playback_details(video_details, socket) do
+    Logger.info(fn -> "Received video details" end)
+
+    {:noreply,
+     socket
+     |> push_event("receive_player_state", video_details)}
+  end
+
+  @doc """
+  Receives details when a round is started
+
+  * **From:** `Matchmaking`
+  * **Topic:** `"room:<room_id>:ready"`
+  * **Args:** `%Round.InProgress{}`
+  """
+  def handle_round_start(%Round.InProgress{} = round, socket) do
+    Logger.info(fn -> "Round Started: #{inspect(round)}" end)
+
+    {:noreply, socket}
   end
 
   defp page_title(:show), do: "Show Room"
