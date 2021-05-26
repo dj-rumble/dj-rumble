@@ -1,11 +1,11 @@
 <div class="text-white text-3xl mt-3">
 Connected Users: <%= @connected_users |> length %>
 </div>
-<div class="bg-gray-50 p-4 m-6 mb-7 rounded-lg">
+<div class="bg-gray-400 p-4 m-6 mb-7 rounded-lg">
   <ul>
-    <%= for user <- @connected_users do %>
-      <li style="list-style: none;">
-        <%= hd(user.metas).username %>
+    <%= for username <- @connected_users do %>
+      <li style="list-style: none;" class="<%= if username == @user.username do "text-green-100" end %>">
+        <%= username %>
       </li>
     <% end %>
   </ul>

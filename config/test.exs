@@ -16,6 +16,8 @@ config :dj_rumble, DjRumble.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   timeout: :infinity
 
+config :tubex, Tubex, api_key: System.get_env("YOUTUBE_TEST_API_KEY")
+
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :dj_rumble, DjRumbleWeb.Endpoint,

@@ -66,6 +66,8 @@ config :dj_rumble, DjRumbleWeb.Endpoint,
     ]
   ]
 
+config :tubex, Tubex, api_key: System.get_env("YOUTUBE_API_KEY")
+
 config :dj_rumble, DjRumble.Mailer, adapter: Bamboo.LocalAdapter
 
 # Do not include metadata nor timestamps in development logs

@@ -1,12 +1,24 @@
 <div class="text-white text-3xl mt-3">
   Playlist
 </div>
-<div class="bg-gray-50 p-4 m-6 mb-7 rounded-lg">
+<div class="bg-gray-400 p-4 m-6 rounded-lg">
   <ul>
-    <%= for video <- @videos do %>
-      <li style="list-style: none;">
-        <%= video.title %>
-      </li>
+    <%= for { video, index } <- @videos do %>
+      <div class="grid grid-cols-4 gap-2
+        <%= if @index_playing == index do %>
+          playlist-selected-video
+        <% else %>
+          playlist-video
+        <% end %> separator">
+        <div class="align-center">
+          <%= img_tag(video.img_url, width: parse_int(video.img_width) * 1.2) %>
+        </div>
+        <div class="col-span-3 grid grid-rows-2">
+          <div class="row-span-2">
+            <p class="font-bold"><%= video.title %></p>
+          </div>
+        </div>
+      </div>
     <% end %>
   </ul>
 </div>

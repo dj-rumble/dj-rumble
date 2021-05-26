@@ -5,9 +5,15 @@ defmodule DjRumbleWeb.Live.Components.Playlist do
 
   use DjRumbleWeb, :live_component
 
-  def update(assigns, socket) do
+  def update(%{videos: videos} = assigns, socket) do
     {:ok,
      socket
-     |> assign(assigns)}
+     |> assign(assigns)
+     |> assign(:videos, Enum.with_index(videos))}
+  end
+
+  def parse_int(str) do
+    {int, _} = Integer.parse(str)
+    int
   end
 end
