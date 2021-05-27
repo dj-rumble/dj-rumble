@@ -120,6 +120,14 @@ defmodule DjRumble.Room.MatchmakingTest do
       state
     end
 
+    defp handle_start_next_round(state) do
+      response = Matchmaking.handle_info(:start_next_round, state)
+
+      {:noreply, state} = response
+
+      state
+    end
+
     defp is_pid_alive(pid) do
       is_pid(pid) and Process.alive?(pid)
     end
@@ -283,7 +291,44 @@ defmodule DjRumble.Room.MatchmakingTest do
     end
 
     @tag wip: true
-    test "handle_cast/2 :: {:send_playback_details, pid} is called with a prepared round and returns :ok",
+    test "handle_cast/2 :: {:join, pid} is called with no rounds and returns :ok",
+         %{state: state} do
+      # Setup
+      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}:ready")
+
+      # Exercise
+      response = Matchmaking.handle_cast({:join, self()}, state)
+
+      {:noreply, _state} = response
+
+      # Verify
+      assert_received(:no_more_rounds)
+      refute_received({:receive_playback_details, %{}})
+    end
+
+    @tag wip: true
+    test "handle_cast/2 :: {:join, pid} is called with no prepared rounds and returns :ok",
+         %{state: state} do
+      # Setup
+      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}:ready")
+      %{video_id: video_id} = video = video_fixture()
+
+      state =
+        state
+        |> handle_schedule_round(video)
+
+      # Exercise
+      response = Matchmaking.handle_cast({:join, self()}, state)
+
+      {:noreply, _state} = response
+
+      # Verify
+      assert_received(:no_more_rounds)
+      refute_received({:receive_playback_details, %{videoId: ^video_id, time: 0}})
+    end
+
+    @tag wip: true
+    test "handle_cast/2 :: {:join, pid} is called with a prepared round and returns :ok",
          %{state: state} do
       # Setup
       :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}:ready")
@@ -303,16 +348,53 @@ defmodule DjRumble.Room.MatchmakingTest do
       refute_received(:no_more_rounds)
 
       # Exercise
-      response = Matchmaking.handle_cast({:send_playback_details, self()}, state)
+      response = Matchmaking.handle_cast({:join, self()}, state)
 
-      {:noreply, state} = response
+      {:noreply, _state} = response
 
       # Verify
       assert_received({:receive_playback_details, %{videoId: ^video_id, time: 0}})
+      refute_received(:no_more_rounds)
     end
 
     @tag wip: true
-    test "handle_info/2 :: {:receive_video_time, int()} is called with a single scheduled round state and does not reply",
+    test "handle_cast/2 :: {:join, pid} is called with a round in progress and returns :ok",
+         %{state: state} do
+      # Setup
+      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}:ready")
+      %{video_id: video_id} = video = video_fixture()
+
+      video_time = 10
+
+      state =
+        state
+        |> handle_schedule_round(video)
+        |> handle_prepare_initial_round(
+          [
+            &assert(is_valid_round(:prepared, &1, %{video: video, time: 0}))
+          ],
+          [&assert(&1 == [])]
+        )
+        |> handle_receive_video_time(video_time)
+        |> handle_start_next_round()
+
+      refute_received(:no_more_rounds)
+
+      # Exercise
+      # Awaits a couple seconds before joining the room so that we catch a
+      # round that is in progress
+      Process.sleep(2000)
+      response = Matchmaking.handle_cast({:join, self()}, state)
+
+      {:noreply, _state} = response
+
+      # Verify
+      assert_received({:receive_countdown, 3000})
+      assert_receive({:receive_playback_details, %{videoId: ^video_id, time: 1}})
+    end
+
+    @tag wip: true
+    test "handle_info/2 :: {:receive_video_time, non_neg_integer()} is called with a single scheduled round state and does not reply",
          %{
            state: state
          } do
@@ -343,7 +425,7 @@ defmodule DjRumble.Room.MatchmakingTest do
     end
 
     @tag wip: true
-    test "handle_info/2 :: {:receive_video_time, int()} is called with a prepared round and nine scheduled rounds state and does not reply",
+    test "handle_info/2 :: {:receive_video_time, non_neg_integer()} is called with a prepared round and nine scheduled rounds state and does not reply",
          %{
            state: state
          } do
