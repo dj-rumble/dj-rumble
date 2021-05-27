@@ -18,6 +18,16 @@ defmodule DjRumble.Round.RoundTest do
       assert score == {0, 0}
     end
 
+    test "set_time/1 returns an updated scheduled round" do
+      time = 10
+
+      %Round.Scheduled{elapsed_time: elapsed_time, time: ^time, score: score} =
+        Round.set_time(%Round.Scheduled{}, time)
+
+      assert elapsed_time == 0
+      assert score == {0, 0}
+    end
+
     test "start/1 returns a round that is in progress" do
       time = 5
       round = %Round.Scheduled{time: time}
