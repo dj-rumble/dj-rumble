@@ -4,7 +4,7 @@ defmodule DjRumble.Rooms.Supervisor do
   """
   use Supervisor
 
-  alias DjRumble.Rooms
+  alias DjRumble.Rooms.{MatchmakingSupervisor, RoomSupervisor}
 
   def start_link(state) do
     GenServer.start_link(__MODULE__, state, name: __MODULE__)
@@ -13,7 +13,8 @@ defmodule DjRumble.Rooms.Supervisor do
   @impl true
   def init(_init_arg) do
     children = [
-      Rooms.RoomSupervisor
+      MatchmakingSupervisor,
+      RoomSupervisor
     ]
 
     Supervisor.start_link(children, strategy: :rest_for_one)
