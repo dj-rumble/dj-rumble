@@ -66,6 +66,8 @@
 + [Docker Compose](https://docs.docker.com/compose/install/)
 + [Elixir](https://elixir-lang.org/install.html)
 
+> Elixir también puede ser instalado utilizando [`asdf`](https://asdf-vm.com/#/core-manage-asdf?id=install). [Guía de instalación alternativa](https://gist.github.com/sgobotta/514a3e452f7bc37c558fc93a2768ccd2) para `asdf`.
+
 ### Editores y extensiones recomendadas
 
 + [*VSCodium*](https://vscodium.com/#install) es la versión libre de Visual Studio Code.
