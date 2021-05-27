@@ -34,6 +34,10 @@ defmodule DjRumble.Rounds.RoundServer do
     GenServer.call(pid, :get_narration)
   end
 
+  def set_round_time(pid, time) do
+    GenServer.call(pid, {:set_round_time, time})
+  end
+
   @doc """
   Round Server implementation
   """
@@ -68,6 +72,15 @@ defmodule DjRumble.Rounds.RoundServer do
   @impl GenServer
   def handle_call(:get_narration, _from, {_room_slug, %Round.Finished{} = round} = state) do
     {:reply, Round.narrate(round), state}
+  end
+
+  @impl GenServer
+  def handle_call(
+        {:set_round_time, time},
+        _from,
+        {room_slug, %Round.Scheduled{} = round} = _state
+      ) do
+    {:reply, :ok, {room_slug, Round.set_time(round, time)}}
   end
 
   @impl GenServer
