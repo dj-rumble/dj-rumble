@@ -44,6 +44,10 @@ defmodule DjRumble.Rounds.Round do
     Round.Scheduled.new(Ecto.UUID.generate(), time)
   end
 
+  def set_time(%Round.Scheduled{} = round, time) do
+    %Round.Scheduled{round | time: time}
+  end
+
   def start(%Round.Scheduled{} = round) do
     Round.InProgress.new(round.id, round.time, round.elapsed_time, round.score)
   end
