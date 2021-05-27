@@ -31,8 +31,8 @@ defmodule DjRumble.Rooms.Matchmaking do
     GenServer.call(server, :prepare_initial_round)
   end
 
-  def send_playback_details(server \\ __MODULE__, pid) do
-    GenServer.cast(server, {:send_playback_details, pid})
+  def join(server \\ __MODULE__, pid) do
+    GenServer.cast(server, {:join, pid})
   end
 
   @impl GenServer
@@ -77,12 +77,33 @@ defmodule DjRumble.Rooms.Matchmaking do
   end
 
   @impl GenServer
-  def handle_cast({:send_playback_details, pid}, state) do
-    Logger.info(fn -> "Sending current round details." end)
+  def handle_cast({:join, pid}, state) do
+    case state.current_round do
+      nil ->
+        :ok =
+          Phoenix.PubSub.broadcast(
+            DjRumble.PubSub,
+            "room:#{state.room.slug}:ready",
+            :no_more_rounds
+          )
 
-    {_ref, {_pid, %{video_id: video_id}, time}} = state.current_round
+      {_ref, {round_pid, %{video_id: video_id}, _time}} ->
+        Logger.info(fn -> "Sending current round details." end)
 
-    :ok = Process.send(pid, {:receive_playback_details, %{videoId: video_id, time: time}}, [])
+        {should_play, elapsed_time} =
+          case RoundServer.get_round(round_pid) do
+            %Round.InProgress{elapsed_time: elapsed_time} -> {true, elapsed_time}
+            round -> {false, round.elapsed_time}
+          end
+
+        :ok =
+          Process.send(
+            pid,
+            {:receive_playback_details,
+             %{shouldPlay: should_play, time: elapsed_time, videoId: video_id}},
+            []
+          )
+    end
 
     {:noreply, state}
   end
@@ -110,8 +131,6 @@ defmodule DjRumble.Rooms.Matchmaking do
   @impl GenServer
   def handle_info(:prepare_next_round, state) do
     state = prepare_next_round(state)
-
-    Logger.info(fn -> "Prepared a round." end)
 
     {:noreply, state}
   end
@@ -203,7 +222,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
   defp schedule_round(video, room) do
     %{slug: slug} = room
-    {:ok, pid} = RoundSupervisor.start_round_server(RoundSupervisor, {slug, 10})
+    {:ok, pid} = RoundSupervisor.start_round_server(RoundSupervisor, {slug, 0})
     ref = Process.monitor(pid)
 
     Phoenix.PubSub.broadcast(
