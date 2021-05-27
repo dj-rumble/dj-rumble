@@ -12,7 +12,7 @@ try do
   video_ids = Rooms.list_videos() |> Enum.map(fn video -> video.id end)
   single_video_rooms = Enum.with_index(Enum.take(room_ids, 3))
   vulf_video_ids = Enum.slice(video_ids, length(single_video_rooms), 6)
-  short_video_ids = Enum.slice(video_ids, length(single_video_rooms) + length(vulf_video_ids), 10)
+  short_video_ids = Enum.slice(video_ids, length(single_video_rooms) + length(vulf_video_ids), 3)
 
   for room_id <- room_ids do
     video_ids =
