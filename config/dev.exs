@@ -71,7 +71,9 @@ config :tubex, Tubex, api_key: System.get_env("YOUTUBE_API_KEY")
 config :dj_rumble, DjRumble.Mailer, adapter: Bamboo.LocalAdapter
 
 # Do not include metadata nor timestamps in development logs
-config :logger, :console, format: "[$level] $message\n"
+config :logger, :console,
+  format: "$time $metadata[$level] $message\n",
+  metadata: [:request_id, :mfa]
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
