@@ -78,7 +78,7 @@ reset: ecto.reset
 security.check:
 	@mix sobelow --verbose
 
-#security.check.ci: @ 🛡️  Performs security checks. Exits on error.
+#security.ci: @ 🛡️  Performs security checks. Exits on error.
 security.ci:
 	@mix sobelow --exit
 
