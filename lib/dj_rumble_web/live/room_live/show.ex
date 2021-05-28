@@ -285,6 +285,13 @@ defmodule DjRumbleWeb.RoomLive.Show do
     end
   end
 
+  def handle_info({:receive_messages, %{messages: messages}}, socket) do
+    {:noreply,
+     socket
+     |> assign(:messages, messages)
+     |> push_event("receive_new_message", %{})}
+  end
+
   defp is_my_presence(id, presence_payload) do
     Enum.any?(Map.to_list(presence_payload.joins), fn {x, _} -> x == id end) ||
       Enum.any?(Map.to_list(presence_payload.leaves), fn {x, _} -> x == id end)
