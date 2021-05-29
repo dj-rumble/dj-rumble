@@ -90,17 +90,17 @@ defmodule DjRumble.Rooms.Matchmaking do
       {_ref, {round_pid, %{video_id: video_id}, _time}} ->
         Logger.info(fn -> "Sending current round details." end)
 
-        {should_play, elapsed_time} =
+        elapsed_time =
           case RoundServer.get_round(round_pid) do
-            %Round.InProgress{elapsed_time: elapsed_time} -> {true, elapsed_time}
-            round -> {false, round.elapsed_time}
+            %Round.InProgress{elapsed_time: elapsed_time} -> elapsed_time
+            round -> round.elapsed_time
           end
 
         :ok =
           Process.send(
             pid,
             {:receive_playback_details,
-             %{shouldPlay: should_play, time: elapsed_time, videoId: video_id}},
+             %{time: elapsed_time, videoId: video_id}},
             []
           )
     end
@@ -143,26 +143,33 @@ defmodule DjRumble.Rooms.Matchmaking do
         "matchmaking:#{state.room.slug}:waiting_for_details"
       )
 
-    parsed_time = trunc(time)
-    {ref, {pid, video, 0 = _time}} = state.current_round
+    state = case state.current_round do
+      {ref, {pid, video, 0 = _time}} ->
+        parsed_time = trunc(time)
 
-    :ok = RoundServer.set_round_time(pid, parsed_time)
+        :ok = RoundServer.set_round_time(pid, parsed_time)
 
-    Logger.info(fn -> "Receives video time #{time} and truncates it to #{parsed_time}." end)
+        Logger.info(fn -> "Receives video time #{time} and truncates it to #{parsed_time}." end)
 
-    :ok =
-      Phoenix.PubSub.broadcast(
-        DjRumble.PubSub,
-        "room:#{state.room.slug}:ready",
-        {:receive_countdown, @countdown_before_rounds}
-      )
+        :ok =
+          Phoenix.PubSub.broadcast(
+            DjRumble.PubSub,
+            "room:#{state.room.slug}:ready",
+            {:receive_countdown, @countdown_before_rounds}
+          )
 
-    Process.send_after(self(), :start_next_round, @countdown_before_rounds)
+        Process.send_after(self(), :start_next_round, @countdown_before_rounds)
 
-    state = %{
-      state
-      | current_round: {ref, {pid, video, parsed_time}}
-    }
+        %{
+          state
+          | current_round: {ref, {pid, video, parsed_time}}
+        }
+
+      # This case is needed because race conditions happen when the broadcasted pids answer
+      {_ref, {_pid, _video, _}} ->
+        state
+
+    end
 
     {:noreply, state}
   end
@@ -251,7 +258,7 @@ defmodule DjRumble.Rooms.Matchmaking do
       [{_ref, {_pid, video, 0 = time}} = next_round | next_rounds] ->
         Phoenix.PubSub.subscribe(DjRumble.PubSub, "matchmaking:#{slug}:waiting_for_details")
 
-        :ok = send_playback_details("room:#{slug}:ready", video, time)
+        :ok = request_playback_details("room:#{slug}:ready", video, time)
 
         Logger.info(fn -> "Prepared a next round" end)
 
@@ -263,11 +270,11 @@ defmodule DjRumble.Rooms.Matchmaking do
     end
   end
 
-  defp send_playback_details(topic, video, time) do
+  defp request_playback_details(topic, video, time) do
     Phoenix.PubSub.broadcast(
       DjRumble.PubSub,
       topic,
-      {:receive_playback_details, %{videoId: video.video_id, time: time}}
+      {:request_playback_details, %{videoId: video.video_id, time: time}}
     )
   end
 
@@ -295,7 +302,7 @@ defmodule DjRumble.Rooms.Matchmaking do
     #       {Gladiators.get_gladiator(left.id), Gladiators.get_gladiator(right.id)},
     #       battle.outcome
     #     )
-    {_ref, {pid, _video, _time}} = state.current_round
+    {_ref, {pid, video, _time}} = state.current_round
 
     # Worths to check if its dead, if not, use the next function
     # RoundSupervisor.terminate_round_server(RoundSupervisor, pid)
@@ -305,7 +312,7 @@ defmodule DjRumble.Rooms.Matchmaking do
     Phoenix.PubSub.broadcast(
       DjRumble.PubSub,
       "room:#{state.room.slug}:ready",
-      {:round_started, RoundServer.get_round(pid)}
+      {:round_started, %{round: RoundServer.get_round(pid), video_details: %{videoId: video.video_id, time: 0}}}
     )
 
     # Process.send_after(self(), :max_series_length_exceeded, @countdown_before_rounds)
