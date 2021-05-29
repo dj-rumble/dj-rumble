@@ -19,8 +19,8 @@ defmodule DjRumble.Rooms.Matchmaking do
     GenServer.start_link(__MODULE__, init_arg)
   end
 
-  def get_room(server \\ __MODULE__) do
-    GenServer.call(server, :get_room)
+  def get_state(server \\ __MODULE__) do
+    GenServer.call(server, :get_state)
   end
 
   def create_round(server \\ __MODULE__, video) do
@@ -49,8 +49,8 @@ defmodule DjRumble.Rooms.Matchmaking do
   end
 
   @impl GenServer
-  def handle_call(:get_room, _from, state) do
-    {:reply, state.room, state}
+  def handle_call(:get_state, _from, state) do
+    {:reply, state, state}
   end
 
   @impl GenServer

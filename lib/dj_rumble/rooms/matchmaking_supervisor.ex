@@ -25,8 +25,8 @@ defmodule DjRumble.Rooms.MatchmakingSupervisor do
 
   def get_matchmaking_server(supervisor \\ __MODULE__, slug) do
     list_matchmaking_servers(supervisor)
-    |> Enum.map(&{&1, Matchmaking.get_room(&1)})
-    |> Enum.find(fn {_, room} -> room.slug == slug end)
+    |> Enum.map(&{&1, Matchmaking.get_state(&1)})
+    |> Enum.find(fn {_, state} -> state.room.slug == slug end)
   end
 
   def terminate_matchmaking_server(supervisor \\ __MODULE__, pid) do
