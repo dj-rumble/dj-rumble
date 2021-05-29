@@ -4,6 +4,14 @@
 <div class="bg-gray-400 p-4 m-6 mb-7 rounded-lg">
   <div id="chat-data" phx-hook="ChatSyncing">
     <div id="chat" class="chat-panel scrollable-panel fixed-height-lg m-6 rounded-lg">
+      <%= if @messages == [] do %>
+        <div>
+          <p class="chat-message">
+            <span class="chat-username">The chat is empty!</span>
+            <span class="timestamp timestamp-message">Write something...</span>
+          </p>
+        </div>
+      <% end %>
       <%= for message <- @messages do %>
         <div>
           <p class="chat-message">
@@ -27,7 +35,7 @@
           value: @new_message,
           phx_blur: "stop_typing",
           phx_target: @myself,
-          placeholder: "Write something...",
+          placeholder: "",
           class: "chat-text-input button-effect"
         %>
       </form>
