@@ -86,19 +86,21 @@ const PlayerSyncing = initPlayer => ({
     const endTimeTrackerElem = document.getElementById('yt-video-end-time')
     const timeSliderElem = document.getElementById('video-time-control')
 
+    const onPlayerReady = () => {
+      /**
+       * player_is_ready
+       *
+       * Tells the server the player is ready to receive events
+       */
+      this.pushEvent('player_is_ready')
+    }
+
     const player = await initPlayer(
       onStateChange(
         this,
         startTimeTrackerElem, endTimeTrackerElem, timeSliderElem
       ),
-      () => {
-        /**
-         * player_is_ready
-         *
-         * Tells the server the player is ready to receive events
-         */
-        this.pushEvent('player_is_ready')
-      }
+      onPlayerReady
     )
 
     /**
