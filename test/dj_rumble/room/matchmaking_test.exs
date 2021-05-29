@@ -249,7 +249,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       )
 
       # Verify
-      assert_received({:receive_playback_details, %{videoId: ^video_id, time: 0}})
+      assert_received({:request_playback_details, %{videoId: ^video_id, time: 0}})
       refute_received(:no_more_rounds)
     end
 
@@ -282,7 +282,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       %{video_id: video_id} = get_video(state.current_round)
 
       # Verify
-      assert_received({:receive_playback_details, %{videoId: ^video_id, time: 0}})
+      assert_received({:request_playback_details, %{videoId: ^video_id, time: 0}})
       refute_received(:no_more_rounds)
     end
 
@@ -337,7 +337,7 @@ defmodule DjRumble.Room.MatchmakingTest do
           [&assert(&1 == [])]
         )
 
-      assert_received({:receive_playback_details, %{videoId: ^video_id, time: 0}})
+      assert_received({:request_playback_details, %{videoId: ^video_id, time: 0}})
       refute_received(:no_more_rounds)
 
       # Exercise
@@ -403,7 +403,7 @@ defmodule DjRumble.Room.MatchmakingTest do
           [&assert(&1 == [])]
         )
 
-      assert_received({:receive_playback_details, %{videoId: ^video_id, time: 0}})
+      assert_received({:request_playback_details, %{videoId: ^video_id, time: 0}})
       refute_received(:no_more_rounds)
 
       video_time = 30
@@ -440,7 +440,7 @@ defmodule DjRumble.Room.MatchmakingTest do
           ]
         )
 
-      assert_received({:receive_playback_details, %{videoId: ^video_id, time: 0}})
+      assert_received({:request_playback_details, %{videoId: ^video_id, time: 0}})
       refute_received(:no_more_rounds)
 
       video_time = 30

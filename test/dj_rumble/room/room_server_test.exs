@@ -309,7 +309,7 @@ defmodule DjRumble.Room.RoomServerTest do
       # Verify
       :ok = assert_players_joined(pids, state)
       :ok = assert_players_received_a_welcome_message(pids)
-      assert_receive({:receive_playback_details, %{time: 0, videoId: ^video_id}})
+      assert_receive({:request_playback_details, %{time: 0, videoId: ^video_id}})
 
       {^matchmaking_server, %{current_round: current_round}} =
         MatchmakingSupervisor.get_matchmaking_server(MatchmakingSupervisor, slug)

@@ -99,8 +99,7 @@ defmodule DjRumble.Rooms.Matchmaking do
         :ok =
           Process.send(
             pid,
-            {:receive_playback_details,
-             %{time: elapsed_time, videoId: video_id}},
+            {:receive_playback_details, %{time: elapsed_time, videoId: video_id}},
             []
           )
     end
@@ -143,33 +142,33 @@ defmodule DjRumble.Rooms.Matchmaking do
         "matchmaking:#{state.room.slug}:waiting_for_details"
       )
 
-    state = case state.current_round do
-      {ref, {pid, video, 0 = _time}} ->
-        parsed_time = trunc(time)
+    state =
+      case state.current_round do
+        {ref, {pid, video, 0 = _time}} ->
+          parsed_time = trunc(time)
 
-        :ok = RoundServer.set_round_time(pid, parsed_time)
+          :ok = RoundServer.set_round_time(pid, parsed_time)
 
-        Logger.info(fn -> "Receives video time #{time} and truncates it to #{parsed_time}." end)
+          Logger.info(fn -> "Receives video time #{time} and truncates it to #{parsed_time}." end)
 
-        :ok =
-          Phoenix.PubSub.broadcast(
-            DjRumble.PubSub,
-            "room:#{state.room.slug}:ready",
-            {:receive_countdown, @countdown_before_rounds}
-          )
+          :ok =
+            Phoenix.PubSub.broadcast(
+              DjRumble.PubSub,
+              "room:#{state.room.slug}:ready",
+              {:receive_countdown, @countdown_before_rounds}
+            )
 
-        Process.send_after(self(), :start_next_round, @countdown_before_rounds)
+          Process.send_after(self(), :start_next_round, @countdown_before_rounds)
 
-        %{
+          %{
+            state
+            | current_round: {ref, {pid, video, parsed_time}}
+          }
+
+        # This case is needed because race conditions happen when the broadcasted pids answer
+        {_ref, {_pid, _video, _}} ->
           state
-          | current_round: {ref, {pid, video, parsed_time}}
-        }
-
-      # This case is needed because race conditions happen when the broadcasted pids answer
-      {_ref, {_pid, _video, _}} ->
-        state
-
-    end
+      end
 
     {:noreply, state}
   end
@@ -312,7 +311,8 @@ defmodule DjRumble.Rooms.Matchmaking do
     Phoenix.PubSub.broadcast(
       DjRumble.PubSub,
       "room:#{state.room.slug}:ready",
-      {:round_started, %{round: RoundServer.get_round(pid), video_details: %{videoId: video.video_id, time: 0}}}
+      {:round_started,
+       %{round: RoundServer.get_round(pid), video_details: %{videoId: video.video_id, time: 0}}}
     )
 
     # Process.send_after(self(), :max_series_length_exceeded, @countdown_before_rounds)
