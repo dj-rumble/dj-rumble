@@ -59,6 +59,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:index_playing, index_playing)
              |> assign(:connected_users, connected_users)
              |> assign(:current_video_time, 0)
+             |> assign(:round_info, "")
              |> assign(:room_server, room_server)}
         end
 
@@ -219,13 +220,15 @@ defmodule DjRumbleWeb.RoomLive.Show do
   def handle_receive_countdown(seconds, socket) do
     one_second = :timer.seconds(1)
 
-    case seconds do
-      0 ->
-        nil
+    socket =
+      case seconds do
+        0 ->
+          assign(socket, :round_info, "")
 
-      _ ->
-        Process.send_after(self(), {:receive_countdown, seconds - one_second}, one_second)
-    end
+        _ ->
+          Process.send_after(self(), {:receive_countdown, seconds - one_second}, one_second)
+          assign(socket, :round_info, "Round starts in #{div(seconds, one_second)}")
+      end
 
     Logger.info(fn -> "Countdown: #{div(seconds, one_second)} seconds until room starts." end)
 
@@ -260,7 +263,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
   def handle_round_finished(%Round.Finished{} = round, socket) do
     Logger.info(fn -> "Round Finished: #{inspect(round)}" end)
 
-    {:noreply, socket}
+    {:noreply,
+     socket
+     |> assign(:round_info, "Round finished. Results...")}
   end
 
   @doc """
