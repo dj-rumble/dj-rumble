@@ -33,7 +33,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
           room ->
             %{assigns: %{user: user}} = socket = assign_defaults(socket, params, session)
 
-            {room_server, _room} = RoomSupervisor.get_room_server(RoomSupervisor, room.id)
+            {room_server, _room} = RoomSupervisor.get_room_server(RoomSupervisor, room.slug)
 
             room = Repo.preload(room, [:videos])
             index_playing = 0
@@ -81,134 +81,20 @@ defmodule DjRumbleWeb.RoomLive.Show do
     :ok = RoomServer.join(socket.assigns.room_server)
 
     {:noreply, socket}
-
-    # %{room: %{slug: slug}} = socket.assigns
-    # presence = list_filtered_present(slug, socket.id)
-
-    # case presence do
-    #   [] ->
-    #     %{videos: videos} = socket.assigns
-
-    #     case Enum.at(videos, 0) do
-    #       nil ->
-    #         {:noreply, socket}
-
-    #       video ->
-    #         {:noreply,
-    #          socket
-    #          |> assign(:page_title, page_title(video))
-    #          |> push_event("receive_player_state", %{
-    #            videoId: video.video_id,
-    #            shouldPlay: true,
-    #            time: 0
-    #          })}
-    #     end
-
-    #   _ps ->
-    #     Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:" <> slug <> ":request_initial_state")
-    #     # Tells every node the requester node needs an initial state
-    #     :ok =
-    #       Phoenix.PubSub.broadcast_from(
-    #         DjRumble.PubSub,
-    #         self(),
-    #         "room:" <> socket.assigns.room.slug,
-    #         {:request_initial_state, %{}}
-    #       )
-
-    #     {:noreply, socket}
-    # end
   end
 
   @impl true
-  def handle_event("next_video", _params, socket) do
-    %{videos: videos, index_playing: index_playing} = socket.assigns
-    next_index_playing = index_playing + 1
-    next_video = Enum.at(videos, next_index_playing)
-
-    case next_video != nil do
-      false ->
-        {:noreply, socket}
-
-      true ->
-        {:noreply,
-         socket
-         |> assign(:page_title, page_title(next_video))
-         |> assign(:index_playing, next_index_playing)
-         |> push_event("receive_player_state", %{
-           videoId: next_video.video_id,
-           shouldPlay: true,
-           time: 0
-         })}
-    end
-  end
-
-  @impl true
-  def handle_event("receive_current_video_time", current_time, socket) do
-    %{room: room} = socket.assigns
-
-    case socket.id == room.video_tracker do
-      true ->
-        Phoenix.PubSub.broadcast(
-          DjRumble.PubSub,
-          "room:" <> room.slug,
-          {:receive_current_video_time, %{time: current_time}}
-        )
-
-        {:noreply, socket}
-
-      false ->
-        {:noreply, socket}
-    end
-  end
-
-  def handle_info({:request_initial_state, _params}, socket) do
-    %{videos: videos, index_playing: index_playing, current_video_time: current_video_time} =
-      socket.assigns
+  def handle_event("receive_video_time", time, socket) do
+    Logger.info(fn -> "Received time: '#{time}' from yt client" end)
 
     :ok =
-      Phoenix.PubSub.broadcast_from(
+      Phoenix.PubSub.broadcast(
         DjRumble.PubSub,
-        self(),
-        "room:" <> socket.assigns.room.slug <> ":request_initial_state",
-        {:receive_initial_state,
-         %{
-           videos: videos,
-           index_playing: index_playing,
-           current_video_time: current_video_time
-         }}
+        "matchmaking:#{socket.assigns.room.slug}:waiting_for_details",
+        {:receive_video_time, time}
       )
 
     {:noreply, socket}
-  end
-
-  def handle_info({:receive_initial_state, params}, socket) do
-    %{room: %{slug: slug}} = socket.assigns
-    Phoenix.PubSub.unsubscribe(DjRumble.PubSub, "room:" <> slug <> ":request_initial_state")
-
-    %{videos: videos, index_playing: index_playing, current_video_time: current_video_time} =
-      params
-
-    socket =
-      socket
-      |> assign(:videos, videos)
-      |> assign(:index_playing, index_playing)
-      |> assign(:current_video_time, current_video_time)
-
-    case videos do
-      [] ->
-        {:noreply, socket}
-
-      _xs ->
-        %{video_id: video_id} = Enum.at(videos, index_playing)
-
-        {:noreply,
-         socket
-         |> push_event("receive_player_state", %{
-           shouldPlay: true,
-           time: current_video_time,
-           videoId: video_id
-         })}
-    end
   end
 
   @impl true
@@ -236,12 +122,6 @@ defmodule DjRumbleWeb.RoomLive.Show do
     end
   end
 
-  def handle_info({:receive_current_video_time, %{time: time}}, socket) do
-    {:noreply,
-     socket
-     |> assign(:current_video_time, time)}
-  end
-
   def handle_info({:add_to_queue, params}, %{assigns: assigns} = socket) do
     %{new_video: new_video} = params
 
@@ -259,16 +139,41 @@ defmodule DjRumbleWeb.RoomLive.Show do
   def handle_info({:receive_playback_details, params}, socket),
     do: handle_playback_details(params, socket)
 
-  def handle_info({:round_started, params}, socket), do: handle_round_start(params, socket)
+  def handle_info({:request_playback_details, params}, socket),
+    do: handle_playback_details_request(params, socket)
+
+  def handle_info({:round_started, params}, socket), do: handle_round_started(params, socket)
+
+  def handle_info(:no_more_rounds, socket), do: handle_no_more_rounds(socket)
+
+  def handle_info({:receive_countdown, params}, socket),
+    do: handle_receive_countdown(params, socket)
+
+  def handle_info({:round_scheduled, params}, socket), do: handle_round_scheduled(params, socket)
+
+  def handle_info({:round_finished, params}, socket), do: handle_round_finished(params, socket)
 
   @doc """
   Receives a welcoming message when joining a room.
 
   * **From:** `Matchmaking`
   * **Topic:** Direct message
-  * **Args:** `String`
+  * **Args:** `String.t()`
   """
   def handle_welcome_message(_message, socket) do
+    {:noreply, socket}
+  end
+
+  @doc """
+  Receives a message telling a round has been scheduled.
+
+  * **From:** `Matchmaking`
+  * **Topic:** `"room:<room_slug>"`
+  * **Args:** `%Round.Scheduled{}`
+  """
+  def handle_round_scheduled(round, socket) do
+    Logger.info(fn -> "Receives a scheduled round: #{inspect(round)}" end)
+
     {:noreply, socket}
   end
 
@@ -276,11 +181,11 @@ defmodule DjRumbleWeb.RoomLive.Show do
   Receives video details when a round is prepared.
 
   * **From:** `Matchmaking`
-  * **Topic:** `"room:<room_id>:ready"`
-  * **Args:** `%{videoId: video_id, time: 0}`
+  * **Topic:** `"room:<room_slug>:ready"`
+  * **Args:** `%{videoId: String.t(), time: non_neg_integer()}`
   """
   def handle_playback_details(video_details, socket) do
-    Logger.info(fn -> "Received video details" end)
+    Logger.info(fn -> "Received video details: #{inspect(video_details)}" end)
 
     {:noreply,
      socket
@@ -288,19 +193,90 @@ defmodule DjRumbleWeb.RoomLive.Show do
   end
 
   @doc """
+  Receives video details when a round is prepared.
+
+  * **From:** `Matchmaking`
+  * **Topic:** `"room:<room_slug>:ready"`
+  * **Args:** `%{videoId: String.t(), time: non_neg_integer()}`
+  """
+  def handle_playback_details_request(video_details, socket) do
+    Logger.info(fn ->
+      "[Pid #{inspect(self())}] receives playback details request for video time."
+    end)
+
+    {:noreply,
+     socket
+     |> push_event("playback_details_request", video_details)}
+  end
+
+  @doc """
+  Receives a message telling a round will start in `seconds` seconds.
+
+  * **From:** `Matchmaking`
+  * **Topic:** `String.t()`. Example: `"room:<room_slug>"`
+  * **Args:** `non_neg_integer()`
+  """
+  def handle_receive_countdown(seconds, socket) do
+    one_second = :timer.seconds(1)
+
+    case seconds do
+      0 ->
+        nil
+
+      _ ->
+        Process.send_after(self(), {:receive_countdown, seconds - one_second}, one_second)
+    end
+
+    Logger.info(fn -> "Countdown: #{div(seconds, one_second)} seconds until room starts." end)
+
+    {:noreply, socket}
+  end
+
+  @doc """
   Receives details when a round is started
 
   * **From:** `Matchmaking`
-  * **Topic:** `"room:<room_id>:ready"`
+  * **Topic:** `String.t()`. Example: `"room:<room_slug>:ready"`
   * **Args:** `%Round.InProgress{}`
   """
-  def handle_round_start(%Round.InProgress{} = round, socket) do
+  def handle_round_started(
+        %{round: %Round.InProgress{} = round, video_details: video_details},
+        socket
+      ) do
     Logger.info(fn -> "Round Started: #{inspect(round)}" end)
+
+    {:noreply,
+     socket
+     |> push_event("receive_player_state", video_details)}
+  end
+
+  @doc """
+  Receives details when a round is finished
+
+  * **From:** `Matchmaking`
+  * **Topic:** `String.t()`. Example: `"room:<room_slug>"`
+  * **Args:** `%Round.Finished{}`
+  """
+  def handle_round_finished(%Round.Finished{} = round, socket) do
+    Logger.info(fn -> "Round Finished: #{inspect(round)}" end)
+
+    {:noreply, socket}
+  end
+
+  @doc """
+  Receives a message telling there are no more rounds
+
+  * **From:** `Matchmaking`
+  * **Topic:** `String.t()`. Example: `"room:<room_slug>:ready"`
+  """
+  def handle_no_more_rounds(socket) do
+    Logger.info(fn -> "No more rounds" end)
 
     {:noreply, socket}
   end
 
   defp page_title(:show), do: "Show Room"
+
   defp page_title(:edit), do: "Edit Room"
 
   defp page_title(video) do

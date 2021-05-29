@@ -31,10 +31,6 @@ const updateTimeDisplays = (
   updateVideoSlider(timeSliderElem, currentTime, totalTime)
 }
 
-const playNextVideo = (hookContext) => {
-  hookContext.pushEvent('next_video')
-}
-
 const onStateChange = (
   hookContext,
   startTimeTrackerElem,
@@ -48,7 +44,6 @@ const onStateChange = (
     case 0: {
       const { trackTimeInterval } = hookContext.el.dataset
       clearInterval(trackTimeInterval)
-      playNextVideo(hookContext)
       break
     }
     case 1: {
@@ -91,30 +86,51 @@ const PlayerSyncing = initPlayer => ({
     const endTimeTrackerElem = document.getElementById('yt-video-end-time')
     const timeSliderElem = document.getElementById('video-time-control')
 
-    const onPlayerReady = () => {
-      /**
-       * player_is_ready
-       *
-       * Tells the server the player is ready to receive events
-       */
-      this.pushEvent('player_is_ready')
-    }
-
     const player = await initPlayer(
       onStateChange(
         this,
         startTimeTrackerElem, endTimeTrackerElem, timeSliderElem
       ),
-      onPlayerReady
+      () => {
+        /**
+         * player_is_ready
+         *
+         * Tells the server the player is ready to receive events
+         */
+        this.pushEvent('player_is_ready')
+      }
     )
+
+    /**
+     * playback_details_request
+     *
+     * Receives a request to answer with the total duration of a video
+     */
+    this.handleEvent('playback_details_request', ({
+      time = 0,
+      videoId = ''
+    }) => {
+      player.loadVideoById({ startSeconds: time, videoId })
+      player.playVideo()
+      const getTotalDurationInterval = setInterval(() => {
+        let duration = player.getDuration()
+
+        if (duration !== undefined && duration !== 0) {
+          clearInterval(getTotalDurationInterval)
+
+          this.pushEvent('receive_video_time', duration)
+          player.pauseVideo()
+          player.seekTo(0)
+        }
+      }, 150)
+    })
 
     /**
      * receive_player_state
      *
-     * Receives an update state of the video player
+     * Receives a video to play
      */
     this.handleEvent('receive_player_state', ({
-      shouldPlay = false,
       time = 0,
       videoId = ''
     }) => {
@@ -125,13 +141,8 @@ const PlayerSyncing = initPlayer => ({
         timeSliderElem,
         player
       )
-      !shouldPlay && player.pauseVideo()
+      player.playVideo()
     })
-
-    setInterval(() => {
-      const currentTime = player.getCurrentTime()
-      this.pushEvent('receive_current_video_time', currentTime)
-    }, 500)
   }
 })
 
