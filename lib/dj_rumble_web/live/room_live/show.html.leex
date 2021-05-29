@@ -4,7 +4,7 @@
   homepage: true
 %>
 
-<div class="grid grid-cols-12 gap-4 mb-12">
+<div class="grid grid-cols-12 gap-6 mb-12">
   <div class="rounded-lg bg-black col-start-1 col-end-9 text-center p-4">
     <%= live_component @socket, DjRumbleWeb.Live.Components.VideoPlayer,
       id: "djrumble-video-player"
@@ -13,23 +13,29 @@
       id: "djrumble-player-controls"
     %>
   </div>
-  <div class="rounded-lg bg-gray-800 col-start-9 col-end-13 text-center align-middle overflow-y-scroll" style="height: 40vh;">
-
-    <%= live_component @socket, DjRumbleWeb.Live.Components.Chat,
-      id: "djrumble-chat",
-      visitor: @visitor,
-      username: @user.username,
-      room: @room
-    %>
-  </div>
-  <div class="rounded-lg bg-gray-800 col-start-1 col-end-7 text-center overflow-y-scroll" style="height: 40vh;">
+  <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 text-center overflow-y-scroll" style="height: 40vh;">
     <%= live_component @socket, DjRumbleWeb.Live.Components.Playlist,
       id: "djrumble-playlist",
       videos: @videos,
       index_playing: @index_playing
     %>
   </div>
-  <div class="rounded-lg bg-gray-800 col-start-7 col-end-13 text-center overflow-y-scroll" style="height: 40vh;">
+  <div class="rounded-lg bg-gray-800 col-start-9 col-end-13 row-span-full text-center align-middle overflow-y-scroll" style="height: 40vh;">
+
+    <%= live_component @socket, DjRumbleWeb.Live.Components.ConnectedUsers,
+      id: "djrumble-connected-users",
+      connected_users: @connected_users,
+      user: @user
+    %>
+    <%= live_component @socket, DjRumbleWeb.Live.Components.Chat,
+      id: "djrumble-chat",
+      visitor: @visitor,
+      username: @user.username,
+      messages: @messages,
+      room: @room
+    %>
+  </div>
+  <div class="rounded-lg bg-gray-800 col-start-9 col-end-13 text-center overflow-y-scroll" style="height: 40vh;">
     <%= live_component @socket, DjRumbleWeb.Live.Components.Searchbox,
       id: "djrumble-searchbox",
       room: @room,
