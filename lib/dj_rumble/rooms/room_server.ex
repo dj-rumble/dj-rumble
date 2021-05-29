@@ -12,12 +12,8 @@ defmodule DjRumble.Rooms.RoomServer do
     GenServer.start_link(__MODULE__, init_arg)
   end
 
-  def start_round(pid) do
-    GenServer.call(pid, :start_round)
-  end
-
-  def get_room(pid) do
-    GenServer.call(pid, :get_room)
+  def get_state(pid) do
+    GenServer.call(pid, :get_state)
   end
 
   def join(pid) do
@@ -29,9 +25,9 @@ defmodule DjRumble.Rooms.RoomServer do
   end
 
   @impl GenServer
-  def init({room} = init_arg) do
+  def init({room} = _init_arg) do
     Logger.info(fn ->
-      "RoomServer started with pid: #{inspect(self())} and state: #{inspect(init_arg)}"
+      "RoomServer started with pid: #{inspect(self())} for room: #{room.slug}"
     end)
 
     {:ok, matchmaking_server} =
@@ -54,13 +50,8 @@ defmodule DjRumble.Rooms.RoomServer do
   end
 
   @impl GenServer
-  def handle_call(:start_round, _from, state) do
-    {:reply, :ok, state}
-  end
-
-  @impl GenServer
-  def handle_call(:get_room, _from, state) do
-    {:reply, state.room, state}
+  def handle_call(:get_state, _from, state) do
+    {:reply, state, state}
   end
 
   @impl GenServer
@@ -79,15 +70,20 @@ defmodule DjRumble.Rooms.RoomServer do
 
   @impl GenServer
   def handle_continue({:joined, pid}, state) do
-    case Map.to_list(state.players) do
+    Process.send(pid, {:welcome, "Hello!"}, [])
+
+    players_list = Map.to_list(state.players)
+
+    Logger.info(fn -> "Current players: #{length(players_list)}." end)
+
+    case players_list do
       [_p] ->
         :ok = Matchmaking.start_round(state.matchmaking_server)
 
       [_p | _ps] ->
-        nil
+        :ok = Matchmaking.join(state.matchmaking_server, pid)
     end
 
-    Process.send(pid, {:welcome, "Hello #{inspect(pid)}!!"}, [])
     {:noreply, state}
   end
 
@@ -97,6 +93,8 @@ defmodule DjRumble.Rooms.RoomServer do
       state
       | players: Map.delete(state.players, ref)
     }
+
+    Logger.info(fn -> "A player left. Current players: #{length(Map.to_list(state.players))}." end)
 
     {:noreply, state}
   end

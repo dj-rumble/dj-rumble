@@ -36,10 +36,10 @@ defmodule DjRumble.Rooms.RoomSupervisor do
     |> Enum.map(fn {_, pid, :worker, _} -> pid end)
   end
 
-  def get_room_server(supervisor \\ __MODULE__, id) do
+  def get_room_server(supervisor \\ __MODULE__, slug) do
     list_room_servers(supervisor)
-    |> Enum.map(&{&1, RoomServer.get_room(&1)})
-    |> Enum.find(fn {_, room} -> room.id == id end)
+    |> Enum.map(&{&1, RoomServer.get_state(&1)})
+    |> Enum.find(fn {_, state} -> state.room.slug == slug end)
   end
 
   def terminate_room_server(supervisor \\ __MODULE__, pid) do
