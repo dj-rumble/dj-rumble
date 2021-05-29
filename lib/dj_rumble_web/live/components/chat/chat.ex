@@ -9,22 +9,9 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
   @impl true
   def update(assigns, socket) do
-    messages = [
-      %{
-        timestamp: %{
-          value: "20:08:12"
-        },
-        username: "Jesús_Cristo_00",
-        text: "Aloha"
-      }
-    ]
-
-    IO.inspect(assigns)
-
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:messages, messages)
      |> assign(:new_message, "")}
   end
 
@@ -47,8 +34,6 @@ defmodule DjRumbleWeb.Live.Components.Chat do
         message = Chat.create_message(:chat_message, new_message)
         messages = messages ++ [message]
 
-        IO.inspect(message)
-
         Phoenix.PubSub.broadcast(
           DjRumble.PubSub,
           "room:" <> room.slug,
@@ -62,14 +47,12 @@ defmodule DjRumbleWeb.Live.Components.Chat do
   @impl true
   def handle_event("typing", _value, %{assigns: assigns} = socket) do
     %{room: room} = assigns
-    IO.inspect("Component - Typing... ")
     # Chat.start_typing(slug, uuid)
     {:noreply, socket}
   end
 
   def handle_event("stop_typing", %{"value" => message}, socket) do
     %{assigns: %{room: room}} = socket
-    IO.inspect("Component - Stop Typing... ")
     # Chat.stop_typing(slug, uuid)
     {:noreply, assign(socket, new_message: message)}
   end
@@ -82,7 +65,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
   defp render_timestamp(timestamp) do
     ~E"""
-      <span>
+      <span class="timestamp <%= timestamp.class %>">
         [<%= timestamp.value %>]
       </span>
     """
@@ -90,7 +73,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
   defp render_username(username, class \\ "") do
     ~E"""
-      <span class="chat-username <%= class %>"><%= username %></span>
+      <span class="chat-username <%= class %>"><%= username %>:</span>
     """
   end
 
@@ -100,7 +83,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
     """
   end
 
-  def render_message(message) do
+  def render_message({:chat_message, message}) do
     ~E"""
       <%= render_timestamp(message.timestamp) %>
       <%= render_prompt(render_username(message.username)) %>
