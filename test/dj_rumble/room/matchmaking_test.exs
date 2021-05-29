@@ -19,27 +19,31 @@ defmodule DjRumble.Room.MatchmakingTest do
 
       matchmaking_genserver_pid = start_supervised!({Matchmaking, {room}})
 
-      %{room: room, pid: matchmaking_genserver_pid}
+      initial_state = %{
+        room: room,
+        current_round: nil,
+        finished_rounds: [],
+        next_rounds: [],
+        crashed_rounds: []
+      }
+
+      %{pid: matchmaking_genserver_pid, room: room, state: initial_state}
     end
 
-    @tag wip: true
     test "start_link/1 starts a matchmaking server", %{pid: pid} do
       assert is_pid(pid)
       assert Process.alive?(pid)
     end
 
-    @tag wip: true
-    test "get_room/1 returns a room", %{pid: pid, room: room} do
-      assert Matchmaking.get_room(pid) == room
+    test "get_state/1 returns a state", %{pid: pid, state: state} do
+      assert Matchmaking.get_state(pid) == state
     end
 
-    @tag wip: true
     test "create_round/1 returns :ok", %{pid: pid, room: room} do
       [video | _videos] = room.videos
       assert Matchmaking.create_round(pid, video) == :ok
     end
 
-    @tag wip: true
     test "start_round/1 returns :ok", %{pid: pid, room: room} do
       [video | _videos] = room.videos
       assert Matchmaking.create_round(pid, video) == :ok
@@ -47,7 +51,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert Matchmaking.start_round(pid) == :ok
     end
 
-    @tag wip: true
     test "start_round/1 returns :ok when there are no scheduled rounds", %{pid: pid} do
       assert Matchmaking.start_round(pid) == :ok
     end
@@ -170,17 +173,14 @@ defmodule DjRumble.Room.MatchmakingTest do
       ])
     end
 
-    @tag wip: true
-    test "handle_call/3 :: :get_room replies with a room", %{state: state} do
+    test "handle_call/3 :: :get_state replies with a state", %{state: state} do
       # Exercise
-      response = Matchmaking.handle_call(:get_room, nil, state)
-      %{room: room} = state
+      response = Matchmaking.handle_call(:get_state, nil, state)
 
       # Verify
-      assert {:reply, room, state} == response
+      assert {:reply, ^state, ^state} = response
     end
 
-    @tag wip: true
     test "handle_call/3 :: {:schedule_round, %Video{}} is called one time and replies :ok", %{
       state: state
     } do
@@ -205,7 +205,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert_received({:round_scheduled, _scheduled_round})
     end
 
-    @tag wip: true
     test "handle_call/3 :: {:schedule_round, %Video{}} is called ten times and replies :ok", %{
       state: state
     } do
@@ -215,7 +214,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       schedule_rounds(state, videos)
     end
 
-    @tag wip: true
     test "handle_call/3 :: :prepare_initial_round is called with empty next rounds list, replies :ok and does not prepare any round",
          %{
            state: state
@@ -232,7 +230,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       refute_received({:receive_playback_details, _video_details})
     end
 
-    @tag wip: true
     test "handle_call/3 :: :prepare_initial_round is called with a single next round, replies :ok and assigns a current round",
          %{
            state: state
@@ -256,7 +253,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       refute_received(:no_more_rounds)
     end
 
-    @tag wip: true
     test "handle_call/3 :: :prepare_initial_round is called with ten next rounds, replies :ok and assigns a current round",
          %{
            state: state
@@ -290,7 +286,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       refute_received(:no_more_rounds)
     end
 
-    @tag wip: true
     test "handle_cast/2 :: {:join, pid} is called with no rounds and returns :ok",
          %{state: state} do
       # Setup
@@ -306,7 +301,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       refute_received({:receive_playback_details, %{}})
     end
 
-    @tag wip: true
     test "handle_cast/2 :: {:join, pid} is called with no prepared rounds and returns :ok",
          %{state: state} do
       # Setup
@@ -327,7 +321,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       refute_received({:receive_playback_details, %{videoId: ^video_id, time: 0}})
     end
 
-    @tag wip: true
     test "handle_cast/2 :: {:join, pid} is called with a prepared round and returns :ok",
          %{state: state} do
       # Setup
@@ -357,7 +350,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       refute_received(:no_more_rounds)
     end
 
-    @tag wip: true
     test "handle_cast/2 :: {:join, pid} is called with a round in progress and returns :ok",
          %{state: state} do
       # Setup
@@ -383,7 +375,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       # Exercise
       # Awaits a couple seconds before joining the room so that we catch a
       # round that is in progress
-      Process.sleep(2000)
+      Process.sleep(1800)
       response = Matchmaking.handle_cast({:join, self()}, state)
 
       {:noreply, _state} = response
@@ -393,7 +385,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert_receive({:receive_playback_details, %{videoId: ^video_id, time: 1}})
     end
 
-    @tag wip: true
     test "handle_info/2 :: {:receive_video_time, non_neg_integer()} is called with a single scheduled round state and does not reply",
          %{
            state: state
@@ -424,7 +415,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert is_valid_round(:prepared, state.current_round, %{video: video, time: video_time})
     end
 
-    @tag wip: true
     test "handle_info/2 :: {:receive_video_time, non_neg_integer()} is called with a prepared round and nine scheduled rounds state and does not reply",
          %{
            state: state

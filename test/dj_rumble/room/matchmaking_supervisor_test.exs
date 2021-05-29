@@ -20,7 +20,15 @@ defmodule DjRumble.Room.MatchmakingSupervisorTest do
         MatchmakingSupervisor.terminate_matchmaking_server(MatchmakingSupervisor, pid)
       end)
 
-      %{pid: pid, room: room}
+      initial_state = %{
+        room: room,
+        current_round: nil,
+        finished_rounds: [],
+        next_rounds: [],
+        crashed_rounds: []
+      }
+
+      %{pid: pid, room: room, state: initial_state}
     end
 
     test "start_matchmaking_server/2 starts a matchmaking server", %{pid: pid} do
@@ -34,9 +42,10 @@ defmodule DjRumble.Room.MatchmakingSupervisorTest do
 
     test "get_matchmaking_server/2 returns a matchmaking server pid and state", %{
       pid: pid,
-      room: room
+      room: room,
+      state: state
     } do
-      {^pid, ^room} =
+      {^pid, ^state} =
         MatchmakingSupervisor.get_matchmaking_server(MatchmakingSupervisor, room.slug)
 
       assert Process.alive?(pid)
