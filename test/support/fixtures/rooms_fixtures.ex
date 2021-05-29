@@ -28,8 +28,8 @@ defmodule DjRumble.RoomsFixtures do
     end
   end
 
-  def videos_fixture(n \\ 2) do
-    for _n <- 0..n, do: video_fixture()
+  def videos_fixture(n \\ 3) do
+    for _n <- 1..n, do: video_fixture()
   end
 
   def video_fixture(attrs \\ %{}) do
