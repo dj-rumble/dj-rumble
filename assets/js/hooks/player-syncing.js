@@ -137,13 +137,13 @@ const PlayerSyncing = initPlayer => ({
       videoId = ''
     }) => {
       player.loadVideoById({ startSeconds: time, videoId })
+      player.playVideo()
       updateTimeDisplays(
         startTimeTrackerElem,
         endTimeTrackerElem,
         timeSliderElem,
         player
       )
-      player.playVideo()
     })
   }
 })
