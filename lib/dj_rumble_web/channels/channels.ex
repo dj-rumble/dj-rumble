@@ -2,6 +2,7 @@ defmodule DjRumbleWeb.Channels do
   @moduledoc """
   Responsible for declaring channel topics and subscriptions management.
   """
+
   @room_topic "room:<slug>"
   @player_is_ready_topic "room:<slug>:ready"
   @matchmaking_details_request_topic "matchmaking:<slug>:waiting_for_details"
@@ -20,5 +21,9 @@ defmodule DjRumbleWeb.Channels do
 
   def unsubscribe(type, slug) do
     Phoenix.PubSub.unsubscribe(DjRumble.PubSub, get_topic(type, slug))
+  end
+
+  def broadcast(type, slug, message) do
+    Phoenix.PubSub.broadcast(DjRumble.PubSub, get_topic(type, slug), message)
   end
 end

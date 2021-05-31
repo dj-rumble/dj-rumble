@@ -99,9 +99,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
     Logger.info(fn -> "Received time: '#{time}' from yt client" end)
 
     :ok =
-      Phoenix.PubSub.broadcast(
-        DjRumble.PubSub,
-        Channels.get_topic(:matchmaking_details_request, socket.assigns.room.slug),
+      Channels.broadcast(
+        :matchmaking_details_request,
+        socket.assigns.room.slug,
         {:receive_video_time, time}
       )
 

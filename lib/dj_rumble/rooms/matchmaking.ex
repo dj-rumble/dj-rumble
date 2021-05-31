@@ -82,12 +82,7 @@ defmodule DjRumble.Rooms.Matchmaking do
   def handle_cast({:join, pid}, state) do
     case state.current_round do
       nil ->
-        :ok =
-          Phoenix.PubSub.broadcast(
-            DjRumble.PubSub,
-            Channels.get_topic(:player_is_ready, state.room.slug),
-            :no_more_rounds
-          )
+        :ok = Channels.broadcast(:player_is_ready, state.room.slug, :no_more_rounds)
 
       {_ref, {round_pid, %{video_id: video_id}, _time}} ->
         Logger.info(fn -> "Sending current round details." end)
@@ -139,9 +134,9 @@ defmodule DjRumble.Rooms.Matchmaking do
           Logger.info(fn -> "Receives video time #{time} and truncates it to #{parsed_time}." end)
 
           :ok =
-            Phoenix.PubSub.broadcast(
-              DjRumble.PubSub,
-              Channels.get_topic(:player_is_ready, state.room.slug),
+            Channels.broadcast(
+              :player_is_ready,
+              state.room.slug,
               {:receive_countdown, @countdown_before_rounds}
             )
 
@@ -172,12 +167,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     # :ok = Gladiators.register_battle_result({Gladiators.get_gladiator(left.id), Gladiators.get_gladiator(right.id)}, battle.outcome)
 
-    :ok =
-      Phoenix.PubSub.broadcast(
-        DjRumble.PubSub,
-        Channels.get_topic(:room, state.room.slug),
-        {:round_finished, round}
-      )
+    :ok = Channels.broadcast(:room, state.room.slug, {:round_finished, round})
 
     Process.demonitor(ref)
 
@@ -223,11 +213,7 @@ defmodule DjRumble.Rooms.Matchmaking do
     {:ok, pid} = RoundSupervisor.start_round_server(RoundSupervisor, {slug, 0})
     ref = Process.monitor(pid)
 
-    Phoenix.PubSub.broadcast(
-      DjRumble.PubSub,
-      Channels.get_topic(:room, slug),
-      {:round_scheduled, RoundServer.get_round(pid)}
-    )
+    :ok = Channels.broadcast(:room, slug, {:round_scheduled, RoundServer.get_round(pid)})
 
     {ref, {pid, video, 0}}
   end
@@ -235,23 +221,16 @@ defmodule DjRumble.Rooms.Matchmaking do
   defp prepare_next_round(state) do
     %{slug: slug} = state.room
 
-    topic = Channels.get_topic(:player_is_ready, slug)
-
     case state.next_rounds do
       [] ->
-        :ok =
-          Phoenix.PubSub.broadcast(
-            DjRumble.PubSub,
-            topic,
-            :no_more_rounds
-          )
+        :ok = Channels.broadcast(:player_is_ready, slug, :no_more_rounds)
 
         state
 
       [{_ref, {_pid, video, 0 = time}} = next_round | next_rounds] ->
         :ok = Channels.subscribe(:matchmaking_details_request, slug)
 
-        :ok = request_playback_details(topic, video, time)
+        :ok = request_playback_details(slug, video, time)
 
         Logger.info(fn -> "Prepared a next round" end)
 
@@ -263,10 +242,10 @@ defmodule DjRumble.Rooms.Matchmaking do
     end
   end
 
-  defp request_playback_details(topic, video, time) do
-    Phoenix.PubSub.broadcast(
-      DjRumble.PubSub,
-      topic,
+  defp request_playback_details(slug, video, time) do
+    Channels.broadcast(
+      :player_is_ready,
+      slug,
       {:request_playback_details, %{videoId: video.video_id, time: time}}
     )
   end
@@ -302,15 +281,16 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     :ok = RoundServer.start_round(pid)
 
-    Phoenix.PubSub.broadcast(
-      DjRumble.PubSub,
-      Channels.get_topic(:player_is_ready, state.room.slug),
-      {:round_started,
-       %{
-         round: RoundServer.get_round(pid),
-         video_details: %{videoId: video.video_id, time: 0, title: video.title}
-       }}
-    )
+    :ok =
+      Channels.broadcast(
+        :player_is_ready,
+        state.room.slug,
+        {:round_started,
+         %{
+           round: RoundServer.get_round(pid),
+           video_details: %{videoId: video.video_id, time: 0, title: video.title}
+         }}
+      )
 
     state
   end
