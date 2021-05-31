@@ -147,7 +147,7 @@ defmodule DjRumble.Rooms.Matchmaking do
         {ref, {pid, video, 0 = _time}} ->
           parsed_time = trunc(time)
 
-          :ok = RoundServer.set_round_time(pid, parsed_time + 2)
+          :ok = RoundServer.set_round_time(pid, parsed_time + 1)
 
           Logger.info(fn -> "Receives video time #{time} and truncates it to #{parsed_time}." end)
 
