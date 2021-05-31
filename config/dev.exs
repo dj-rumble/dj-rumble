@@ -60,6 +60,7 @@ config :dj_rumble, DjRumbleWeb.Endpoint,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
+      ~r"lib/dj_rumble/.*(ex)$",
       ~r"lib/dj_rumble_web/(live|views)/.*(ex)$",
       ~r"lib/dj_rumble_web/templates/.*(eex)$",
       ~r"lib/dj_rumble_web/live/components/.*(leex|ex)$"
