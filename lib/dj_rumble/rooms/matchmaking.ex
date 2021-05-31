@@ -147,7 +147,7 @@ defmodule DjRumble.Rooms.Matchmaking do
         {ref, {pid, video, 0 = _time}} ->
           parsed_time = trunc(time)
 
-          :ok = RoundServer.set_round_time(pid, parsed_time)
+          :ok = RoundServer.set_round_time(pid, parsed_time + 2)
 
           Logger.info(fn -> "Receives video time #{time} and truncates it to #{parsed_time}." end)
 
@@ -158,7 +158,9 @@ defmodule DjRumble.Rooms.Matchmaking do
               {:receive_countdown, @countdown_before_rounds}
             )
 
-          Process.send_after(self(), :start_next_round, @countdown_before_rounds)
+          # Sets a 1200 milliseconds gap to let the video player be ready after
+          # the ui overlay with round info disappears.
+          Process.send_after(self(), :start_next_round, @countdown_before_rounds + 1200)
 
           %{
             state
@@ -192,10 +194,13 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     Process.demonitor(ref)
 
+    {_ref, {_pid, video, _}} = state.current_round
+
     state = %{
       state
       | current_round: nil,
-        finished_rounds: [round | state.finished_rounds]
+        finished_rounds: [round | state.finished_rounds],
+        next_rounds: state.next_rounds ++ [schedule_round(video, state.room)]
     }
 
     Process.send_after(self(), :prepare_next_round, @time_between_rounds)
@@ -312,7 +317,10 @@ defmodule DjRumble.Rooms.Matchmaking do
       DjRumble.PubSub,
       "room:#{state.room.slug}:ready",
       {:round_started,
-       %{round: RoundServer.get_round(pid), video_details: %{videoId: video.video_id, time: 0}}}
+       %{
+         round: RoundServer.get_round(pid),
+         video_details: %{videoId: video.video_id, time: 0, title: video.title}
+       }}
     )
 
     # Process.send_after(self(), :max_series_length_exceeded, @countdown_before_rounds)
