@@ -12,6 +12,8 @@ defmodule DjRumble.Rooms.Matchmaking do
     RoundSupervisor
   }
 
+  alias DjRumbleWeb.Channels
+
   @time_between_rounds :timer.seconds(3)
   @countdown_before_rounds :timer.seconds(3)
 
@@ -83,7 +85,7 @@ defmodule DjRumble.Rooms.Matchmaking do
         :ok =
           Phoenix.PubSub.broadcast(
             DjRumble.PubSub,
-            "room:#{state.room.slug}:ready",
+            Channels.get_topic(:player_is_ready, state.room.slug),
             :no_more_rounds
           )
 
@@ -107,17 +109,6 @@ defmodule DjRumble.Rooms.Matchmaking do
     {:noreply, state}
   end
 
-  # @impl GenServer
-  # def handle_info(:max_series_length_exceeded, state) do
-  #   state = start_next_round(state)
-
-  #   Logger.info(fn ->
-  #     "Maximum battle length elapsed, starting the next series"
-  #   end)
-
-  #   {:noreply, state}
-  # end
-
   @impl GenServer
   def handle_info(:start_next_round, state) do
     state = start_next_round(state)
@@ -136,11 +127,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
   @impl GenServer
   def handle_info({:receive_video_time, time}, state) do
-    :ok =
-      Phoenix.PubSub.unsubscribe(
-        DjRumble.PubSub,
-        "matchmaking:#{state.room.slug}:waiting_for_details"
-      )
+    :ok = Channels.unsubscribe(:matchmaking_details_request, state.room.slug)
 
     state =
       case state.current_round do
@@ -154,7 +141,7 @@ defmodule DjRumble.Rooms.Matchmaking do
           :ok =
             Phoenix.PubSub.broadcast(
               DjRumble.PubSub,
-              "room:#{state.room.slug}:ready",
+              Channels.get_topic(:player_is_ready, state.room.slug),
               {:receive_countdown, @countdown_before_rounds}
             )
 
@@ -188,7 +175,7 @@ defmodule DjRumble.Rooms.Matchmaking do
     :ok =
       Phoenix.PubSub.broadcast(
         DjRumble.PubSub,
-        "room:#{state.room.slug}",
+        Channels.get_topic(:room, state.room.slug),
         {:round_finished, round}
       )
 
@@ -238,7 +225,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     Phoenix.PubSub.broadcast(
       DjRumble.PubSub,
-      "room:#{slug}",
+      Channels.get_topic(:room, slug),
       {:round_scheduled, RoundServer.get_round(pid)}
     )
 
@@ -248,21 +235,23 @@ defmodule DjRumble.Rooms.Matchmaking do
   defp prepare_next_round(state) do
     %{slug: slug} = state.room
 
+    topic = Channels.get_topic(:player_is_ready, slug)
+
     case state.next_rounds do
       [] ->
         :ok =
           Phoenix.PubSub.broadcast(
             DjRumble.PubSub,
-            "room:#{slug}:ready",
+            topic,
             :no_more_rounds
           )
 
         state
 
       [{_ref, {_pid, video, 0 = time}} = next_round | next_rounds] ->
-        Phoenix.PubSub.subscribe(DjRumble.PubSub, "matchmaking:#{slug}:waiting_for_details")
+        :ok = Channels.subscribe(:matchmaking_details_request, slug)
 
-        :ok = request_playback_details("room:#{slug}:ready", video, time)
+        :ok = request_playback_details(topic, video, time)
 
         Logger.info(fn -> "Prepared a next round" end)
 
@@ -308,22 +297,20 @@ defmodule DjRumble.Rooms.Matchmaking do
     #     )
     {_ref, {pid, video, _time}} = state.current_round
 
-    # Worths to check if its dead, if not, use the next function
+    # Worths to check if its dead, if not, use the next function:
     # RoundSupervisor.terminate_round_server(RoundSupervisor, pid)
 
     :ok = RoundServer.start_round(pid)
 
     Phoenix.PubSub.broadcast(
       DjRumble.PubSub,
-      "room:#{state.room.slug}:ready",
+      Channels.get_topic(:player_is_ready, state.room.slug),
       {:round_started,
        %{
          round: RoundServer.get_round(pid),
          video_details: %{videoId: video.video_id, time: 0, title: video.title}
        }}
     )
-
-    # Process.send_after(self(), :max_series_length_exceeded, @countdown_before_rounds)
 
     state
   end

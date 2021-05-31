@@ -72,6 +72,7 @@ defmodule DjRumble.Room.RoomServerTest do
 
   describe "room_server server implementation" do
     alias DjRumble.Rooms.Matchmaking
+    alias DjRumbleWeb.Channels
 
     setup do
       %{videos: videos} = room = room_fixture(%{}, %{preload: true})
@@ -268,7 +269,7 @@ defmodule DjRumble.Room.RoomServerTest do
       # Setup
       %{matchmaking_server: matchmaking_server, room: %{slug: slug}} = state
 
-      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{slug}:ready")
+      :ok = Channels.subscribe(:player_is_ready, state.room.slug)
 
       self = self()
       :erlang.trace(matchmaking_server, true, [:receive])
@@ -312,7 +313,7 @@ defmodule DjRumble.Room.RoomServerTest do
       # Setup
       %{matchmaking_server: matchmaking_server, room: %{slug: slug}} = state
 
-      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{slug}:ready")
+      :ok = Channels.subscribe(:player_is_ready, state.room.slug)
 
       %{video_id: video_id} = video = video_fixture()
       :ok = Matchmaking.create_round(matchmaking_server, video)

@@ -87,14 +87,7 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
 
     {:ok, _room_video} = Rooms.create_room_video(%{room_id: room.id, video_id: new_video.id})
 
-    Phoenix.PubSub.broadcast(
-      DjRumble.PubSub,
-      "room:" <> slug,
-      {:add_to_queue,
-       %{
-         new_video: new_video
-       }}
-    )
+    :ok = Process.send(self(), {:add_to_queue, new_video}, [])
 
     {:noreply, socket}
   end

@@ -58,6 +58,7 @@ defmodule DjRumble.Room.MatchmakingTest do
 
   describe "matchmaking server implementation" do
     alias DjRumble.Rooms.Matchmaking
+    alias DjRumbleWeb.Channels
 
     setup do
       room = room_fixture(%{}, %{preload: true})
@@ -85,7 +86,7 @@ defmodule DjRumble.Room.MatchmakingTest do
     end
 
     defp schedule_rounds(state, videos, _callbacks \\ [], _next_round_callbacks \\ []) do
-      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}")
+      :ok = Channels.subscribe(:room, state.room.slug)
 
       Enum.reduce(Enum.with_index(videos), state, fn {video, index}, acc_state ->
         state =
@@ -185,7 +186,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       state: state
     } do
       # Setup
-      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}")
+      :ok = Channels.subscribe(:room, state.room.slug)
       video = video_fixture()
 
       # Exercise
@@ -219,7 +220,7 @@ defmodule DjRumble.Room.MatchmakingTest do
            state: state
          } do
       # Setup
-      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}:ready")
+      :ok = Channels.subscribe(:player_is_ready, state.room.slug)
 
       # Exercise
       new_state = handle_prepare_initial_round(state)
@@ -235,7 +236,7 @@ defmodule DjRumble.Room.MatchmakingTest do
            state: state
          } do
       # Setup
-      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}:ready")
+      :ok = Channels.subscribe(:player_is_ready, state.room.slug)
       %{video_id: video_id} = video = video_fixture()
 
       state
@@ -258,7 +259,7 @@ defmodule DjRumble.Room.MatchmakingTest do
            state: state
          } do
       # Setup
-      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}:ready")
+      :ok = Channels.subscribe(:player_is_ready, state.room.slug)
       [prepared_video | scheduled_videos] = videos = videos_fixture(10)
 
       state =
@@ -289,7 +290,7 @@ defmodule DjRumble.Room.MatchmakingTest do
     test "handle_cast/2 :: {:join, pid} is called with no rounds and returns :ok",
          %{state: state} do
       # Setup
-      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}:ready")
+      :ok = Channels.subscribe(:player_is_ready, state.room.slug)
 
       # Exercise
       response = Matchmaking.handle_cast({:join, self()}, state)
@@ -304,7 +305,7 @@ defmodule DjRumble.Room.MatchmakingTest do
     test "handle_cast/2 :: {:join, pid} is called with no prepared rounds and returns :ok",
          %{state: state} do
       # Setup
-      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}:ready")
+      :ok = Channels.subscribe(:player_is_ready, state.room.slug)
       %{video_id: video_id} = video = video_fixture()
 
       state =
@@ -324,7 +325,7 @@ defmodule DjRumble.Room.MatchmakingTest do
     test "handle_cast/2 :: {:join, pid} is called with a prepared round and returns :ok",
          %{state: state} do
       # Setup
-      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}:ready")
+      :ok = Channels.subscribe(:player_is_ready, state.room.slug)
       %{video_id: video_id} = video = video_fixture()
 
       state =
@@ -353,7 +354,7 @@ defmodule DjRumble.Room.MatchmakingTest do
     test "handle_cast/2 :: {:join, pid} is called with a round in progress and returns :ok",
          %{state: state} do
       # Setup
-      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}:ready")
+      :ok = Channels.subscribe(:player_is_ready, state.room.slug)
       %{video_id: video_id} = video = video_fixture()
 
       video_time = 10
@@ -390,7 +391,7 @@ defmodule DjRumble.Room.MatchmakingTest do
            state: state
          } do
       # Setup
-      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}:ready")
+      :ok = Channels.subscribe(:player_is_ready, state.room.slug)
       %{video_id: video_id} = video = video_fixture()
 
       state =
@@ -420,7 +421,7 @@ defmodule DjRumble.Room.MatchmakingTest do
            state: state
          } do
       # Setup
-      :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{state.room.slug}:ready")
+      :ok = Channels.subscribe(:player_is_ready, state.room.slug)
       [%{video_id: video_id} = prepared_video | scheduled_videos] = videos = videos_fixture(10)
 
       state =

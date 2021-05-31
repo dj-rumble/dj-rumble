@@ -11,11 +11,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
   alias DjRumble.Rooms
   alias DjRumble.Rooms.{RoomServer, RoomSupervisor}
   alias DjRumble.Rounds.Round
+  alias DjRumbleWeb.Channels
   alias DjRumbleWeb.Presence
   alias Faker
 
   def get_list_from_slug(slug) do
-    Presence.list("room:#{slug}")
+    Presence.list(Channels.get_topic(:room, slug))
     |> Enum.map(fn {uuid, %{metas: metas}} -> %{uuid: uuid, metas: metas} end)
   end
 
@@ -38,7 +39,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
             room = Repo.preload(room, [:videos])
             index_playing = 0
 
-            topic = "room:#{slug}"
+            topic = Channels.get_topic(:room, slug)
             connected_users = get_list_from_slug(slug)
 
             # Subscribe to the topic
@@ -55,7 +56,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
             {:ok,
              socket
              |> assign(:videos, room.videos)
-             |> assign_tracker(room)
+             |> assign(:room, room)
              |> assign(:index_playing, index_playing)
              |> assign(:connected_users, connected_users)
              |> assign(:current_video_time, 0)
@@ -77,11 +78,10 @@ defmodule DjRumbleWeb.RoomLive.Show do
   @impl true
   def handle_event("player_is_ready", _params, socket) do
     %{room: room} = socket.assigns
-    topic = "room:#{room.slug}:ready"
 
     case socket.assigns.joined do
       false ->
-        :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, topic)
+        :ok = Channels.subscribe(:player_is_ready, room.slug)
 
         :ok = RoomServer.join(socket.assigns.room_server)
 
@@ -101,7 +101,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
     :ok =
       Phoenix.PubSub.broadcast(
         DjRumble.PubSub,
-        "matchmaking:#{socket.assigns.room.slug}:waiting_for_details",
+        Channels.get_topic(:matchmaking_details_request, socket.assigns.room.slug),
         {:receive_video_time, time}
       )
 
@@ -110,42 +110,19 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   @impl true
   def handle_info(
-        %{event: "presence_diff", payload: payload},
+        %{event: "presence_diff", payload: _payload},
         %{assigns: %{room: %{slug: slug}}} = socket
       ) do
     connected_users = get_list_from_slug(slug)
 
-    room = handle_video_tracker_activity(slug, connected_users, payload)
-
-    socket =
-      socket
-      |> assign(:connected_users, connected_users)
-      |> assign(:room, room)
-
-    case is_my_presence(socket.id, payload) do
-      false ->
-        {:noreply,
-         socket
-         |> push_event("presence-changed", %{})}
-
-      true ->
-        {:noreply, socket}
-    end
-  end
-
-  def handle_info({:add_to_queue, params}, %{assigns: assigns} = socket) do
-    %{new_video: new_video} = params
-
-    %{videos: videos} = assigns
-
-    videos = videos ++ [new_video]
-
     {:noreply,
      socket
-     |> assign(:videos, videos)}
+     |> assign(:connected_users, connected_users)}
   end
 
   def handle_info({:welcome, params}, socket), do: handle_welcome_message(params, socket)
+
+  def handle_info({:add_to_queue, params}, socket), do: handle_add_round(params, socket)
 
   def handle_info({:receive_playback_details, params}, socket),
     do: handle_playback_details(params, socket)
@@ -176,6 +153,25 @@ defmodule DjRumbleWeb.RoomLive.Show do
   end
 
   @doc """
+  Receives a new video and tells the server to create a Round with it.
+
+  * **From:** `SearchBox`
+  * **Topic:** Direct message
+  * **Args:** `%Video{}`
+  """
+  def handle_add_round(video, %{assigns: assigns} = socket) do
+    # %{new_video: new_video} = params
+
+    %{videos: videos} = assigns
+
+    videos = videos ++ [video]
+
+    {:noreply,
+     socket
+     |> assign(:videos, videos)}
+  end
+
+  @doc """
   Receives a message telling a round has been scheduled.
 
   * **From:** `Matchmaking`
@@ -193,7 +189,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   * **From:** `Matchmaking`
   * **Topic:** `"room:<room_slug>:ready"`
-  * **Args:** `%{videoId: String.t(), time: non_neg_integer()}`
+  * **Args:** `%{videoId: String.t(), time: non_neg_integer(), title: String.t()}`
   """
   def handle_playback_details(video_details, socket) do
     Logger.info(fn -> "Received video details: #{inspect(video_details)}" end)
@@ -299,53 +295,5 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   defp assign_page_title(socket, title) do
     assign(socket, :page_title, title)
-  end
-
-  defp list_filtered_present(slug, uuid) do
-    Presence.list("room:" <> slug)
-    |> Enum.filter(fn {k, _} -> k !== uuid end)
-    |> Enum.map(fn {k, _} -> k end)
-  end
-
-  defp assign_tracker(socket, room) do
-    current_user = socket.id
-
-    case list_filtered_present(room.slug, current_user) do
-      [] ->
-        {:ok, updated_room} = Rooms.update_room(room, %{video_tracker: current_user})
-
-        socket
-        |> assign(:room, updated_room)
-
-      _xs ->
-        socket
-        |> assign(:room, room)
-    end
-  end
-
-  defp handle_video_tracker_activity(slug, presence, %{leaves: leaves}) do
-    room = Rooms.get_room_by_slug(slug)
-    video_tracker = room.video_tracker
-
-    case video_tracker in Map.keys(leaves) do
-      false ->
-        room
-
-      true ->
-        case presence do
-          [] ->
-            {:ok, updated_room} = Rooms.update_room(room, %{video_tracker: ""})
-            updated_room
-
-          [p | _ps] ->
-            {:ok, updated_room} = Rooms.update_room(room, %{video_tracker: p.uuid})
-            updated_room
-        end
-    end
-  end
-
-  defp is_my_presence(id, presence_payload) do
-    Enum.any?(Map.to_list(presence_payload.joins), fn {x, _} -> x == id end) ||
-      Enum.any?(Map.to_list(presence_payload.leaves), fn {x, _} -> x == id end)
   end
 end
