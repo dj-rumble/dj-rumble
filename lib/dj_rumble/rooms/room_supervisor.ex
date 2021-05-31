@@ -23,7 +23,7 @@ defmodule DjRumble.Rooms.RoomSupervisor do
     {:ok, pid}
   end
 
-  def start_room_server(supervisor \\ __MODULE__, room) do
+  def start_room_server(supervisor, room) do
     DynamicSupervisor.start_child(supervisor, {RoomServer, {room}})
   end
 
@@ -36,13 +36,13 @@ defmodule DjRumble.Rooms.RoomSupervisor do
     |> Enum.map(fn {_, pid, :worker, _} -> pid end)
   end
 
-  def get_room_server(supervisor \\ __MODULE__, slug) do
+  def get_room_server(supervisor, slug) do
     list_room_servers(supervisor)
     |> Enum.map(&{&1, RoomServer.get_state(&1)})
     |> Enum.find(fn {_, state} -> state.room.slug == slug end)
   end
 
-  def terminate_room_server(supervisor \\ __MODULE__, pid) do
+  def terminate_room_server(supervisor, pid) do
     DynamicSupervisor.terminate_child(supervisor, pid)
   end
 

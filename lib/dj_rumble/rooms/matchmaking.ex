@@ -19,19 +19,19 @@ defmodule DjRumble.Rooms.Matchmaking do
     GenServer.start_link(__MODULE__, init_arg)
   end
 
-  def get_state(server \\ __MODULE__) do
+  def get_state(server) do
     GenServer.call(server, :get_state)
   end
 
-  def create_round(server \\ __MODULE__, video) do
+  def create_round(server, video) do
     GenServer.call(server, {:schedule_round, video})
   end
 
-  def start_round(server \\ __MODULE__) do
+  def start_round(server) do
     GenServer.call(server, :prepare_initial_round)
   end
 
-  def join(server \\ __MODULE__, pid) do
+  def join(server, pid) do
     GenServer.cast(server, {:join, pid})
   end
 

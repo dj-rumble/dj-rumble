@@ -10,7 +10,7 @@ defmodule DjRumble.Rounds.RoundSupervisor do
     DynamicSupervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
-  def start_round_server(supervisor \\ __MODULE__, {room_slug, round_time}) do
+  def start_round_server(supervisor, {room_slug, round_time}) do
     DynamicSupervisor.start_child(supervisor, {RoundServer, {room_slug, round_time}})
   end
 
@@ -23,13 +23,13 @@ defmodule DjRumble.Rounds.RoundSupervisor do
     |> Enum.map(fn {_, pid, :worker, _} -> pid end)
   end
 
-  def get_round_server(supervisor \\ __MODULE__, slug) do
+  def get_round_server(supervisor, slug) do
     list_round_servers(supervisor)
     |> Enum.map(&{&1, RoundServer.get_room_slug(&1)})
     |> Enum.find(fn {_, room_slug} -> room_slug == slug end)
   end
 
-  def terminate_round_server(supervisor \\ __MODULE__, pid) do
+  def terminate_round_server(supervisor, pid) do
     DynamicSupervisor.terminate_child(supervisor, pid)
   end
 

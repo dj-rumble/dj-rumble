@@ -10,7 +10,7 @@ defmodule DjRumble.Rooms.MatchmakingSupervisor do
     DynamicSupervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
-  def start_matchmaking_server(supervisor \\ __MODULE__, room) do
+  def start_matchmaking_server(supervisor, room) do
     DynamicSupervisor.start_child(supervisor, {Matchmaking, {room}})
   end
 
@@ -23,13 +23,13 @@ defmodule DjRumble.Rooms.MatchmakingSupervisor do
     |> Enum.map(fn {_, pid, :worker, _} -> pid end)
   end
 
-  def get_matchmaking_server(supervisor \\ __MODULE__, slug) do
+  def get_matchmaking_server(supervisor, slug) do
     list_matchmaking_servers(supervisor)
     |> Enum.map(&{&1, Matchmaking.get_state(&1)})
     |> Enum.find(fn {_, state} -> state.room.slug == slug end)
   end
 
-  def terminate_matchmaking_server(supervisor \\ __MODULE__, pid) do
+  def terminate_matchmaking_server(supervisor, pid) do
     DynamicSupervisor.terminate_child(supervisor, pid)
   end
 

@@ -18,20 +18,12 @@ defmodule DjRumbleWeb.Router do
     plug :fetch_current_user
   end
 
-  pipeline :api do
-    plug :accepts, ["json"]
-  end
-
   scope "/", DjRumbleWeb do
     pipe_through :browser
 
-    # live "/", PageLive, :index
     live "/", RoomLive.Index, :index
-    live "/rooms/new", RoomLive.Index, :new
-    live "/rooms/:id/edit", RoomLive.Index, :edit
 
     live "/rooms/:slug", RoomLive.Show, :show
-    live "/rooms/:id/show/edit", RoomLive.Show, :edit
   end
 
   # Other scopes may use custom stacks.
