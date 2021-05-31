@@ -5,12 +5,13 @@
     homepage: true
   %>
 
+  <%= live_component @socket, DjRumbleWeb.Live.Components.RoundInfo,
+    id: "djrumble-round-info",
+    round_info: @round_info
+  %>
+
   <div class="grid grid-cols-12 gap-4 mb-12">
     <div class="rounded-lg bg-black col-start-1 col-end-9 text-center p-4">
-      <%= live_component @socket, DjRumbleWeb.Live.Components.RoundInfo,
-        id: "djrumble-round-info",
-        round_info: @round_info
-      %>
       <%= live_component @socket, DjRumbleWeb.Live.Components.VideoPlayer,
         id: "djrumble-video-player"
       %>
