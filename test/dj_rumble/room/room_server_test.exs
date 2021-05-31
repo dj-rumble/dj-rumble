@@ -51,7 +51,6 @@ defmodule DjRumble.Room.RoomServerTest do
       is_pid(pid) and Process.alive?(pid)
     end
 
-    @tag wip: true
     test "start_link/1 starts a room server", %{pid: pid} do
       assert is_pid_alive(pid)
     end
@@ -99,6 +98,16 @@ defmodule DjRumble.Room.RoomServerTest do
       %{state: initial_state}
     end
 
+    defp handle_get_state(state) do
+      response = RoomServer.handle_call(:get_state, nil, state)
+
+      {:reply, state, new_state} = response
+
+      assert state == new_state
+
+      state
+    end
+
     defp handle_join(state, pid) do
       response = RoomServer.handle_call(:join, {pid, nil}, state)
 
@@ -109,6 +118,14 @@ defmodule DjRumble.Room.RoomServerTest do
 
     defp handle_joined(state, pid) do
       response = RoomServer.handle_continue({:joined, pid}, state)
+
+      {:noreply, state} = response
+
+      state
+    end
+
+    defp handle_player_exits(state, ref) do
+      response = RoomServer.handle_info({:DOWN, ref, :process, nil, nil}, state)
 
       {:noreply, state} = response
 
@@ -148,6 +165,12 @@ defmodule DjRumble.Room.RoomServerTest do
       end)
     end
 
+    defp do_players_exit(refs, state) do
+      Enum.reduce(refs, {[], state}, fn ref, {refs, state} ->
+        {refs ++ [ref], handle_player_exits(state, ref)}
+      end)
+    end
+
     defp get_player_pid(player) do
       elem(elem(player, 1), 0)
     end
@@ -165,7 +188,6 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok = Enum.each(pids, &assert_receive({:trace, ^&1, :receive, {:welcome, "Hello!"}}))
     end
 
-    @tag wip: true
     test "handle_call/3 :: :get_state replies with a state", %{state: state} do
       # Exercise
       response = RoomServer.handle_call(:get_state, nil, state)
@@ -174,7 +196,6 @@ defmodule DjRumble.Room.RoomServerTest do
       assert {:reply, ^state, ^state} = response
     end
 
-    @tag wip: true
     test "handle_call/3 :: :join is called with no players and replies with a state with a player",
          %{state: state} do
       # Setup
@@ -193,7 +214,6 @@ defmodule DjRumble.Room.RoomServerTest do
       end)
     end
 
-    @tag wip: true
     test "handle_call/3 :: :join is called some times and players are added in the state", %{
       state: state
     } do
@@ -212,7 +232,6 @@ defmodule DjRumble.Room.RoomServerTest do
       end)
     end
 
-    @tag wip: true
     test "handle_call/3 :: {:joined, pid} is called with a player and a round is started", %{
       state: state
     } do
@@ -242,7 +261,6 @@ defmodule DjRumble.Room.RoomServerTest do
       end)
     end
 
-    @tag wip: true
     test "handle_call/3 :: {:joined, pid} is called some times, no rounds are started and some players receive playback details",
          %{
            state: state
@@ -287,7 +305,6 @@ defmodule DjRumble.Room.RoomServerTest do
       end)
     end
 
-    @tag wip: true
     test "handle_call/3 :: {:joined, pid} is called some times, a round is started and some players receive playback details",
          %{
            state: state
@@ -329,17 +346,48 @@ defmodule DjRumble.Room.RoomServerTest do
       end)
     end
 
-    # @tag wip: true
-    # test "handle_info/2 :: {:DOWN, ref, :process, pid, reason} is called many times and returns a state without players", %{state: state} do
-    #   {pids, state} = spawn_players(3)
-    #   # Setup
-    #   |> do_join_players(state)
+    test "handle_info/2 :: {:DOWN, ref, :process, pid, reason} is called one time and returns a state without players",
+         %{state: state} do
+      # Setup
+      state = handle_get_state(state)
+      assert state.players == Map.new()
 
-    #   :ok = assert_players_joined(pids, state)
+      {pids, state} =
+        spawn_players(1)
+        |> do_join_players(state)
 
-    #   {pids, state} = RoomServer.handle_info({:DOWN, })
+      :ok = assert_players_joined(pids, state)
 
-    #   {_, state} =
-    # end
+      refs = Map.keys(state.players)
+
+      # Exercise
+      {refs, state} = do_players_exit(refs, state)
+
+      # Verify
+      assert state.players == %{}
+      :ok = Enum.each(refs, &refute(Map.has_key?(state.players, &1)))
+    end
+
+    test "handle_info/2 :: {:DOWN, ref, :process, pid, reason} is called many times and returns a state without players",
+         %{state: state} do
+      # Setup
+      state = handle_get_state(state)
+      assert state.players == Map.new()
+
+      {pids, state} =
+        spawn_players(10)
+        |> do_join_players(state)
+
+      :ok = assert_players_joined(pids, state)
+
+      refs = Map.keys(state.players)
+
+      # Exercise
+      {refs, state} = do_players_exit(refs, state)
+
+      # Verify
+      assert state.players == %{}
+      :ok = Enum.each(refs, &refute(Map.has_key?(state.players, &1)))
+    end
   end
 end
