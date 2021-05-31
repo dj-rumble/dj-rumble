@@ -1,4 +1,7 @@
 defmodule DjRumble.Rooms.Chat do
+  @moduledoc """
+  Responsible for chat management
+  """
   use Phoenix.HTML
 
   alias DjRumbleWeb.Presence
