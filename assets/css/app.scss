@@ -179,7 +179,6 @@
 /*       End Playlist       */
 
 /*       Chat       */
-
 .chat-form {
   margin-top: 8px;
 }
@@ -233,10 +232,12 @@ input.chat-text-input:focus {
 }
 
 .chat-panel, .peers-panel, .room-settings, .live-inside-box {
+  padding: 1em;
   background-color: #ccc;
 }
 
 .chat-message {
+  margin-bottom: 0.5rem;
   font-size: 1.6rem;
 }
 

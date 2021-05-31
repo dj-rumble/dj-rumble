@@ -1,44 +1,51 @@
-<div class="text-white text-3xl mt-3">
-  Chat
-</div>
-<div class="bg-gray-400 p-4 m-6 mb-7 rounded-lg">
-  <div id="chat-data" phx-hook="ChatSyncing">
-    <div id="chat" class="chat-panel scrollable-panel fixed-height-lg m-6 rounded-lg">
-      <%= if @messages == [] do %>
-        <div>
+<div class="flex flex-col flex-grow">
+  <div class="flex flex-col flex-grow bg-gray-400 p-4 m-6 mb-7 rounded-lg">
+    <div class="flex flex-col flex-grow" id="chat-data" phx-hook="ChatSyncing">
+      <div id="chat" class="flex flex-col flex-grow chat-panel scrollable-panel fixed-height-lg m-6 rounded-lg">
+        <%= if @messages == [] do %>
+          <div class="flex items-center justify-center flex-grow">
+            <p class="chat-message">
+              <span class="chat-username">The chat is empty!</span>
+              <span class="timestamp timestamp-message">Write something...</span>
+            </p>
+          </div>
+        <% else %>
+        <div class="flex flex-col items-start justify-start flex-grow">
           <p class="chat-message">
-            <span class="chat-username">The chat is empty!</span>
-            <span class="timestamp timestamp-message">Write something...</span>
+            <span class="chat-username">Chat started...</span>
           </p>
+          <%= for message <- @messages do %>
+
+
+            <p class="chat-message">
+              <%= render_message(message) %>
+            </p>
+
+        <% end %>
         </div>
-      <% end %>
-      <%= for message <- @messages do %>
-        <div>
-          <p class="chat-message">
-            <%= render_message(message) %>
-          </p>
-        </div>
-      <% end %>
-    </div>
-    <div class="m-6">
-      <form
-        id="new-message"
-        phx-change="typing"
-        phx-submit="new_message"
-        phx-target="<%= @myself %>"
-        class="chat-form m-0"
-      >
-        <%=
-          text_input :submit,
-          :message,
-          id: "new-message-input",
-          value: @new_message,
-          phx_blur: "stop_typing",
-          phx_target: @myself,
-          placeholder: "",
-          class: "chat-text-input button-effect"
-        %>
-      </form>
+        <% end  %>
+
+      </div>
+      <div class="m-6">
+        <form
+          id="new-message"
+          phx-change="typing"
+          phx-submit="new_message"
+          phx-target="<%= @myself %>"
+          class="chat-form m-0"
+        >
+          <%=
+            text_input :submit,
+            :message,
+            id: "new-message-input",
+            value: @new_message,
+            phx_blur: "stop_typing",
+            phx_target: @myself,
+            placeholder: "",
+            class: "chat-text-input button-effect"
+          %>
+        </form>
+      </div>
     </div>
   </div>
 </div>
