@@ -1,11 +1,15 @@
 {
   "default_stop_words": [
     "apply",
+    "defdata",
     "defimpl",
     "defmodule",
     "defrecord",
     "defstruct",
-    "def.+(.+\/\/.+).+do"
+    "defsum",
+    "def.+(.+\/\/.+).+do",
+    "live_dashboard",
+    "use"
   ],
 
   "custom_stop_words": [
@@ -20,6 +24,7 @@
 
   "skip_files": [
     "test/",
-    "lib/dj_rumble_web/views"
+    "lib/dj_rumble_web/views",
+    "lib/dj_rumble_web/live/live_helpers.ex"
   ]
 }
