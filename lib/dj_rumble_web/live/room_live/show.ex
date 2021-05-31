@@ -60,6 +60,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:connected_users, connected_users)
              |> assign(:current_video_time, 0)
              |> assign(:round_info, "")
+             |> assign(:joined, false)
              |> assign(:room_server, room_server)}
         end
 
@@ -76,12 +77,21 @@ defmodule DjRumbleWeb.RoomLive.Show do
   @impl true
   def handle_event("player_is_ready", _params, socket) do
     %{room: room} = socket.assigns
+    topic = "room:#{room.slug}:ready"
 
-    Phoenix.PubSub.subscribe(DjRumble.PubSub, "room:#{room.slug}:ready")
+    case socket.assigns.joined do
+      false ->
+        :ok = Phoenix.PubSub.subscribe(DjRumble.PubSub, topic)
 
-    :ok = RoomServer.join(socket.assigns.room_server)
+        :ok = RoomServer.join(socket.assigns.room_server)
 
-    {:noreply, socket}
+        {:noreply,
+         socket
+         |> assign(:joined, true)}
+
+      true ->
+        {:noreply, socket}
+    end
   end
 
   @impl true
@@ -223,11 +233,17 @@ defmodule DjRumbleWeb.RoomLive.Show do
     socket =
       case seconds do
         0 ->
-          assign(socket, :round_info, "")
+          socket
+          |> assign(:round_info, "")
+          |> assign_page_title("Countdown: 0")
 
         _ ->
           Process.send_after(self(), {:receive_countdown, seconds - one_second}, one_second)
-          assign(socket, :round_info, "Round starts in #{div(seconds, one_second)}")
+          remaining_seconds = div(seconds, one_second)
+
+          socket
+          |> assign(:round_info, "Round starts in #{remaining_seconds}")
+          |> assign_page_title("Countdown: #{remaining_seconds}")
       end
 
     Logger.info(fn -> "Countdown: #{div(seconds, one_second)} seconds until room starts." end)
@@ -250,6 +266,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
     {:noreply,
      socket
+     |> assign_page_title(video_details.title)
      |> push_event("receive_player_state", video_details)}
   end
 
@@ -280,15 +297,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
     {:noreply, socket}
   end
 
-  defp page_title(:show), do: "Show Room"
-
-  defp page_title(:edit), do: "Edit Room"
-
-  defp page_title(video) do
-    case video do
-      nil -> ""
-      _ -> video.title
-    end
+  defp assign_page_title(socket, title) do
+    assign(socket, :page_title, title)
   end
 
   defp list_filtered_present(slug, uuid) do
