@@ -73,11 +73,9 @@ defmodule DjRumble.Rounds.Round do
   end
 
   def simulate_tick(%Round.InProgress{} = round) do
-    {time, action} = track_time(round)
+    {time, _action} = track_time(round)
 
-    round =
-      %Round.InProgress{round | elapsed_time: time}
-      |> log_action(action)
+    round = %Round.InProgress{round | elapsed_time: time}
 
     round
     |> check_if_finished()
@@ -119,7 +117,7 @@ defmodule DjRumble.Rounds.Round do
     end
   end
 
-  defp log_action(%Round.InProgress{log: log} = round, action) do
-    %Round.InProgress{round | log: Log.append(log, action)}
-  end
+  # defp log_action(%Round.InProgress{log: log} = round, action) do
+  #   %Round.InProgress{round | log: Log.append(log, action)}
+  # end
 end

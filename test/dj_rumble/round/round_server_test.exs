@@ -73,7 +73,7 @@ defmodule DjRumble.Round.RoundServerTest do
       :ok = RoundServer.start_round(pid)
       :ok = Process.send(pid, :tick, [])
       %Round.InProgress{time: ^round_time, elapsed_time: 1, log: log} = RoundServer.get_round(pid)
-      assert log == Log.append(Log.new(), %Action.CountTime{})
+      assert log == Log.new()
     end
   end
 
@@ -187,9 +187,7 @@ defmodule DjRumble.Round.RoundServerTest do
           state
         end)
 
-      properties = ActionsDeck.count_action_properties()
-      action = Action.from_properties(properties)
-      log = Log.append(Log.new(), action)
+      log = Log.new()
       round = %Round.InProgress{get_round(state) | log: log}
 
       # Exercise
@@ -218,13 +216,7 @@ defmodule DjRumble.Round.RoundServerTest do
           state
         end)
 
-      properties = ActionsDeck.count_action_properties()
-      action = Action.from_properties(properties)
-
-      log =
-        Log.new()
-        |> Log.append(action)
-        |> Log.append(action)
+      log = Log.new()
 
       round = %Round.Finished{get_round(state) | log: log}
 
