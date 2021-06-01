@@ -28,6 +28,14 @@ defmodule DjRumble.Rooms.RoomServer do
     Matchmaking.list_next_rounds(matchmaking_server)
   end
 
+  def get_current_round(matchmaking_server) do
+    Matchmaking.get_current_round(matchmaking_server)
+  end
+
+  def create_round(matchmaking_server, video) do
+    Matchmaking.create_round(matchmaking_server, video)
+  end
+
   @impl GenServer
   def init({room} = _init_arg) do
     Logger.info(fn ->

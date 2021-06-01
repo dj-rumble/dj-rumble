@@ -12,6 +12,8 @@ defmodule DjRumble.Rooms.Matchmaking do
     RoundSupervisor
   }
 
+  alias DjRumble.Rooms.Video
+
   alias DjRumbleWeb.Channels
 
   @time_between_rounds :timer.seconds(3)
@@ -39,6 +41,10 @@ defmodule DjRumble.Rooms.Matchmaking do
 
   def list_next_rounds(server) do
     GenServer.call(server, :list_next_rounds)
+  end
+
+  def get_current_round(server) do
+    GenServer.call(server, :get_current_round)
   end
 
   @impl GenServer
@@ -93,6 +99,25 @@ defmodule DjRumble.Rooms.Matchmaking do
   end
 
   @impl GenServer
+  def handle_call(:get_current_round, _from, state) do
+    response =
+      case state.current_round do
+        {_ref, {pid, video, _time}} ->
+          %{round: RoundServer.get_round(pid), video: video}
+
+        nil ->
+          video =
+            Video.video_placeholder(%{
+              title: "Waiting for the next round"
+            })
+
+          %{round: nil, video: video}
+      end
+
+    {:reply, response, state}
+  end
+
+  @impl GenServer
   def handle_cast({:join, pid}, state) do
     case state.current_round do
       nil ->
@@ -143,7 +168,7 @@ defmodule DjRumble.Rooms.Matchmaking do
         {ref, {pid, video, 0 = _time}} ->
           parsed_time = trunc(time)
 
-          :ok = RoundServer.set_round_time(pid, parsed_time + 1)
+          :ok = RoundServer.set_round_time(pid, parsed_time)
 
           Logger.info(fn -> "Receives video time #{time} and truncates it to #{parsed_time}." end)
 
