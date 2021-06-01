@@ -7,7 +7,7 @@ defmodule DjRumble.Room.RoomServerTest do
 
   import DjRumble.RoomsFixtures
 
-  alias DjRumble.Rooms.{MatchmakingSupervisor, RoomServer}
+  alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor, RoomServer, Video}
   alias DjRumble.Rounds.Round
 
   describe "room_server client interface" do
@@ -27,6 +27,14 @@ defmodule DjRumble.Room.RoomServerTest do
         Enum.map(state.next_rounds, &get_video(&1))
         |> Enum.each(&Enum.member?(videos, &1))
 
+      on_exit(fn ->
+        :ok =
+          MatchmakingSupervisor.terminate_matchmaking_server(
+            MatchmakingSupervisor,
+            matchmaking_server_pid
+          )
+      end)
+
       initial_state = %{
         matchmaking_server: matchmaking_server_pid,
         players: %{},
@@ -42,6 +50,10 @@ defmodule DjRumble.Room.RoomServerTest do
         room: room,
         state: initial_state
       }
+    end
+
+    defp placeholder_video do
+      Video.video_placeholder(%{title: "Waiting for the next round"})
     end
 
     defp get_video(round) do
@@ -89,6 +101,180 @@ defmodule DjRumble.Room.RoomServerTest do
 
           assert round_video == video
         end)
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns an empty round with a placeholder video when there are no next rounds",
+         %{
+           matchmaking_server: matchmaking_server
+         } do
+      # Exercise
+      current_round = RoomServer.get_current_round(matchmaking_server)
+
+      # Verify
+      video = placeholder_video()
+      %{round: nil, video: ^video} = current_round
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns an empty round with a placeholder video when there is a next round",
+         %{
+           matchmaking_server: matchmaking_server,
+           state: state
+         } do
+      # Setup
+      [video | _videos] = state.room.videos
+      :ok = RoomServer.create_round(matchmaking_server, video)
+      # Exercise
+      current_round = RoomServer.get_current_round(matchmaking_server)
+
+      # Verify
+      video = placeholder_video()
+      %{round: nil, video: ^video} = current_round
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns an empty round with a placeholder video when there are some next rounds",
+         %{
+           matchmaking_server: matchmaking_server,
+           state: state
+         } do
+      # Setup
+      %{videos: videos} = state.room
+      :ok = Enum.each(videos, &assert(RoomServer.create_round(matchmaking_server, &1) == :ok))
+
+      # Exercise
+      current_round = RoomServer.get_current_round(matchmaking_server)
+
+      # Verify
+      video = placeholder_video()
+      %{round: nil, video: ^video} = current_round
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns a scheduled round with a video when there is a current round",
+         %{
+           matchmaking_server: matchmaking_server,
+           state: state
+         } do
+      # Setup
+      [video | _videos] = state.room.videos
+      :ok = RoomServer.create_round(matchmaking_server, video)
+      :ok = Matchmaking.start_round(matchmaking_server)
+
+      # Exercise
+      current_round = RoomServer.get_current_round(matchmaking_server)
+
+      # Verify
+      %{video: ^video} = current_round
+
+      %{
+        round: %Round.Scheduled{
+          elapsed_time: 0,
+          score: {0, 0},
+          time: 0
+        },
+        video: ^video
+      } = current_round
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns a scheduled round with a video when there are some current rounds",
+         %{
+           matchmaking_server: matchmaking_server,
+           state: state
+         } do
+      # Setup
+      [video | _videos] = videos = state.room.videos
+      :ok = Enum.each(videos, &assert(RoomServer.create_round(matchmaking_server, &1) == :ok))
+      :ok = Matchmaking.start_round(matchmaking_server)
+
+      # Exercise
+      current_round = RoomServer.get_current_round(matchmaking_server)
+
+      # Verify
+      %{video: ^video} = current_round
+
+      %{
+        round: %Round.Scheduled{
+          elapsed_time: 0,
+          score: {0, 0},
+          time: 0
+        },
+        video: ^video
+      } = current_round
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns a round that is in progress with a video when there is a next round",
+         %{
+           matchmaking_server: matchmaking_server,
+           state: state
+         } do
+      # Setup
+      [video | _videos] = state.room.videos
+      :ok = RoomServer.create_round(matchmaking_server, video)
+      :ok = Matchmaking.start_round(matchmaking_server)
+      time = 30
+      :ok = Process.send(matchmaking_server, {:receive_video_time, time}, [])
+      :ok = Process.send(matchmaking_server, :start_next_round, [])
+
+      # Exercise
+      current_round = RoomServer.get_current_round(matchmaking_server)
+
+      # Verify
+      %{video: ^video} = current_round
+
+      %{
+        round: %Round.InProgress{
+          elapsed_time: 0,
+          score: {0, 0},
+          time: ^time
+        },
+        video: ^video
+      } = current_round
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns a round that is in progress with a video when there are some next rounds",
+         %{
+           matchmaking_server: matchmaking_server,
+           state: state
+         } do
+      # Setup
+      [video | _videos] = videos = state.room.videos
+      :ok = Enum.each(videos, &assert(RoomServer.create_round(matchmaking_server, &1) == :ok))
+      :ok = Matchmaking.start_round(matchmaking_server)
+      time = 30
+      :ok = Process.send(matchmaking_server, {:receive_video_time, time}, [])
+      :ok = Process.send(matchmaking_server, :start_next_round, [])
+
+      # Exercise
+      current_round = RoomServer.get_current_round(matchmaking_server)
+
+      # Verify
+      %{video: ^video} = current_round
+
+      %{
+        round: %Round.InProgress{
+          elapsed_time: 0,
+          score: {0, 0},
+          time: ^time
+        },
+        video: ^video
+      } = current_round
+    end
+
+    @tag wip: true
+    test "create_round/1 returns :ok and a round is scheduled", %{
+      matchmaking_server: matchmaking_server,
+      state: state
+    } do
+      # Setup
+      [video | _videos] = state.room.videos
+
+      # Exercise
+      :ok = RoomServer.create_round(matchmaking_server, video)
     end
   end
 

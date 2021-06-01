@@ -32,7 +32,7 @@ defmodule DjRumble.Round.RoundServerTest do
 
     test "start_round/1 ticks until the round pid terminates", %{pid: pid} do
       :ok = RoundServer.start_round(pid)
-      :ok = Process.sleep(2500)
+      :ok = Process.sleep(3500)
       refute Process.alive?(pid)
     end
 

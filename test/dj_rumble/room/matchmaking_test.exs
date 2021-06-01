@@ -7,6 +7,8 @@ defmodule DjRumble.Room.MatchmakingTest do
 
   import DjRumble.RoomsFixtures
 
+  alias DjRumble.Rooms.Video
+
   alias DjRumble.Rounds.Round
 
   describe "matchmaking client interface" do
@@ -30,6 +32,10 @@ defmodule DjRumble.Room.MatchmakingTest do
       }
 
       %{pid: matchmaking_genserver_pid, room: room, state: initial_state}
+    end
+
+    defp placeholder_video do
+      Video.video_placeholder(%{title: "Waiting for the next round"})
     end
 
     test "start_link/1 starts a matchmaking server", %{pid: pid} do
@@ -79,6 +85,145 @@ defmodule DjRumble.Room.MatchmakingTest do
 
           assert round_video == video
         end)
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns an empty round with a placeholder video when there are no next rounds",
+         %{pid: pid} do
+      # Exercise
+      current_round = Matchmaking.get_current_round(pid)
+
+      # Verify
+      video = placeholder_video()
+      %{round: nil, video: ^video} = current_round
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns an empty round with a placeholder video when there is a next round",
+         %{pid: pid, state: state} do
+      # Setup
+      [video | _videos] = state.room.videos
+      assert Matchmaking.create_round(pid, video) == :ok
+
+      # Exercise
+      current_round = Matchmaking.get_current_round(pid)
+
+      # Verify
+      video = placeholder_video()
+      %{round: nil, video: ^video} = current_round
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns an empty round with a placeholder video when there are some next rounds",
+         %{pid: pid, state: state} do
+      # Setup
+      %{videos: videos} = state.room
+      :ok = Enum.each(videos, &assert(Matchmaking.create_round(pid, &1) == :ok))
+
+      # Exercise
+      current_round = Matchmaking.get_current_round(pid)
+
+      # Verify
+      video = placeholder_video()
+      %{round: nil, video: ^video} = current_round
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns a scheduled round with a video when there is a current round",
+         %{pid: pid, state: state} do
+      # Setup
+      [video | _videos] = state.room.videos
+      assert Matchmaking.create_round(pid, video) == :ok
+      assert Matchmaking.start_round(pid) == :ok
+
+      # Exercise
+      current_round = Matchmaking.get_current_round(pid)
+
+      # Verify
+      %{video: ^video} = current_round
+
+      %{
+        round: %Round.Scheduled{
+          elapsed_time: 0,
+          score: {0, 0},
+          time: 0
+        }
+      } = current_round
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns a scheduled round with a video when there are some current rounds",
+         %{pid: pid, state: state} do
+      # Setup
+      %{videos: [video | _videos] = videos} = state.room
+      :ok = Enum.each(videos, &assert(Matchmaking.create_round(pid, &1) == :ok))
+      assert Matchmaking.start_round(pid) == :ok
+
+      # Exercise
+      current_round = Matchmaking.get_current_round(pid)
+
+      # Verify
+      %{video: ^video} = current_round
+
+      %{
+        round: %Round.Scheduled{
+          elapsed_time: 0,
+          score: {0, 0},
+          time: 0
+        }
+      } = current_round
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns a round that is in progress with a video when there is a next round",
+         %{pid: pid, state: state} do
+      # Setup
+      %{videos: [video | _videos]} = state.room
+      :ok = Matchmaking.create_round(pid, video)
+      :ok = Matchmaking.start_round(pid)
+      time = 30
+      :ok = Process.send(pid, {:receive_video_time, time}, [])
+      :ok = Process.send(pid, :start_next_round, [])
+
+      # Exercise
+      current_round = Matchmaking.get_current_round(pid)
+
+      # Verify
+      %{video: ^video} = current_round
+
+      %{
+        round: %Round.InProgress{
+          elapsed_time: 0,
+          score: {0, 0},
+          time: ^time
+        }
+      } = current_round
+    end
+
+    @tag wip: true
+    test "get_current_round/1 returns a round that is in progress with a video when there are some current rounds",
+         %{pid: pid, state: state} do
+      # Setup
+      %{videos: [video | _videos] = videos} = state.room
+      :ok = Enum.each(videos, &assert(Matchmaking.create_round(pid, &1) == :ok))
+      :ok = Matchmaking.start_round(pid)
+      time = 30
+      :ok = Process.send(pid, {:receive_video_time, time}, [])
+      :ok = Process.send(pid, :start_next_round, [])
+
+      # Exercise
+      current_round = Matchmaking.get_current_round(pid)
+
+      # Verify
+      %{video: ^video} = current_round
+
+      %{
+        round: %Round.InProgress{
+          elapsed_time: 0,
+          score: {0, 0},
+          time: ^time
+        }
+      } = current_round
     end
   end
 
