@@ -5,6 +5,8 @@ defmodule DjRumble.Rooms.Video do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias DjRumble.Rooms.Video
+
   schema "videos" do
     field :channel_title, :string
     field :description, :string
@@ -40,5 +42,24 @@ defmodule DjRumble.Rooms.Video do
       :img_height,
       :img_width
     ])
+  end
+
+  def video_placeholder(attrs \\ %{}) do
+    attrs =
+      Enum.into(
+        attrs,
+        %{
+          channel_title: "",
+          description: "",
+          img_height: "120",
+          img_url:
+            "http://journey.coca-cola.com/content/dam/journey/lc/es/private/cultura/2018/5-mayo/Portada-vinyl--1-.gif",
+          img_width: "120",
+          title: "",
+          video_id: ""
+        }
+      )
+
+    struct(Video, attrs)
   end
 end
