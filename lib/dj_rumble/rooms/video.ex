@@ -62,4 +62,16 @@ defmodule DjRumble.Rooms.Video do
 
     struct(Video, attrs)
   end
+
+  def from_tubex(tubex_video) do
+    %Video{
+      channel_title: HtmlEntities.decode(tubex_video.channel_title),
+      description: HtmlEntities.decode(tubex_video.description),
+      img_height: "#{tubex_video.thumbnails["default"]["height"]}",
+      img_url: tubex_video.thumbnails["default"]["url"],
+      img_width: "#{tubex_video.thumbnails["default"]["width"]}",
+      title: HtmlEntities.decode(tubex_video.title),
+      video_id: tubex_video.video_id
+    }
+  end
 end
