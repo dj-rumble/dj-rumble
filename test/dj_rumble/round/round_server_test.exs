@@ -7,7 +7,7 @@ defmodule DjRumble.Round.RoundServerTest do
 
   import DjRumble.RoomsFixtures
 
-  alias DjRumble.Rounds.{Action, ActionsDeck, Log, Round, RoundServer}
+  alias DjRumble.Rounds.{Log, Round, RoundServer}
 
   describe "round_server client interface" do
     setup do

@@ -8,6 +8,7 @@ defmodule DjRumble.Room.RoomServerTest do
   import DjRumble.RoomsFixtures
 
   alias DjRumble.Rooms.{MatchmakingSupervisor, RoomServer}
+  alias DjRumble.Rounds.Round
 
   describe "room_server client interface" do
     setup do
@@ -67,6 +68,27 @@ defmodule DjRumble.Room.RoomServerTest do
 
     test "join/1 returns :ok", %{pid: pid} do
       assert RoomServer.join(pid) == :ok
+    end
+
+    test "list_next_rounds/1 returns a list of rounds and videos", %{
+      matchmaking_server: matchmaking_server,
+      state: state
+    } do
+      next_rounds = RoomServer.list_next_rounds(matchmaking_server)
+
+      assert length(next_rounds) == length(state.next_videos)
+
+      :ok =
+        Enum.zip(next_rounds, state.next_videos)
+        |> Enum.each(fn {%{round: round, video: round_video}, video} ->
+          %Round.Scheduled{
+            elapsed_time: 0,
+            score: {0, 0},
+            time: 0
+          } = round
+
+          assert round_video == video
+        end)
     end
   end
 

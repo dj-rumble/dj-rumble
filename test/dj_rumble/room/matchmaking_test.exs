@@ -7,6 +7,8 @@ defmodule DjRumble.Room.MatchmakingTest do
 
   import DjRumble.RoomsFixtures
 
+  alias DjRumble.Rounds.Round
+
   describe "matchmaking client interface" do
     alias DjRumble.Rooms.Matchmaking
 
@@ -53,6 +55,30 @@ defmodule DjRumble.Room.MatchmakingTest do
 
     test "start_round/1 returns :ok when there are no scheduled rounds", %{pid: pid} do
       assert Matchmaking.start_round(pid) == :ok
+    end
+
+    test "list_next_rounds/1 returns a list of rounds and videos", %{pid: pid, state: state} do
+      # Setup
+      %{room: %{videos: videos}} = state
+      :ok = Enum.each(videos, &assert(Matchmaking.create_round(pid, &1) == :ok))
+
+      # Exercise
+      next_rounds = Matchmaking.list_next_rounds(pid)
+
+      # Verify
+      assert length(next_rounds) == length(videos)
+
+      :ok =
+        Enum.zip(next_rounds, videos)
+        |> Enum.each(fn {%{round: round, video: round_video}, video} ->
+          %Round.Scheduled{
+            elapsed_time: 0,
+            score: {0, 0},
+            time: 0
+          } = round
+
+          assert round_video == video
+        end)
     end
   end
 
@@ -114,6 +140,14 @@ defmodule DjRumble.Room.MatchmakingTest do
       Enum.each(next_round_callbacks, & &1.(state.next_rounds))
 
       state
+    end
+
+    defp handle_list_next_rounds(state) do
+      response = Matchmaking.handle_call(:list_next_rounds, nil, state)
+
+      {:reply, next_rounds, _state} = response
+
+      next_rounds
     end
 
     defp handle_receive_video_time(state, time) do
@@ -285,6 +319,41 @@ defmodule DjRumble.Room.MatchmakingTest do
       # Verify
       assert_received({:request_playback_details, %{videoId: ^video_id, time: 0}})
       refute_received(:no_more_rounds)
+    end
+
+    test "handle_call/3 :: :list_next_rounds is called and replies with an empty list of rounds and videos",
+         %{state: state} do
+      # Exercise
+      next_rounds = handle_list_next_rounds(state)
+
+      # Verify
+      assert next_rounds == []
+    end
+
+    test "handle_call/3 :: :list_next_rounds is called and replies with a list with a single rounds and videos",
+         %{state: state} do
+      # Setup
+      video = video_fixture()
+
+      state = handle_schedule_round(state, video)
+
+      # Exercise
+      next_rounds = handle_list_next_rounds(state)
+
+      # Verify
+      assert length(next_rounds) == 1
+
+      :ok =
+        Enum.zip(next_rounds, [video])
+        |> Enum.each(fn {%{round: round, video: round_video}, video} ->
+          %Round.Scheduled{
+            elapsed_time: 0,
+            score: {0, 0},
+            time: 0
+          } = round
+
+          assert round_video == video
+        end)
     end
 
     test "handle_cast/2 :: {:join, pid} is called with no rounds and returns :ok",
