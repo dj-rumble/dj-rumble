@@ -26,7 +26,7 @@
     <%= for {video, index} <- @search_results do %>
       <div class="grid grid-cols-4 gap-2 search-result separator bg-gray-400">
         <div class="align-center">
-          <%= img_tag(video.thumbnails["default"]["url"], width: video.thumbnails["default"]["width"] * 1.2) %>
+          <%= img_tag(video.img_url, width: parse_int(video.img_width) * 1.2) %>
         </div>
         <div class="col-span-2 grid grid-rows-2">
           <div class="row-span-2">

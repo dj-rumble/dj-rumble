@@ -52,10 +52,7 @@ defmodule DjRumble.Rooms.RoomServer do
     state = %{
       matchmaking_server: matchmaking_server,
       players: %{},
-      room: room,
-      current_video: nil,
-      previous_videos: [],
-      next_videos: room.videos
+      room: room
     }
 
     {:ok, state}

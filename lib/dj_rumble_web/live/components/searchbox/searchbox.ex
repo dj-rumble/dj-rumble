@@ -6,7 +6,7 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
 
   use DjRumbleWeb, :live_component
 
-  alias DjRumble.Rooms
+  alias DjRumble.Rooms.Video
 
   require Logger
 
@@ -35,7 +35,7 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
     search_result =
       case Tubex.Video.search_by_query(query, opts) do
         {:ok, search_result, _pag_opts} ->
-          search_result
+          Enum.map(search_result, &Video.from_tubex(&1))
 
         {:error, %{"error" => %{"errors" => errors}}} ->
           for error <- errors do
@@ -57,13 +57,7 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
 
   @impl true
   def handle_event("add_to_queue", selected_video, socket) do
-    %{
-      assigns: %{
-        room: room,
-        search_results: search_results,
-        slug: slug
-      }
-    } = socket
+    %{assigns: %{search_results: search_results}} = socket
 
     {selected_video, _index} =
       Enum.find(
@@ -74,20 +68,7 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
         end
       )
 
-    {:ok, new_video} =
-      Rooms.create_video(%{
-        channel_title: selected_video.channel_title,
-        description: selected_video.description,
-        img_url: selected_video.thumbnails["default"]["url"],
-        img_width: "#{selected_video.thumbnails["default"]["width"]}",
-        img_height: "#{selected_video.thumbnails["default"]["height"]}",
-        title: selected_video.title,
-        video_id: selected_video.video_id
-      })
-
-    {:ok, _room_video} = Rooms.create_room_video(%{room_id: room.id, video_id: new_video.id})
-
-    :ok = Process.send(self(), {:add_to_queue, new_video}, [])
+    :ok = Process.send(self(), {:create_round, selected_video}, [])
 
     {:noreply, socket}
   end
@@ -125,5 +106,10 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
         +
       </a>
     """
+  end
+
+  defp parse_int(str) do
+    {int, _} = Integer.parse(str)
+    int
   end
 end

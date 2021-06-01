@@ -42,7 +42,6 @@ defmodule DjRumbleWeb.RoomLive.Show do
             send(self(), :tick)
 
             room = Repo.preload(room, [:videos])
-            index_playing = 0
 
             topic = Channels.get_topic(:room, slug)
             connected_users = get_list_from_slug(slug)
@@ -63,7 +62,6 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:connected_users, connected_users)
              |> assign(:current_video_time, 0)
              |> assign(:joined, false)
-             |> assign(:index_playing, index_playing)
              |> assign(:matchmaking_server, matchmaking_server)
              |> assign(:room, room)
              |> assign(:room_server, room_server)
@@ -131,7 +129,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   def handle_info({:welcome, params}, socket), do: handle_welcome_message(params, socket)
 
-  def handle_info({:add_to_queue, params}, socket), do: handle_add_round(params, socket)
+  def handle_info({:create_round, params}, socket), do: handle_create_round(params, socket)
 
   def handle_info({:receive_playback_details, params}, socket),
     do: handle_playback_details(params, socket)
@@ -187,16 +185,16 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Topic:** Direct message
   * **Args:** `%Video{}`
   """
-  def handle_add_round(video, %{assigns: assigns} = socket) do
-    # %{new_video: new_video} = params
+  def handle_create_round(video, %{assigns: assigns} = socket) do
+    %{matchmaking_server: matchmaking_server, room: room} = assigns
 
-    %{videos: videos} = assigns
+    {:ok, video} = Rooms.create_video(Map.from_struct(video))
 
-    videos = videos ++ [video]
+    {:ok, _room_video} = Rooms.create_room_video(%{room_id: room.id, video_id: video.id})
 
-    {:noreply,
-     socket
-     |> assign(:videos, videos)}
+    :ok = RoomServer.create_round(matchmaking_server, video)
+
+    {:noreply, socket}
   end
 
   @doc """

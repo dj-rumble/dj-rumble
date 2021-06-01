@@ -36,8 +36,8 @@
     <div class="rounded-lg bg-gray-800 col-start-7 col-end-13 text-center overflow-y-scroll" style="height: 40vh;">
       <%= live_component @socket, DjRumbleWeb.Live.Components.Searchbox,
         id: "djrumble-searchbox",
-        room: @room,
-        slug: @room.slug
+        matchmaking_server: @matchmaking_server,
+        room: @room
       %>
     </div>
   </div>

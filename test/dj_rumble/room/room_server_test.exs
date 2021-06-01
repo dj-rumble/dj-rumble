@@ -38,10 +38,7 @@ defmodule DjRumble.Room.RoomServerTest do
       initial_state = %{
         matchmaking_server: matchmaking_server_pid,
         players: %{},
-        room: room,
-        current_video: nil,
-        previous_videos: [],
-        next_videos: room.videos
+        room: room
       }
 
       %{
@@ -88,10 +85,10 @@ defmodule DjRumble.Room.RoomServerTest do
     } do
       next_rounds = RoomServer.list_next_rounds(matchmaking_server)
 
-      assert length(next_rounds) == length(state.next_videos)
+      assert length(next_rounds) == length(state.room.videos)
 
       :ok =
-        Enum.zip(next_rounds, state.next_videos)
+        Enum.zip(next_rounds, state.room.videos)
         |> Enum.each(fn {%{round: round, video: round_video}, video} ->
           %Round.Scheduled{
             elapsed_time: 0,
@@ -283,7 +280,7 @@ defmodule DjRumble.Room.RoomServerTest do
     alias DjRumbleWeb.Channels
 
     setup do
-      %{videos: videos} = room = room_fixture(%{}, %{preload: true})
+      room = room_fixture(%{}, %{preload: true})
 
       {:ok, matchmaking_server} =
         MatchmakingSupervisor.start_matchmaking_server(MatchmakingSupervisor, room)
@@ -291,10 +288,7 @@ defmodule DjRumble.Room.RoomServerTest do
       initial_state = %{
         matchmaking_server: matchmaking_server,
         players: %{},
-        room: room,
-        current_video: nil,
-        previous_videos: [],
-        next_videos: videos
+        room: room
       }
 
       on_exit(fn ->
