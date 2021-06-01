@@ -37,6 +37,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
               MatchmakingSupervisor.get_matchmaking_server(MatchmakingSupervisor, room.slug)
 
             next_rounds = RoomServer.list_next_rounds(matchmaking_server)
+            current_round = RoomServer.get_current_round(matchmaking_server)
 
             send(self(), :tick)
 
@@ -67,6 +68,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:room, room)
              |> assign(:room_server, room_server)
              |> assign(:round_info, "")
+             |> assign(:current_round, current_round)
              |> assign(:next_rounds, next_rounds)}
         end
 
@@ -161,6 +163,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
     socket =
       socket
+      |> assign(:current_round, RoomServer.get_current_round(matchmaking_server))
       |> assign(:next_rounds, RoomServer.list_next_rounds(matchmaking_server))
 
     {:noreply, socket}
