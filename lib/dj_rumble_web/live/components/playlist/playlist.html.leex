@@ -4,12 +4,7 @@
 <div class="bg-gray-400 p-4 m-6 rounded-lg">
   <ul>
     <%= for { video, index } <- @videos do %>
-      <div class="grid grid-cols-4 gap-2
-        <%= if @index_playing == index do %>
-          playlist-selected-video
-        <% else %>
-          playlist-video
-        <% end %> separator">
+      <div class="grid grid-cols-4 gap-2 playlist-video separator">
         <div class="align-center">
           <%= img_tag(video.img_url, width: parse_int(video.img_width) * 1.2) %>
         </div>

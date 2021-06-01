@@ -9,16 +9,13 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   alias DjRumble.Repo
   alias DjRumble.Rooms
-  alias DjRumble.Rooms.{RoomServer, RoomSupervisor}
+  alias DjRumble.Rooms.{MatchmakingSupervisor, RoomServer, RoomSupervisor}
   alias DjRumble.Rounds.Round
   alias DjRumbleWeb.Channels
   alias DjRumbleWeb.Presence
   alias Faker
 
-  def get_list_from_slug(slug) do
-    Presence.list(Channels.get_topic(:room, slug))
-    |> Enum.map(fn {uuid, %{metas: metas}} -> %{uuid: uuid, metas: metas} end)
-  end
+  @tick_rate :timer.seconds(2)
 
   @impl true
   def mount(%{"slug" => slug} = params, session, socket) do
@@ -35,6 +32,13 @@ defmodule DjRumbleWeb.RoomLive.Show do
             %{assigns: %{user: user}} = socket = assign_defaults(socket, params, session)
 
             {room_server, _room} = RoomSupervisor.get_room_server(RoomSupervisor, room.slug)
+
+            {matchmaking_server, _state} =
+              MatchmakingSupervisor.get_matchmaking_server(MatchmakingSupervisor, room.slug)
+
+            next_rounds = RoomServer.list_next_rounds(matchmaking_server)
+
+            send(self(), :tick)
 
             room = Repo.preload(room, [:videos])
             index_playing = 0
@@ -55,14 +59,15 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
             {:ok,
              socket
-             |> assign(:videos, room.videos)
-             |> assign(:room, room)
-             |> assign(:index_playing, index_playing)
              |> assign(:connected_users, connected_users)
              |> assign(:current_video_time, 0)
-             |> assign(:round_info, "")
              |> assign(:joined, false)
-             |> assign(:room_server, room_server)}
+             |> assign(:index_playing, index_playing)
+             |> assign(:matchmaking_server, matchmaking_server)
+             |> assign(:room, room)
+             |> assign(:room_server, room_server)
+             |> assign(:round_info, "")
+             |> assign(:next_rounds, next_rounds)}
         end
 
       false ->
@@ -120,6 +125,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
      |> assign(:connected_users, connected_users)}
   end
 
+  def handle_info(:tick, socket), do: handle_tick(%{}, socket)
+
   def handle_info({:welcome, params}, socket), do: handle_welcome_message(params, socket)
 
   def handle_info({:add_to_queue, params}, socket), do: handle_add_round(params, socket)
@@ -140,6 +147,24 @@ defmodule DjRumbleWeb.RoomLive.Show do
   def handle_info({:round_scheduled, params}, socket), do: handle_round_scheduled(params, socket)
 
   def handle_info({:round_finished, params}, socket), do: handle_round_finished(params, socket)
+
+  @doc """
+  Receives a local message to continuously update the Liveview
+
+  * **From:** `self()`
+  * **Topic:** Direct message
+  * **Args:** `%{}`
+  """
+  def handle_tick(_params, socket) do
+    %{assigns: %{matchmaking_server: matchmaking_server}} = socket
+    schedule_next_tick()
+
+    socket =
+      socket
+      |> assign(:next_rounds, RoomServer.list_next_rounds(matchmaking_server))
+
+    {:noreply, socket}
+  end
 
   @doc """
   Receives a welcoming message when joining a room.
@@ -295,5 +320,14 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   defp assign_page_title(socket, title) do
     assign(socket, :page_title, title)
+  end
+
+  defp get_list_from_slug(slug) do
+    Presence.list(Channels.get_topic(:room, slug))
+    |> Enum.map(fn {uuid, %{metas: metas}} -> %{uuid: uuid, metas: metas} end)
+  end
+
+  defp schedule_next_tick do
+    Process.send_after(self(), :tick, @tick_rate)
   end
 end
