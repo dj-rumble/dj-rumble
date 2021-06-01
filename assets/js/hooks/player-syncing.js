@@ -113,6 +113,7 @@ const PlayerSyncing = initPlayer => ({
       videoId = ''
     }) => {
       player.loadVideoById({ startSeconds: time, videoId })
+      player.mute()
       player.playVideo()
       const getTotalDurationInterval = setInterval(() => {
         let duration = player.getDuration()
