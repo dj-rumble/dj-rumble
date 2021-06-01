@@ -37,6 +37,10 @@ defmodule DjRumble.Rooms.Matchmaking do
     GenServer.cast(server, {:join, pid})
   end
 
+  def list_next_rounds(server) do
+    GenServer.call(server, :list_next_rounds)
+  end
+
   @impl GenServer
   def init({room} = _init_arg) do
     state = %{
@@ -76,6 +80,16 @@ defmodule DjRumble.Rooms.Matchmaking do
     state = prepare_next_round(state)
 
     {:reply, :ok, state}
+  end
+
+  @impl GenServer
+  def handle_call(:list_next_rounds, _from, state) do
+    next_rounds =
+      Enum.map(state.next_rounds, fn {_ref, {pid, video, _time}} ->
+        %{round: RoundServer.get_round(pid), video: video}
+      end)
+
+    {:reply, next_rounds, state}
   end
 
   @impl GenServer

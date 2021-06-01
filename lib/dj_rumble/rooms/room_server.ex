@@ -24,6 +24,10 @@ defmodule DjRumble.Rooms.RoomServer do
     GenServer.call(pid, :get_narration)
   end
 
+  def list_next_rounds(matchmaking_server) do
+    Matchmaking.list_next_rounds(matchmaking_server)
+  end
+
   @impl GenServer
   def init({room} = _init_arg) do
     Logger.info(fn ->
