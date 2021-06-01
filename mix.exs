@@ -57,6 +57,7 @@ defmodule DjRumble.MixProject do
       {:floki, ">= 0.27.0"},
       {:gettext, "~> 0.11"},
       {:git_hooks, "~> 0.6.2", only: [:dev], runtime: false},
+      {:html_entities, "~> 0.5.2"},
       {:jason, "~> 1.0"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:phoenix, "~> 1.5.8"},
