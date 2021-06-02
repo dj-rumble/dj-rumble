@@ -13,6 +13,7 @@
   ],
 
   "custom_stop_words": [
+    "Logger."
   ],
 
   "coverage_options": {
