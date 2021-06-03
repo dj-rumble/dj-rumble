@@ -118,6 +118,7 @@
   cursor: pointer;
 }
 
+/*       Search       */
 .search-input {
   margin-bottom: 0px;
 }
@@ -145,7 +146,9 @@
   color: #363266;
   font-size: xx-large;
 }
+/*       End Search       */
 
+/*       Playlist       */
 .playlist-selected-video {
   border: #6a5991 solid 3px;
   border-radius: 5px;
@@ -173,3 +176,95 @@
 .playlist-video:hover {
   background: #cccccc;
 }
+/*       End Playlist       */
+
+/*       Chat       */
+.chat-form {
+  margin-top: 8px;
+}
+
+.text-input {
+  border: 0.1rem;
+  border-style: groove !important;
+  border-color: $primary !important;
+}
+
+input.text-input:focus {
+  border-style: solid !important;
+  border-color: $secondary !important;
+  -webkit-animation: input-highlight 0.1s forwards;
+  animation: input-highlight 0.1s forwards;
+  -webkit-transition: border-color 1500ms ease-in;
+  transition: border-color 1500ms ease-in;
+}
+
+@-webkit-keyframes input-highlight {
+  0% { border: 0.1rem; }
+  100% { border: 0.15rem; }
+}
+
+@keyframes input-highlight {
+  0% { border: 0.1rem; }
+  100% { border: 0.15rem }
+}
+
+.chat-text-input, .search-text-input, .text-input-effect, .select-input {
+  border: 0px !important;
+  box-shadow: inset 3px 3px 5px #323637 !important;
+}
+
+input.chat-text-input:focus {
+  content: none;
+  -webkit-animation: input-highlight 0.1s forwards;
+  animation: input-highlight 0.1s forwards;
+  -webkit-transition: border-color 1500ms ease-in;
+  transition: border-color 1500ms ease-in;
+}
+
+@-webkit-keyframes input-highlight {
+  0% { border: 0.1rem; }
+  100% { border: 0.15rem; }
+}
+
+@keyframes input-highlight {
+  0% { border: 0.1rem; }
+  100% { border: 0.15rem }
+}
+
+.chat-panel, .peers-panel, .room-settings, .live-inside-box {
+  padding: 1em;
+  background-color: #ccc;
+}
+
+.chat-message {
+  margin-bottom: 0.5rem;
+  font-size: 1.6rem;
+}
+
+.timestamp-message {
+  color: $secondary;
+}
+
+.highlight-timestamp {
+  color: #58af6e
+}
+
+.timestamp {
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.chat-username {
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.chat-text {
+  font-style: italic;
+  font-weight: bolder;
+}
+
+.highlight-username {
+  color: $primary;
+}
+/*       End Chat       */

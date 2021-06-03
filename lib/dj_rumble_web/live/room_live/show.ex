@@ -57,12 +57,15 @@ defmodule DjRumbleWeb.RoomLive.Show do
               %{username: user.username}
             )
 
+            Channels.subscribe(:initial_chat_request, slug)
+            Channels.broadcast(:room, slug, :request_initial_chat)
+
             {:ok,
              socket
              |> assign(:connected_users, connected_users)
-             |> assign(:current_video_time, 0)
              |> assign(:joined, false)
              |> assign(:matchmaking_server, matchmaking_server)
+             |> assign(:messages, [])
              |> assign(:room, room)
              |> assign(:room_server, room_server)
              |> assign(:round_info, "")
@@ -134,6 +137,28 @@ defmodule DjRumbleWeb.RoomLive.Show do
   def handle_info({:receive_playback_details, params}, socket),
     do: handle_playback_details(params, socket)
 
+  def handle_info({:receive_initial_chat, %{messages: messages}}, socket) do
+    Channels.unsubscribe(:initial_chat_request, socket.assigns.room.slug)
+
+    {:noreply,
+     socket
+     |> assign(:messages, messages)}
+  end
+
+  def handle_info(:request_initial_chat, socket) do
+    %{messages: messages} = socket.assigns
+
+    :ok =
+      Channels.broadcast_from(
+        self(),
+        :initial_chat_request,
+        socket.assigns.room.slug,
+        {:receive_initial_chat, %{messages: messages}}
+      )
+
+    {:noreply, socket}
+  end
+
   def handle_info({:request_playback_details, params}, socket),
     do: handle_playback_details_request(params, socket)
 
@@ -147,6 +172,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
   def handle_info({:round_scheduled, params}, socket), do: handle_round_scheduled(params, socket)
 
   def handle_info({:round_finished, params}, socket), do: handle_round_finished(params, socket)
+
+  def handle_info({:receive_message, params}, socket),
+    do: handle_receive_chat_message(params, socket)
 
   @doc """
   Receives a local message to continuously update the Liveview
@@ -317,6 +345,19 @@ defmodule DjRumbleWeb.RoomLive.Show do
     Logger.info(fn -> "No more rounds" end)
 
     {:noreply, socket}
+  end
+
+  @doc """
+  Receives a chat message
+
+  * **From:** `Broadcast
+  * **Topic:** `String.t()`. Example: `room:<room_slug>`
+  """
+  def handle_receive_chat_message(message, socket) do
+    {:noreply,
+     socket
+     |> assign(:messages, socket.assigns.messages ++ [message])
+     |> push_event("receive_new_message", %{})}
   end
 
   defp assign_page_title(socket, title) do
