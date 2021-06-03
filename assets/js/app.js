@@ -16,12 +16,14 @@ import "../css/app.scss"
 //     import socket from "./socket"
 //
 import "phoenix_html"
+import ChatSyncing from "./hooks/chat-syncing"
 import {LiveSocket} from "phoenix_live_view"
 import LoadYTIframeAPI from './deps/yt-iframe-api'
 import PlayerSyncing from "./hooks/player-syncing"
 import {Socket} from "phoenix"
 import createPlayer from './lib/player'
 import topbar from "topbar"
+
 
 
 function onIframeReady() {
@@ -38,6 +40,7 @@ function initLiveview() {
     .getAttribute("content")
 
   const hooks = {
+    ChatSyncing: ChatSyncing(),
     PlayerSyncing: PlayerSyncing(initPlayer)
   }
   

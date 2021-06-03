@@ -4,7 +4,7 @@ Connected Users: <%= @connected_users |> length %>
 <div class="bg-gray-400 p-4 m-6 mb-7 rounded-lg">
   <ul>
     <%= for username <- @connected_users do %>
-      <li style="list-style: none;" class="<%= if username == @user.username do "text-green-100" end %>">
+      <li style="list-style: none;" class="<%= if username == @user.username do "text-purple-900" end %>">
         <%= username %>
       </li>
     <% end %>

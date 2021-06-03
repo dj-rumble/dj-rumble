@@ -68,7 +68,8 @@ defmodule DjRumble.MixProject do
       {:sobelow, "~> 0.11", only: [:dev, :test], runtime: false},
       {:telemetry_metrics, "~> 0.4"},
       {:telemetry_poller, "~> 0.4"},
-      {:tubex, git: "https://github.com/sgobotta/tubex.git", tag: "0.0.10"}
+      {:tubex, git: "https://github.com/sgobotta/tubex.git", tag: "0.0.10"},
+      {:tzdata, "~> 1.1"}
     ]
   end
 

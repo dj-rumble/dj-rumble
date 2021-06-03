@@ -49,6 +49,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
          |> assign_tracker(room)
          |> assign(:index_playing, index_playing)
          |> assign(:connected_users, connected_users)
+         |> assign(:messages, [])
          |> assign(:current_video_time, 0)}
     end
   end
@@ -140,8 +141,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
   end
 
   def handle_info({:request_initial_state, _params}, socket) do
-    %{videos: videos, index_playing: index_playing, current_video_time: current_video_time} =
-      socket.assigns
+    %{
+      videos: videos,
+      index_playing: index_playing,
+      current_video_time: current_video_time,
+      messages: messages
+    } = socket.assigns
 
     :ok =
       Phoenix.PubSub.broadcast_from(
@@ -151,6 +156,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
         {:receive_initial_state,
          %{
            videos: videos,
+           messages: messages,
            index_playing: index_playing,
            current_video_time: current_video_time
          }}
@@ -163,12 +169,17 @@ defmodule DjRumbleWeb.RoomLive.Show do
     %{room: %{slug: slug}} = socket.assigns
     Phoenix.PubSub.unsubscribe(DjRumble.PubSub, "room:" <> slug <> ":request_initial_state")
 
-    %{videos: videos, index_playing: index_playing, current_video_time: current_video_time} =
-      params
+    %{
+      videos: videos,
+      index_playing: index_playing,
+      current_video_time: current_video_time,
+      messages: messages
+    } = params
 
     socket =
       socket
       |> assign(:videos, videos)
+      |> assign(:messages, messages)
       |> assign(:index_playing, index_playing)
       |> assign(:current_video_time, current_video_time)
 
@@ -283,6 +294,13 @@ defmodule DjRumbleWeb.RoomLive.Show do
             updated_room
         end
     end
+  end
+
+  def handle_info({:receive_messages, %{messages: messages}}, socket) do
+    {:noreply,
+     socket
+     |> assign(:messages, messages)
+     |> push_event("receive_new_message", %{})}
   end
 
   defp is_my_presence(id, presence_payload) do
