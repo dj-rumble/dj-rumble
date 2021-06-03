@@ -48,6 +48,16 @@ defmodule DjRumble.Rounds.Round do
     %Round.Scheduled{round | time: time}
   end
 
+  def set_score(%Round.InProgress{} = round, :positive) do
+    {positives, negatives} = round.score
+    %Round.InProgress{round | score: {positives + 1, negatives}}
+  end
+
+  def set_score(%Round.InProgress{} = round, :negative) do
+    {positives, negatives} = round.score
+    %Round.InProgress{round | score: {positives, negatives + 1}}
+  end
+
   def start(%Round.Scheduled{} = round) do
     Round.InProgress.new(round.id, round.time, round.elapsed_time, round.score)
   end
