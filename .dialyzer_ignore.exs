@@ -13,6 +13,7 @@
   {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 15},
   {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 18},
   {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 23},
-  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 30},
-  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 37}
+  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 31},
+  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 47},
+  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 38}
 ]
