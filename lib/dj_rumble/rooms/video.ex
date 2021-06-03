@@ -44,7 +44,7 @@ defmodule DjRumble.Rooms.Video do
     ])
   end
 
-  def video_placeholder(attrs \\ %{}) do
+  def video_placeholder(attrs) do
     attrs =
       Enum.into(
         attrs,

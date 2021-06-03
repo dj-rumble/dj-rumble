@@ -23,19 +23,25 @@ defmodule DjRumble.Room.MatchmakingTest do
 
       matchmaking_genserver_pid = start_supervised!({Matchmaking, {room}})
 
-      initial_state = %{
-        room: room,
-        current_round: nil,
-        finished_rounds: [],
-        next_rounds: [],
-        crashed_rounds: []
-      }
+      initial_state = Matchmaking.initial_state(%{room: room})
 
       %{pid: matchmaking_genserver_pid, room: room, state: initial_state}
     end
 
     defp placeholder_video do
       Video.video_placeholder(%{title: "Waiting for the next round"})
+    end
+
+    defp prepare_next_round(server) do
+      Process.send(server, :prepare_next_round, [])
+    end
+
+    defp receive_video_time(server, time) do
+      Process.send(server, {:receive_video_time, time}, [])
+    end
+
+    defp start_next_round(server) do
+      Process.send(server, :start_next_round, [])
     end
 
     test "start_link/1 starts a matchmaking server", %{pid: pid} do
@@ -50,17 +56,6 @@ defmodule DjRumble.Room.MatchmakingTest do
     test "create_round/1 returns :ok", %{pid: pid, room: room} do
       [video | _videos] = room.videos
       assert Matchmaking.create_round(pid, video) == :ok
-    end
-
-    test "start_round/1 returns :ok", %{pid: pid, room: room} do
-      [video | _videos] = room.videos
-      assert Matchmaking.create_round(pid, video) == :ok
-
-      assert Matchmaking.start_round(pid) == :ok
-    end
-
-    test "start_round/1 returns :ok when there are no scheduled rounds", %{pid: pid} do
-      assert Matchmaking.start_round(pid) == :ok
     end
 
     test "list_next_rounds/1 returns a list of rounds and videos", %{pid: pid, state: state} do
@@ -87,7 +82,6 @@ defmodule DjRumble.Room.MatchmakingTest do
         end)
     end
 
-    @tag wip: true
     test "get_current_round/1 returns an empty round with a placeholder video when there are no next rounds",
          %{pid: pid} do
       # Exercise
@@ -98,7 +92,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       %{round: nil, video: ^video} = current_round
     end
 
-    @tag wip: true
     test "get_current_round/1 returns an empty round with a placeholder video when there is a next round",
          %{pid: pid, state: state} do
       # Setup
@@ -113,7 +106,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       %{round: nil, video: ^video} = current_round
     end
 
-    @tag wip: true
     test "get_current_round/1 returns an empty round with a placeholder video when there are some next rounds",
          %{pid: pid, state: state} do
       # Setup
@@ -133,8 +125,9 @@ defmodule DjRumble.Room.MatchmakingTest do
          %{pid: pid, state: state} do
       # Setup
       [video | _videos] = state.room.videos
-      assert Matchmaking.create_round(pid, video) == :ok
-      assert Matchmaking.start_round(pid) == :ok
+
+      :ok = Matchmaking.create_round(pid, video)
+      :ok = prepare_next_round(pid)
 
       # Exercise
       current_round = Matchmaking.get_current_round(pid)
@@ -157,7 +150,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       # Setup
       %{videos: [video | _videos] = videos} = state.room
       :ok = Enum.each(videos, &assert(Matchmaking.create_round(pid, &1) == :ok))
-      assert Matchmaking.start_round(pid) == :ok
+      :ok = prepare_next_round(pid)
 
       # Exercise
       current_round = Matchmaking.get_current_round(pid)
@@ -180,10 +173,10 @@ defmodule DjRumble.Room.MatchmakingTest do
       # Setup
       %{videos: [video | _videos]} = state.room
       :ok = Matchmaking.create_round(pid, video)
-      :ok = Matchmaking.start_round(pid)
+      :ok = prepare_next_round(pid)
       time = 30
-      :ok = Process.send(pid, {:receive_video_time, time}, [])
-      :ok = Process.send(pid, :start_next_round, [])
+      :ok = receive_video_time(pid, time)
+      :ok = start_next_round(pid)
 
       # Exercise
       current_round = Matchmaking.get_current_round(pid)
@@ -206,10 +199,10 @@ defmodule DjRumble.Room.MatchmakingTest do
       # Setup
       %{videos: [video | _videos] = videos} = state.room
       :ok = Enum.each(videos, &assert(Matchmaking.create_round(pid, &1) == :ok))
-      :ok = Matchmaking.start_round(pid)
+      :ok = prepare_next_round(pid)
       time = 30
-      :ok = Process.send(pid, {:receive_video_time, time}, [])
-      :ok = Process.send(pid, :start_next_round, [])
+      :ok = receive_video_time(pid, time)
+      :ok = start_next_round(pid)
 
       # Exercise
       current_round = Matchmaking.get_current_round(pid)
@@ -229,18 +222,13 @@ defmodule DjRumble.Room.MatchmakingTest do
 
   describe "matchmaking server implementation" do
     alias DjRumble.Rooms.Matchmaking
+    alias DjRumble.Rounds.Round
     alias DjRumbleWeb.Channels
 
     setup do
       room = room_fixture(%{}, %{preload: true})
 
-      state = %{
-        room: room,
-        current_round: nil,
-        finished_rounds: [],
-        next_rounds: [],
-        crashed_rounds: []
-      }
+      state = Matchmaking.initial_state(%{room: room})
 
       %{room: room, state: state}
     end
@@ -295,6 +283,14 @@ defmodule DjRumble.Room.MatchmakingTest do
       next_rounds
     end
 
+    defp handle_join(state, pid) do
+      response = Matchmaking.handle_call({:join, pid}, nil, state)
+
+      {:reply, :ok, state} = response
+
+      state
+    end
+
     defp handle_receive_video_time(state, time) do
       response = Matchmaking.handle_info({:receive_video_time, time}, state)
 
@@ -305,6 +301,22 @@ defmodule DjRumble.Room.MatchmakingTest do
 
     defp handle_start_next_round(state) do
       response = Matchmaking.handle_info(:start_next_round, state)
+
+      {:noreply, state} = response
+
+      state
+    end
+
+    defp handle_round_finished(state, ref, round) do
+      response = Matchmaking.handle_info({:DOWN, ref, :process, nil, {:shutdown, round}}, state)
+
+      {:noreply, state} = response
+
+      state
+    end
+
+    defp handle_round_crashed(state) do
+      response = Matchmaking.handle_info({:DOWN, nil, :process, nil, {:exit, :error}}, state)
 
       {:noreply, state} = response
 
@@ -369,19 +381,12 @@ defmodule DjRumble.Room.MatchmakingTest do
       video = video_fixture()
 
       # Exercise
-      _state =
-        handle_schedule_round(
-          state,
-          video,
-          [
-            &assert(&1 == nil)
-          ],
-          [
-            &assert(length(&1) == 1),
-            &assert(is_valid_round(:scheduled, hd(&1), %{video: video}))
-          ]
-        )
+      new_state = schedule_rounds(state, [video])
 
+      # Verify
+      state = %{state | next_rounds: state.next_rounds ++ new_state.next_rounds}
+
+      assert new_state == state
       assert_received({:round_scheduled, _scheduled_round})
     end
 
@@ -390,8 +395,13 @@ defmodule DjRumble.Room.MatchmakingTest do
     } do
       # Setup
       videos = videos_fixture(10)
-      # Exercise & Verify
-      schedule_rounds(state, videos)
+
+      # Exercise
+      new_state = schedule_rounds(state, videos)
+
+      # Verify
+      state = %{state | next_rounds: state.next_rounds ++ new_state.next_rounds}
+      assert new_state == state
     end
 
     test "handle_call/3 :: :prepare_initial_round is called with empty next rounds list, replies :ok and does not prepare any round",
@@ -418,17 +428,19 @@ defmodule DjRumble.Room.MatchmakingTest do
       :ok = Channels.subscribe(:player_is_ready, state.room.slug)
       %{video_id: video_id} = video = video_fixture()
 
-      state
-      |> handle_schedule_round(video)
-      # Exercise
-      |> handle_prepare_initial_round(
-        [
-          &assert(is_valid_round(:prepared, &1, %{video: video, time: 0}))
-        ],
-        [&assert(&1 == [])]
-      )
+      state =
+        state
+        |> handle_schedule_round(video)
+        # Exercise
+        |> handle_prepare_initial_round(
+          [
+            &assert(is_valid_round(:prepared, &1, %{video: video, time: 0}))
+          ],
+          [&assert(&1 == [])]
+        )
 
       # Verify
+      assert state.status == :waiting_for_details
       assert_received({:request_playback_details, %{videoId: ^video_id, time: 0}})
       refute_received(:no_more_rounds)
     end
@@ -462,6 +474,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       %{video_id: video_id} = get_video(state.current_round)
 
       # Verify
+      assert state.status == :waiting_for_details
       assert_received({:request_playback_details, %{videoId: ^video_id, time: 0}})
       refute_received(:no_more_rounds)
     end
@@ -501,22 +514,22 @@ defmodule DjRumble.Room.MatchmakingTest do
         end)
     end
 
-    test "handle_cast/2 :: {:join, pid} is called with no rounds and returns :ok",
+    @tag wip: true
+    test "handle_call/3 :: {:join, pid} is called with no rounds and returns :ok",
          %{state: state} do
       # Setup
       :ok = Channels.subscribe(:player_is_ready, state.room.slug)
+      self = self()
 
       # Exercise
-      response = Matchmaking.handle_cast({:join, self()}, state)
-
-      {:noreply, _state} = response
+      _state = handle_join(state, self)
 
       # Verify
-      assert_received(:no_more_rounds)
+      assert_receive(:prepare_next_round)
       refute_received({:receive_playback_details, %{}})
     end
 
-    test "handle_cast/2 :: {:join, pid} is called with no prepared rounds and returns :ok",
+    test "handle_call/3 :: {:join, pid} is called with no prepared rounds and returns :ok",
          %{state: state} do
       # Setup
       :ok = Channels.subscribe(:player_is_ready, state.room.slug)
@@ -527,16 +540,14 @@ defmodule DjRumble.Room.MatchmakingTest do
         |> handle_schedule_round(video)
 
       # Exercise
-      response = Matchmaking.handle_cast({:join, self()}, state)
-
-      {:noreply, _state} = response
+      _state = handle_join(state, self())
 
       # Verify
-      assert_received(:no_more_rounds)
+      assert_receive(:prepare_next_round)
       refute_received({:receive_playback_details, %{videoId: ^video_id, time: 0}})
     end
 
-    test "handle_cast/2 :: {:join, pid} is called with a prepared round and returns :ok",
+    test "handle_call/3 :: {:join, pid} is called with a prepared round and returns :ok",
          %{state: state} do
       # Setup
       :ok = Channels.subscribe(:player_is_ready, state.room.slug)
@@ -556,16 +567,14 @@ defmodule DjRumble.Room.MatchmakingTest do
       refute_received(:no_more_rounds)
 
       # Exercise
-      response = Matchmaking.handle_cast({:join, self()}, state)
-
-      {:noreply, _state} = response
+      _state = handle_join(state, self())
 
       # Verify
-      assert_received({:receive_playback_details, %{videoId: ^video_id, time: 0}})
+      assert_received({:request_playback_details, %{videoId: ^video_id, time: 0}})
       refute_received(:no_more_rounds)
     end
 
-    test "handle_cast/2 :: {:join, pid} is called with a round in progress and returns :ok",
+    test "handle_call/3 :: {:join, pid} is called with a round in progress and returns :ok",
          %{state: state} do
       # Setup
       :ok = Channels.subscribe(:player_is_ready, state.room.slug)
@@ -591,9 +600,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       # Awaits a couple seconds before joining the room so that we catch a
       # round that is in progress
       Process.sleep(1800)
-      response = Matchmaking.handle_cast({:join, self()}, state)
-
-      {:noreply, _state} = response
+      _state = handle_join(state, self())
 
       # Verify
       assert_received({:receive_countdown, 3000})
@@ -668,6 +675,68 @@ defmodule DjRumble.Room.MatchmakingTest do
                video: prepared_video,
                time: video_time
              })
+    end
+
+    @tag wip: true
+    test "handle_info/2 :: {:DOWN, ref, :process, pid, {:shutdown, %Round.Finished{}} is called and the next round changes",
+         %{state: state} do
+      :ok = Channels.subscribe(:room, state.room.slug)
+      [video | _videos] = videos_fixture(10)
+
+      time = 30
+
+      state =
+        state
+        |> handle_schedule_round(video)
+        |> handle_prepare_initial_round(
+          [
+            &assert(is_valid_round(:prepared, &1, %{video: video, time: 0}))
+          ],
+          [&assert(&1 == [])]
+        )
+        |> handle_receive_video_time(time)
+        |> handle_start_next_round()
+
+      {ref, {_pid, _video, _time}} = state.current_round
+
+      round = %Round.Finished{}
+
+      state = handle_round_finished(state, ref, round)
+
+      assert state.current_round == nil
+      assert Enum.member?(state.finished_rounds, round)
+      assert state.status == :cooldown
+
+      assert_receive({:round_finished, ^round})
+    end
+
+    @tag wip: true
+    test "handle_info/2 :: {:DOWN, ref, :process, pid, reason} is called and a crashed round is registered",
+         %{state: state} do
+      :ok = Channels.subscribe(:room, state.room.slug)
+      [video | _videos] = videos_fixture(10)
+
+      time = 30
+
+      state =
+        state
+        |> handle_schedule_round(video)
+        |> handle_prepare_initial_round(
+          [
+            &assert(is_valid_round(:prepared, &1, %{video: video, time: 0}))
+          ],
+          [&assert(&1 == [])]
+        )
+        |> handle_receive_video_time(time)
+        |> handle_start_next_round()
+
+      {_ref, {_pid, _video, _time}} = crashed_round = state.current_round
+
+      state = handle_round_crashed(state)
+
+      assert state.current_round == nil
+      assert Enum.member?(state.crashed_rounds, crashed_round)
+      assert state.status == :cooldown
     end
   end
 end

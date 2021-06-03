@@ -31,12 +31,8 @@ defmodule DjRumble.Rooms.Matchmaking do
     GenServer.call(server, {:schedule_round, video})
   end
 
-  def start_round(server) do
-    GenServer.call(server, :prepare_initial_round)
-  end
-
   def join(server, pid) do
-    GenServer.cast(server, {:join, pid})
+    GenServer.call(server, {:join, pid})
   end
 
   def list_next_rounds(server) do
@@ -47,15 +43,20 @@ defmodule DjRumble.Rooms.Matchmaking do
     GenServer.call(server, :get_current_round)
   end
 
-  @impl GenServer
-  def init({room} = _init_arg) do
-    state = %{
-      room: room,
+  def initial_state(args) do
+    %{
+      room: args.room,
       current_round: nil,
       finished_rounds: [],
       next_rounds: [],
-      crashed_rounds: []
+      crashed_rounds: [],
+      status: :idle
     }
+  end
+
+  @impl GenServer
+  def init({room} = _init_arg) do
+    state = initial_state(%{room: room})
 
     {:ok, state, :hibernate}
   end
@@ -79,9 +80,12 @@ defmodule DjRumble.Rooms.Matchmaking do
 
   @impl GenServer
   def handle_call(:prepare_initial_round, _from, state) do
+    # coveralls-ignore-start
     Logger.info(fn ->
       "Preparing an initial round."
     end)
+
+    # coveralls-ignore-stop
 
     state = prepare_next_round(state)
 
@@ -118,12 +122,26 @@ defmodule DjRumble.Rooms.Matchmaking do
   end
 
   @impl GenServer
-  def handle_cast({:join, pid}, state) do
-    case state.current_round do
-      nil ->
-        :ok = Channels.broadcast(:player_is_ready, state.room.slug, :no_more_rounds)
+  def handle_call({:join, pid}, _from, state) do
+    case state.status do
+      :idle ->
+        :ok = Process.send(self(), :prepare_next_round, [])
 
-      {_ref, {round_pid, %{video_id: video_id}, _time}} ->
+      :waiting_for_details ->
+        {_ref, {_pid, video, 0 = time}} = state.current_round
+
+        Logger.info(fn -> "Sending a playback details request." end)
+
+        :ok = request_playback_details(state.room.slug, video, time)
+
+      :cooldown ->
+        nil
+
+      :countdown ->
+        nil
+
+      :playing ->
+        {_ref, {round_pid, %{video_id: video_id}, _time}} = state.current_round
         Logger.info(fn -> "Sending current round details." end)
 
         elapsed_time =
@@ -132,15 +150,10 @@ defmodule DjRumble.Rooms.Matchmaking do
             round -> round.elapsed_time
           end
 
-        :ok =
-          Process.send(
-            pid,
-            {:receive_playback_details, %{time: elapsed_time, videoId: video_id}},
-            []
-          )
+        :ok = send_playback_details(pid, elapsed_time, video_id)
     end
 
-    {:noreply, state}
+    {:reply, :ok, state}
   end
 
   @impl GenServer
@@ -185,7 +198,8 @@ defmodule DjRumble.Rooms.Matchmaking do
 
           %{
             state
-            | current_round: {ref, {pid, video, parsed_time}}
+            | current_round: {ref, {pid, video, parsed_time}},
+              status: :countdown
           }
 
         # This case is needed because race conditions happen when the broadcasted pids answer
@@ -200,9 +214,12 @@ defmodule DjRumble.Rooms.Matchmaking do
   def handle_info({:DOWN, ref, :process, _pid, {:shutdown, %Round.Finished{} = round}}, state) do
     {dislikes, likes} = round.score
 
+    # coveralls-ignore-start
     Logger.info(fn ->
       "Round finished, id: #{round.id}, score: {#{dislikes}, #{likes}}, outcome: #{round.outcome}"
     end)
+
+    # coveralls-ignore-stop
 
     # :ok = Gladiators.register_battle_result({Gladiators.get_gladiator(left.id), Gladiators.get_gladiator(right.id)}, battle.outcome)
 
@@ -216,7 +233,8 @@ defmodule DjRumble.Rooms.Matchmaking do
       state
       | current_round: nil,
         finished_rounds: [round | state.finished_rounds],
-        next_rounds: state.next_rounds ++ [schedule_round(video, state.room)]
+        next_rounds: state.next_rounds ++ [schedule_round(video, state.room)],
+        status: :cooldown
     }
 
     Process.send_after(self(), :prepare_next_round, @time_between_rounds)
@@ -226,20 +244,22 @@ defmodule DjRumble.Rooms.Matchmaking do
 
   @impl GenServer
   def handle_info({:DOWN, _ref, :process, pid, reason}, state) do
-    # {_, {round_pid, video}} = Map.get(state.current_round, ref)
-
-    Logger.error(fn ->
+    # coveralls-ignore-start
+    Logger.info(fn ->
       "Round with pid '#{inspect(pid)}' crashed. Reason: #{inspect(reason)}. Last local state: #{
         inspect(state)
       }."
     end)
+
+    # coveralls-ignore-stop
 
     # :ok = Gladiators.register_battle_result({Gladiators.get_gladiator(left.id), Gladiators.get_gladiator(right.id)}, :draw)
 
     state = %{
       state
       | current_round: nil,
-        crashed_rounds: [state.current_round | state.crashed_rounds]
+        crashed_rounds: [state.current_round | state.crashed_rounds],
+        status: :cooldown
     }
 
     Process.send_after(self(), :prepare_next_round, @time_between_rounds)
@@ -264,20 +284,24 @@ defmodule DjRumble.Rooms.Matchmaking do
       [] ->
         :ok = Channels.broadcast(:player_is_ready, slug, :no_more_rounds)
 
-        state
+        %{state | status: :idle}
 
       [{_ref, {_pid, video, 0 = time}} = next_round | next_rounds] ->
+        :ok = Channels.unsubscribe(:matchmaking_details_request, slug)
         :ok = Channels.subscribe(:matchmaking_details_request, slug)
+
+        state = %{
+          state
+          | current_round: next_round,
+            next_rounds: next_rounds,
+            status: :waiting_for_details
+        }
 
         :ok = request_playback_details(slug, video, time)
 
         Logger.info(fn -> "Prepared a next round" end)
 
-        %{
-          state
-          | current_round: next_round,
-            next_rounds: next_rounds
-        }
+        state
     end
   end
 
@@ -287,6 +311,15 @@ defmodule DjRumble.Rooms.Matchmaking do
       slug,
       {:request_playback_details, %{videoId: video.video_id, time: time}}
     )
+  end
+
+  defp send_playback_details(pid, time, video_id) do
+    :ok =
+      Process.send(
+        pid,
+        {:receive_playback_details, %{time: time, videoId: video_id}},
+        []
+      )
   end
 
   defp start_next_round(state) do
@@ -331,6 +364,6 @@ defmodule DjRumble.Rooms.Matchmaking do
          }}
       )
 
-    state
+    %{state | status: :playing}
   end
 end

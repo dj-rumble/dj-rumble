@@ -36,6 +36,14 @@ defmodule DjRumble.Rooms.RoomServer do
     Matchmaking.create_round(matchmaking_server, video)
   end
 
+  def initial_state(args) do
+    %{
+      matchmaking_server: args.matchmaking_server,
+      players: %{},
+      room: args.room
+    }
+  end
+
   @impl GenServer
   def init({room} = _init_arg) do
     Logger.info(fn ->
@@ -49,11 +57,7 @@ defmodule DjRumble.Rooms.RoomServer do
       :ok = Matchmaking.create_round(matchmaking_server, video)
     end)
 
-    state = %{
-      matchmaking_server: matchmaking_server,
-      players: %{},
-      room: room
-    }
+    state = initial_state(%{matchmaking_server: matchmaking_server, room: room})
 
     {:ok, state}
   end
@@ -85,13 +89,7 @@ defmodule DjRumble.Rooms.RoomServer do
 
     Logger.info(fn -> "Current players: #{length(players_list)}." end)
 
-    case players_list do
-      [_p] ->
-        :ok = Matchmaking.start_round(state.matchmaking_server)
-
-      [_p | _ps] ->
-        :ok = Matchmaking.join(state.matchmaking_server, pid)
-    end
+    :ok = Matchmaking.join(state.matchmaking_server, pid)
 
     {:noreply, state}
   end

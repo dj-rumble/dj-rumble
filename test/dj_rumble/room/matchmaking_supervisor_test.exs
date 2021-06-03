@@ -10,7 +10,7 @@ defmodule DjRumble.Room.MatchmakingSupervisorTest do
   # The MatchmakingSupervisor pid is automatically started on tests run since it's part
   # of the djrumble main application process.
   describe "matchmaking_supervisor" do
-    alias DjRumble.Rooms.MatchmakingSupervisor
+    alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor}
 
     setup do
       room = room_fixture()
@@ -20,13 +20,7 @@ defmodule DjRumble.Room.MatchmakingSupervisorTest do
         MatchmakingSupervisor.terminate_matchmaking_server(MatchmakingSupervisor, pid)
       end)
 
-      initial_state = %{
-        room: room,
-        current_round: nil,
-        finished_rounds: [],
-        next_rounds: [],
-        crashed_rounds: []
-      }
+      initial_state = Matchmaking.initial_state(%{room: room})
 
       %{pid: pid, room: room, state: initial_state}
     end

@@ -35,11 +35,11 @@ defmodule DjRumble.Room.RoomServerTest do
           )
       end)
 
-      initial_state = %{
-        matchmaking_server: matchmaking_server_pid,
-        players: %{},
-        room: room
-      }
+      initial_state =
+        RoomServer.initial_state(%{
+          matchmaking_server: matchmaking_server_pid,
+          room: room
+        })
 
       %{
         matchmaking_server: matchmaking_server_pid,
@@ -59,6 +59,18 @@ defmodule DjRumble.Room.RoomServerTest do
 
     defp is_pid_alive(pid) do
       is_pid(pid) and Process.alive?(pid)
+    end
+
+    defp prepare_next_round(matchmaking_server) do
+      Process.send(matchmaking_server, :prepare_next_round, [])
+    end
+
+    defp receive_video_time(matchmaking_server, time) do
+      Process.send(matchmaking_server, {:receive_video_time, time}, [])
+    end
+
+    defp start_next_round(matchmaking_server) do
+      Process.send(matchmaking_server, :start_next_round, [])
     end
 
     test "start_link/1 starts a room server", %{pid: pid} do
@@ -100,7 +112,6 @@ defmodule DjRumble.Room.RoomServerTest do
         end)
     end
 
-    @tag wip: true
     test "get_current_round/1 returns an empty round with a placeholder video when there are no next rounds",
          %{
            matchmaking_server: matchmaking_server
@@ -113,7 +124,6 @@ defmodule DjRumble.Room.RoomServerTest do
       %{round: nil, video: ^video} = current_round
     end
 
-    @tag wip: true
     test "get_current_round/1 returns an empty round with a placeholder video when there is a next round",
          %{
            matchmaking_server: matchmaking_server,
@@ -130,7 +140,6 @@ defmodule DjRumble.Room.RoomServerTest do
       %{round: nil, video: ^video} = current_round
     end
 
-    @tag wip: true
     test "get_current_round/1 returns an empty round with a placeholder video when there are some next rounds",
          %{
            matchmaking_server: matchmaking_server,
@@ -157,7 +166,7 @@ defmodule DjRumble.Room.RoomServerTest do
       # Setup
       [video | _videos] = state.room.videos
       :ok = RoomServer.create_round(matchmaking_server, video)
-      :ok = Matchmaking.start_round(matchmaking_server)
+      :ok = prepare_next_round(matchmaking_server)
 
       # Exercise
       current_round = RoomServer.get_current_round(matchmaking_server)
@@ -184,7 +193,7 @@ defmodule DjRumble.Room.RoomServerTest do
       # Setup
       [video | _videos] = videos = state.room.videos
       :ok = Enum.each(videos, &assert(RoomServer.create_round(matchmaking_server, &1) == :ok))
-      :ok = Matchmaking.start_round(matchmaking_server)
+      :ok = prepare_next_round(matchmaking_server)
 
       # Exercise
       current_round = RoomServer.get_current_round(matchmaking_server)
@@ -211,10 +220,10 @@ defmodule DjRumble.Room.RoomServerTest do
       # Setup
       [video | _videos] = state.room.videos
       :ok = RoomServer.create_round(matchmaking_server, video)
-      :ok = Matchmaking.start_round(matchmaking_server)
+      :ok = prepare_next_round(matchmaking_server)
       time = 30
-      :ok = Process.send(matchmaking_server, {:receive_video_time, time}, [])
-      :ok = Process.send(matchmaking_server, :start_next_round, [])
+      :ok = receive_video_time(matchmaking_server, time)
+      :ok = start_next_round(matchmaking_server)
 
       # Exercise
       current_round = RoomServer.get_current_round(matchmaking_server)
@@ -241,10 +250,10 @@ defmodule DjRumble.Room.RoomServerTest do
       # Setup
       [video | _videos] = videos = state.room.videos
       :ok = Enum.each(videos, &assert(RoomServer.create_round(matchmaking_server, &1) == :ok))
-      :ok = Matchmaking.start_round(matchmaking_server)
+      :ok = prepare_next_round(matchmaking_server)
       time = 30
-      :ok = Process.send(matchmaking_server, {:receive_video_time, time}, [])
-      :ok = Process.send(matchmaking_server, :start_next_round, [])
+      :ok = receive_video_time(matchmaking_server, time)
+      :ok = start_next_round(matchmaking_server)
 
       # Exercise
       current_round = RoomServer.get_current_round(matchmaking_server)
@@ -262,7 +271,6 @@ defmodule DjRumble.Room.RoomServerTest do
       } = current_round
     end
 
-    @tag wip: true
     test "create_round/1 returns :ok and a round is scheduled", %{
       matchmaking_server: matchmaking_server,
       state: state
@@ -285,11 +293,11 @@ defmodule DjRumble.Room.RoomServerTest do
       {:ok, matchmaking_server} =
         MatchmakingSupervisor.start_matchmaking_server(MatchmakingSupervisor, room)
 
-      initial_state = %{
-        matchmaking_server: matchmaking_server,
-        players: %{},
-        room: room
-      }
+      initial_state =
+        RoomServer.initial_state(%{
+          matchmaking_server: matchmaking_server,
+          room: room
+        })
 
       on_exit(fn ->
         MatchmakingSupervisor.terminate_matchmaking_server(
@@ -452,11 +460,9 @@ defmodule DjRumble.Room.RoomServerTest do
       _state = handle_joined(state, pid)
 
       # Verify
-      self = self()
-      assert_received({:trace, ^pid, :receive, {:welcome, "Hello!"}})
+      assert_receive({:trace, ^pid, :receive, {:welcome, "Hello!"}})
 
-      assert_received {:trace, ^matchmaking_server, :receive,
-                       {_, {^self, _}, :prepare_initial_round}}
+      assert_receive({:trace, ^matchmaking_server, :receive, :prepare_next_round})
 
       # Teardown
       on_exit(fn ->
@@ -473,7 +479,6 @@ defmodule DjRumble.Room.RoomServerTest do
 
       :ok = Channels.subscribe(:player_is_ready, state.room.slug)
 
-      self = self()
       :erlang.trace(matchmaking_server, true, [:receive])
 
       {pids, state} =
@@ -485,9 +490,7 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok = assert_players_joined(pids, state)
       :ok = assert_players_received_a_welcome_message(pids)
 
-      assert_receive(
-        {:trace, ^matchmaking_server, :receive, {_, {^self, _}, :prepare_initial_round}}
-      )
+      assert_receive({:trace, ^matchmaking_server, :receive, :prepare_next_round})
 
       assert_receive(:no_more_rounds)
 
@@ -499,7 +502,7 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok =
         tl(pids)
         |> Enum.each(fn pid ->
-          assert_receive({:trace, ^matchmaking_server, :receive, {_, {:join, ^pid}}})
+          assert_receive({:trace, ^matchmaking_server, :receive, {_, _, {:join, ^pid}}})
         end)
 
       # Teardown
@@ -540,7 +543,7 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok =
         tl(pids)
         |> Enum.each(fn pid ->
-          assert_receive({:trace, ^matchmaking_server, :receive, {_, {:join, ^pid}}})
+          assert_receive({:trace, ^matchmaking_server, :receive, {_, _, {:join, ^pid}}})
         end)
 
       # Teardown
