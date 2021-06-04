@@ -7,18 +7,18 @@
       %>
     </div>
     <div class="col-span-2 grid grid-rows-2 self-center">
-      <div class="row-span-2 text-center text-4xl">
+      <div class="row-span-2 text-center text-3xl">
         <p class="font-bold"><%= @current_video.title %></p>
       </div>
       <div class="grid grid-cols-2 grid grid-rows-2">
         <div class="
-        col-span-1 justify-self-center text-6xl	cursor-pointer
+        col-span-1 justify-self-center text-4xl	cursor-pointer
         transform hover:scale-110
       ">
           <%= render_score_button(:positive, @myself) %>
         </div>
         <div class="
-          col-span-1 justify-self-center text-6xl	cursor-pointer
+          col-span-1 justify-self-center text-4xl	cursor-pointer
           transform hover:scale-110
         ">
           <%= render_score_button(:negative, @myself) %>
@@ -29,15 +29,15 @@
     </div>
   </div>
   <%= for { video, _index } <- @videos do %>
-    <div class="grid grid-cols-6 gap-2 playlist-video separator">
+    <div class="grid grid-cols-6 gap-2 playlist-video separator bg-gray-800 shadow-card">
       <div class="col-span-1 align-center w-3/4 self-center rounded">
         <%= img_tag(video.img_url, width: parse_int(video.img_width) * 1.2) %>
       </div>
       <div class="col-span-5 grid grid-rows-2 self-center">
-        <div class="row-span-2 text-left text-gray-600">
+        <div class="row-span-2 text-left text-gray-400">
           <p class="font-bold"><%= video.title %></p>
         </div>
-        <div class="row-span-2 text-left text-gray-600">
+        <div class="row-span-2 text-left text-gray-400">
           <p class="font-bold"><%= video.description %></p>
         </div>
       </div>

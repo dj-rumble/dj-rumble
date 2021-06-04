@@ -12,7 +12,7 @@
     %>
 
     <div class="grid grid-rows-6 grid-cols-12 grid-flow-col gap-6 mb-12" style="max-height: 85vh;">
-      <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-1 row-end-4 text-center p-4">
+      <div class="rounded-xl bg-black col-start-1 col-end-9 row-start-1 row-end-4 text-center p-4">
         <%= live_component @socket, DjRumbleWeb.Live.Components.VideoPlayer,
           id: "djrumble-video-player"
         %>
@@ -20,7 +20,7 @@
           id: "djrumble-player-controls"
         %>
       </div>
-      <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 row-start-4 row-end-6 text-center overflow-y-scroll">
+      <div class="rounded-lg col-start-1 col-end-9 row-start-4 row-end-6 text-center overflow-y-scroll">
         <%= live_component @socket, DjRumbleWeb.Live.Components.Playlist,
           id: "djrumble-playlist",
           current_round: @current_round,
