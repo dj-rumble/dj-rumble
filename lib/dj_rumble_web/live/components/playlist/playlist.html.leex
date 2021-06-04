@@ -1,29 +1,46 @@
-<div class="text-white text-3xl mt-3">
-  Playlist
-</div>
-<div class="bg-gray-400 p-4 m-6 rounded-lg">
-  <ul>
-    <div class="grid grid-cols-4 gap-2 playlist-selected-video separator">
-      <div class="align-center">
-        <%= img_tag(@current_video.img_url, width: parse_int(@current_video.img_width) * 1.2) %>
+<div class="p-4 m-6 rounded-lg">
+  <div class="grid grid-cols-4 gap-2 playlist-selected-video separator">
+    <div class="align-center w-3/4 self-center rounded-xl">
+      <%= img_tag(
+        @current_video.img_url,
+        width: parse_int(@current_video.img_width) * 1.2, class: "rounded")
+      %>
+    </div>
+    <div class="col-span-2 grid grid-rows-2 self-center">
+      <div class="row-span-2 text-center text-4xl">
+        <p class="font-bold"><%= @current_video.title %></p>
       </div>
-      <div class="col-span-3 grid grid-rows-2">
-        <div class="row-span-2">
-          <p class="font-bold"><%= @current_video.title %></p>
+      <div class="grid grid-cols-2 grid grid-rows-2">
+        <div class="
+        col-span-1 justify-self-center text-6xl	cursor-pointer
+        transform hover:scale-110
+      ">
+          <%= render_score_button(:positive, @myself) %>
+        </div>
+        <div class="
+          col-span-1 justify-self-center text-6xl	cursor-pointer
+          transform hover:scale-110
+        ">
+          <%= render_score_button(:negative, @myself) %>
         </div>
       </div>
     </div>
-    <%= for { video, _index } <- @videos do %>
-      <div class="grid grid-cols-4 gap-2 playlist-video separator">
-        <div class="align-center">
-          <%= img_tag(video.img_url, width: parse_int(video.img_width) * 1.2) %>
+    <div class="col-span-1">
+    </div>
+  </div>
+  <%= for { video, _index } <- @videos do %>
+    <div class="grid grid-cols-6 gap-2 playlist-video separator">
+      <div class="col-span-1 align-center w-3/4 self-center rounded">
+        <%= img_tag(video.img_url, width: parse_int(video.img_width) * 1.2) %>
+      </div>
+      <div class="col-span-5 grid grid-rows-2 self-center">
+        <div class="row-span-2 text-left text-gray-600">
+          <p class="font-bold"><%= video.title %></p>
         </div>
-        <div class="col-span-3 grid grid-rows-2">
-          <div class="row-span-2">
-            <p class="font-bold"><%= video.title %></p>
-          </div>
+        <div class="row-span-2 text-left text-gray-600">
+          <p class="font-bold"><%= video.description %></p>
         </div>
       </div>
-    <% end %>
-  </ul>
+    </div>
+  <% end %>
 </div>

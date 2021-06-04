@@ -21,6 +21,7 @@ import {LiveSocket} from "phoenix_live_view"
 import LoadYTIframeAPI from './deps/yt-iframe-api'
 import PlayerSyncing from "./hooks/player-syncing"
 import {Socket} from "phoenix"
+import UiFeedback from "./hooks/ui-feedback"
 import createPlayer from './lib/player'
 import topbar from "topbar"
 
@@ -41,9 +42,10 @@ function initLiveview() {
 
   const hooks = {
     ChatSyncing: ChatSyncing(),
-    PlayerSyncing: PlayerSyncing(initPlayer)
+    PlayerSyncing: PlayerSyncing(initPlayer),
+    UiFeedback: UiFeedback()
   }
-  
+
   let liveSocket = new LiveSocket("/live", Socket, {
     hooks,
     params: {_csrf_token: csrfToken}

@@ -8,6 +8,8 @@ defmodule DjRumble.Rooms.RoomServer do
 
   alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor}
 
+  alias DjRumbleWeb.Channels
+
   def start_link({_room} = init_arg) do
     GenServer.start_link(__MODULE__, init_arg)
   end
@@ -103,6 +105,8 @@ defmodule DjRumble.Rooms.RoomServer do
     %{matchmaking_server: matchmaking_server} = state
 
     :ok = Matchmaking.score(matchmaking_server, type)
+
+    :ok = Channels.broadcast(:room, state.room.slug, {:receive_score, type})
 
     {:noreply, state}
   end
