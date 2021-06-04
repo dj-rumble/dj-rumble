@@ -6,7 +6,7 @@ const UiFeedback = () => ({
       const elementId = `djrumble-score-${type}`
       const container = document.getElementById(elementId)
 
-      spawnHeart(container)
+      spawnHeart(container, type)
     })
   }
 })
