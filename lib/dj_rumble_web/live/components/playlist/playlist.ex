@@ -43,9 +43,11 @@ defmodule DjRumbleWeb.Live.Components.Playlist do
         :negative -> "👎"
       end
 
+    id = "djrumble-score-#{Atom.to_string(type)}"
+
     ~L"""
       <a
-        id="<%= Atom.to_string(:type) %>"
+        id="<%= id %>"
         class=""
         phx-click="score"
         phx-value-score=<%= type %>

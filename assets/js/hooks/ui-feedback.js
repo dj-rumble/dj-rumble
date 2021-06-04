@@ -1,8 +1,12 @@
+import { spawnHeart } from '../lib/animations'
+
 const UiFeedback = () => ({
   mounted() {
+    this.handleEvent('receive_score', ({ type }) => {
+      const elementId = `djrumble-score-${type}`
+      const container = document.getElementById(elementId)
 
-    this.handleEvent('receive_score', ({type}) => {
-      console.log(`Score: ${type}`)
+      spawnHeart(container)
     })
   }
 })
