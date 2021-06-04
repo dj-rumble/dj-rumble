@@ -36,6 +36,10 @@ defmodule DjRumble.Rooms.RoomServer do
     Matchmaking.create_round(matchmaking_server, video)
   end
 
+  def score(pid, from, type) do
+    GenServer.cast(pid, {:score, from, type})
+  end
+
   def initial_state(args) do
     %{
       matchmaking_server: args.matchmaking_server,
@@ -90,6 +94,15 @@ defmodule DjRumble.Rooms.RoomServer do
     Logger.info(fn -> "Current players: #{length(players_list)}." end)
 
     :ok = Matchmaking.join(state.matchmaking_server, pid)
+
+    {:noreply, state}
+  end
+
+  @impl GenServer
+  def handle_cast({:score, from, type}, state) do
+    %{matchmaking_server: matchmaking_server} = state
+
+    :ok = Matchmaking.score(matchmaking_server, type)
 
     {:noreply, state}
   end

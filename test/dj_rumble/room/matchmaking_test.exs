@@ -75,8 +75,12 @@ defmodule DjRumble.Room.MatchmakingTest do
       :ok = start_next_round(pid)
     end
 
-    defp send_scores(server, scores) do
-      Enum.each(scores, &Matchmaking.score(server, &1))
+    defp do_score(server, score) do
+      :ok = Matchmaking.score(server, score)
+    end
+
+    defp do_scores(server, scores) do
+      Enum.each(scores, &do_score(server, &1))
     end
 
     test "start_link/1 starts a matchmaking server", %{pid: pid} do
@@ -260,7 +264,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       {1, 0} = evaluated_score = get_evaluated_score(score, initial_score)
 
       # Exercise
-      :ok = send_scores(pid, score)
+      :ok = do_scores(pid, score)
 
       # Verify
       %{
@@ -281,7 +285,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       {3, 0} = evaluated_score = get_evaluated_score(score, initial_score)
 
       # Exercise
-      :ok = send_scores(pid, score)
+      :ok = do_scores(pid, score)
 
       # Verify
       %{
@@ -305,7 +309,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       evaluated_score = get_evaluated_score(score, initial_score)
 
       # Exercise
-      :ok = send_scores(pid, score)
+      :ok = do_scores(pid, score)
 
       # Verify
       %{
