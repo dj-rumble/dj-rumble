@@ -11,11 +11,10 @@ defmodule DjRumbleWeb.ModalComponent do
       phx-capture-click="close_search_modal"
       phx-window-keydown="close_search_modal"
       phx-key="escape"
-      phx-target="#<%= @id %>"
       phx-page-loading>
 
       <div class="phx-modal-content">
-        <a class="phx-modal-close" phx-click="close_search_modal" href="">×</a>
+        <a class="phx-modal-close" phx-click="close_search_modal">×</a>
         <%= live_component @socket, @component, @opts %>
       </div>
     </div>
