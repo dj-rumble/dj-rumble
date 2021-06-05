@@ -10,6 +10,14 @@
     round_info: @round_info
   %>
 
+  <%= if @show_search_modal do %>
+    <%= live_search_modal @socket, DjRumbleWeb.Live.Components.Searchbox,
+      id: "djrumble-searchbox",
+      matchmaking_server: @matchmaking_server,
+      room: @room
+    %>
+  <%= end %>
+
   <div class="grid grid-rows-6 grid-cols-12 grid-flow-col gap-6 mb-12 shadow-sm" style="max-height: 85vh;">
     <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-1 row-end-4 text-center p-4">
       <%= live_component @socket, DjRumbleWeb.Live.Components.VideoPlayer,
@@ -48,14 +56,6 @@
   <div style="width: 100% !important; z-index: 1; position: absolute; bottom: 0; left:0; right:0;" class="flex flex-grow">
     <%= live_component @socket, DjRumbleWeb.Live.Components.SearchFab,
       id: "djrumble-searchfab"
-    %>
-  </div>
-
-  <div style="width: 100% !important; z-index: 1; position: absolute; left:0; right:0;" class="flex flex-grow">
-    <%= live_component @socket, DjRumbleWeb.Live.Components.Searchbox,
-      id: "djrumble-searchbox",
-      matchmaking_server: @matchmaking_server,
-      room: @room
     %>
   </div>
 

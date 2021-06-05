@@ -70,7 +70,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:room_server, room_server)
              |> assign(:round_info, "")
              |> assign(:current_round, current_round)
-             |> assign(:next_rounds, next_rounds)}
+             |> assign(:next_rounds, next_rounds)
+             |> assign(:show_search_modal, false)}
         end
 
       false ->
@@ -114,6 +115,20 @@ defmodule DjRumbleWeb.RoomLive.Show do
       )
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("open_search_modal", _, socket) do
+    {:noreply,
+    socket
+    |> assign(:show_search_modal, true)}
+  end
+
+  @impl true
+  def handle_event("close_search_modal", _, socket) do
+    {:noreply,
+    socket
+    |> assign(:show_search_modal, false)}
   end
 
   @impl true
