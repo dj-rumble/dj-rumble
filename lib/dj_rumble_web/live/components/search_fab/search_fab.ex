@@ -14,8 +14,6 @@ defmodule DjRumbleWeb.Live.Components.SearchFab do
 
   @impl true
   def handle_event("open_search_modal", _, socket) do
-    IO.inspect("Open Modal Event")
-
     {:noreply, socket}
   end
 end
