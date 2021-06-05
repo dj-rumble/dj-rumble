@@ -8,6 +8,8 @@ defmodule DjRumble.Rooms.RoomServer do
 
   alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor}
 
+  alias DjRumbleWeb.Channels
+
   def start_link({_room} = init_arg) do
     GenServer.start_link(__MODULE__, init_arg)
   end
@@ -34,6 +36,10 @@ defmodule DjRumble.Rooms.RoomServer do
 
   def create_round(matchmaking_server, video) do
     Matchmaking.create_round(matchmaking_server, video)
+  end
+
+  def score(pid, from, type) do
+    GenServer.cast(pid, {:score, from, type})
   end
 
   def initial_state(args) do
@@ -90,6 +96,17 @@ defmodule DjRumble.Rooms.RoomServer do
     Logger.info(fn -> "Current players: #{length(players_list)}." end)
 
     :ok = Matchmaking.join(state.matchmaking_server, pid)
+
+    {:noreply, state}
+  end
+
+  @impl GenServer
+  def handle_cast({:score, from, type}, state) do
+    %{matchmaking_server: matchmaking_server} = state
+
+    :ok = Matchmaking.score(matchmaking_server, type)
+
+    :ok = Channels.broadcast(:room, state.room.slug, {:receive_score, type})
 
     {:noreply, state}
   end

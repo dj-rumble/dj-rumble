@@ -8,6 +8,7 @@ defmodule DjRumble.Round.RoundTest do
   describe "round" do
     alias DjRumble.Rounds.{Log, Round}
 
+    @tag wip: true
     test "schedule/1 returns a scheduled round" do
       time = 5
 
@@ -18,6 +19,7 @@ defmodule DjRumble.Round.RoundTest do
       assert score == {0, 0}
     end
 
+    @tag wip: true
     test "set_time/1 returns an updated scheduled round" do
       time = 10
 
@@ -28,6 +30,43 @@ defmodule DjRumble.Round.RoundTest do
       assert score == {0, 0}
     end
 
+    @tag wip: true
+    test "set_score/2 returns a round with a positive score" do
+      # Setup
+      time = 30
+      elapsed_time = 2
+      round = %Round.InProgress{time: time, elapsed_time: elapsed_time}
+
+      # Exercise
+      round = Round.set_score(round, :positive)
+
+      # Verify
+      %Round.InProgress{
+        time: ^time,
+        elapsed_time: ^elapsed_time,
+        score: {1, 0}
+      } = round
+    end
+
+    @tag wip: true
+    test "set_score/2 returns a round with a negative score" do
+      # Setup
+      time = 30
+      elapsed_time = 2
+      round = %Round.InProgress{time: time, elapsed_time: elapsed_time}
+
+      # Exercise
+      round = Round.set_score(round, :negative)
+
+      # Verify
+      %Round.InProgress{
+        time: ^time,
+        elapsed_time: ^elapsed_time,
+        score: {0, 1}
+      } = round
+    end
+
+    @tag wip: true
     test "start/1 returns a round that is in progress" do
       time = 5
       round = %Round.Scheduled{time: time}
@@ -40,6 +79,7 @@ defmodule DjRumble.Round.RoundTest do
       assert log == Log.new()
     end
 
+    @tag wip: true
     test "finish/1 returns a finished round" do
       time = 5
       round = %Round.InProgress{time: time}
@@ -58,24 +98,28 @@ defmodule DjRumble.Round.RoundTest do
       assert outcome == :continue
     end
 
+    @tag wip: true
     test "narrate/1 returns a log from a round that is in progress" do
       time = 5
       round = %Round.InProgress{time: time}
       assert Round.narrate(round) == []
     end
 
+    @tag wip: true
     test "narrate/1 returns a log from a finished round" do
       time = 5
       round = %Round.Finished{time: time}
       assert Round.narrate(round) == []
     end
 
+    @tag wip: true
     test "simulate_tick/1 returns a round that is in progress with elapsed time" do
       time = 5
       round = %Round.InProgress{time: time}
       %Round.InProgress{elapsed_time: 1, time: ^time} = Round.simulate_tick(round)
     end
 
+    @tag wip: true
     test "simulate_tick/1 returns a finished round with elapsed time" do
       time = 1
       round = %Round.InProgress{time: time}

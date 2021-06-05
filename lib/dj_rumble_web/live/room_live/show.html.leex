@@ -1,14 +1,15 @@
-<%= if connected?(@socket) do %>
-  <%= live_component @socket, DjRumbleWeb.Live.Components.Navbar,
-    visitor: @visitor,
-    username: @user.username,
-    homepage: true
-  %>
+<div id="ui-feedback-data" phx-hook="UiFeedback">
+  <%= if connected?(@socket) do %>
+    <%= live_component @socket, DjRumbleWeb.Live.Components.Navbar,
+      visitor: @visitor,
+      username: @user.username,
+      homepage: true
+    %>
 
-  <%= live_component @socket, DjRumbleWeb.Live.Components.RoundInfo,
-    id: "djrumble-round-info",
-    round_info: @round_info
-  %>
+    <%= live_component @socket, DjRumbleWeb.Live.Components.RoundInfo,
+      id: "djrumble-round-info",
+      round_info: @round_info
+    %>
 
   <%= if @show_search_modal do %>
     <%= live_search_modal @socket, DjRumbleWeb.Live.Components.Searchbox,
@@ -31,7 +32,8 @@
       <%= live_component @socket, DjRumbleWeb.Live.Components.Playlist,
         id: "djrumble-playlist",
         current_round: @current_round,
-        next_rounds: @next_rounds
+        next_rounds: @next_rounds,
+        room_server: @room_server
       %>
     </div>
     <div class="flex flex-col rounded-lg bg-gray-800 col-start-9 col-end-13 row-start-1 row-end-6 text-center align-middle overflow-y-scroll shadow-sm">
