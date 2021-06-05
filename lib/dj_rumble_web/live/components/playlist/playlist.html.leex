@@ -3,22 +3,22 @@
 </div>
 <div class="bg-gray-400 p-4 m-6 rounded-lg">
   <ul>
-    <div class="grid grid-cols-4 gap-2 playlist-selected-video separator">
-      <div class="align-center">
-        <%= img_tag(@current_video.img_url, width: parse_int(@current_video.img_width) * 1.2) %>
+    <div class="grid grid-cols-8 gap-2 playlist-selected-video separator">
+      <div class="col-span-1 align-center">
+        <%= img_tag(@current_video.img_url, width: parse_int(@current_video.img_width) * 0.5) %>
       </div>
-      <div class="col-span-3 grid grid-rows-2">
+      <div class="col-span-7 grid grid-rows-2">
         <div class="row-span-2">
           <p class="font-bold"><%= @current_video.title %></p>
         </div>
       </div>
     </div>
     <%= for { video, _index } <- @videos do %>
-      <div class="grid grid-cols-4 gap-2 playlist-video separator">
-        <div class="align-center">
-          <%= img_tag(video.img_url, width: parse_int(video.img_width) * 1.2) %>
+      <div class="grid grid-cols-8 gap-2 playlist-video separator">
+        <div class="col-span-1 align-center">
+          <%= img_tag(video.img_url, width: parse_int(video.img_width) * 0.5) %>
         </div>
-        <div class="col-span-3 grid grid-rows-2">
+        <div class="col-span-7 grid grid-rows-2">
           <div class="row-span-2">
             <p class="font-bold"><%= video.title %></p>
           </div>
