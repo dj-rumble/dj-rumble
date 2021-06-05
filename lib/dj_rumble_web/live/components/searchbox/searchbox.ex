@@ -53,6 +53,7 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
     {:noreply,
      socket
      |> assign(:search_results, search_result)
+     |> assign(:state, "OPEN")
      |> push_event("receive_search_completed_signal", %{})}
   end
 

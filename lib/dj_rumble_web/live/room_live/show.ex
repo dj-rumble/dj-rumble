@@ -71,6 +71,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:round_info, "")
              |> assign(:current_round, current_round)
              |> assign(:next_rounds, next_rounds)
+             |> assign(:state, "CLOSED")
              |> assign(:show_search_modal, false)}
         end
 

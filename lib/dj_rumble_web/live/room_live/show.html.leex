@@ -19,8 +19,8 @@
     %>
   <%= end %>
 
-  <div class="grid grid-rows-6 grid-cols-12 grid-flow-col gap-6 mb-12 shadow-sm" style="max-height: 85vh;">
-    <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-1 row-end-4 text-center p-4">
+  <div class="grid grid-rows-6 grid-cols-12 grid-flow-col gap-6 mb-12" style="max-height: 85vh;">
+    <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-1 row-end-4 text-center p-4 shadow-card">
       <%= live_component @socket, DjRumbleWeb.Live.Components.VideoPlayer,
         id: "djrumble-video-player"
       %>
@@ -28,7 +28,7 @@
         id: "djrumble-player-controls"
       %>
     </div>
-    <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 row-start-4 row-end-6 text-center overflow-y-scroll shadow-sm">
+    <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 row-start-4 row-end-6 text-center overflow-y-scroll shadow-card">
       <%= live_component @socket, DjRumbleWeb.Live.Components.Playlist,
         id: "djrumble-playlist",
         current_round: @current_round,
@@ -36,7 +36,7 @@
         room_server: @room_server
       %>
     </div>
-    <div class="flex flex-col rounded-lg bg-gray-800 col-start-9 col-end-13 row-start-1 row-end-6 text-center align-middle overflow-y-scroll shadow-sm">
+    <div class="flex flex-col rounded-lg bg-gray-800 col-start-9 col-end-13 row-start-1 row-end-6 text-center align-middle overflow-y-scroll shadow-card">
       <div class="flex-none">
         <%= live_component @socket, DjRumbleWeb.Live.Components.ConnectedUsers,
           id: "djrumble-connected-users",
@@ -56,9 +56,30 @@
   </div>
 
   <div style="width: 100% !important; z-index: 1; position: absolute; bottom: 0; left:0; right:0;" class="flex flex-grow">
-    <%= live_component @socket, DjRumbleWeb.Live.Components.SearchFab,
-      id: "djrumble-searchfab"
-    %>
+    <div class="flex justify-center" style="width: 100%">
+
+      <%= live_component @socket, DjRumbleWeb.Live.Components.Searchbox,
+        id: "djrumble-searchbox-modal",
+        matchmaking_server: @matchmaking_server,
+        room: @room,
+        state: @state
+      do %>
+
+        <button
+          style="position: fixed; bottom: 0; left: 50%"
+          id="djrumble-searchbox-modal-button"
+          phx-click="open"
+          phx-target="#djrumble-searchbox-modal-menu"
+          class="search-button bg-purple-800 hover:bg-purple-700 text-white border-b-4  border-purple-900 hover:border-purple-800 rounded-full">
+          <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+
+      <% end %>
+
+    </div>
+
   </div>
 
 <% end %>

@@ -79,6 +79,87 @@
   cursor: pointer;
 }
 
+/* Custom Modal */
+
+.modal-window {
+  background-color: #444;
+  opacity: 1;
+  border-color: #444;
+  border-width: 0px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.5rem;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom-width: 1px;
+  border-bottom-color: #666;
+  border-bottom-style: groove;
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+}
+
+.modal-title {
+  margin-bottom: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #a0aec0;
+}
+
+.modal-body {
+  font-size: 1.4rem;
+  flex: 1 1 auto;
+  padding: 1rem;
+  position: relative;
+  height: 50vh;
+}
+
+.modal-body-content {
+  margin-top: 6px;
+  margin-bottom: 6px
+}
+
+.modal-close-icon {
+  background-color: transparent !important;
+  border: 0px;
+  color: #a0aec0;
+  transition-duration: 150ms;
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transforma;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-close-icon:hover {
+  background-color: transparent;
+  border: 0px;
+  color: #cbd5e0;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.modal-button {
+  align-items: center;
+  color: #fff;
+  display: inline-flex;
+  justify-content: center;
+  border-radius: 0.375rem;
+  border-width: 1px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  opacity: 1;
+  font-size: 1.250rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+}
 
 /* Alerts and form errors */
 .alert {
@@ -155,7 +236,7 @@
 
 /*       Playlist       */
 .playlist-selected-video {
-  border: #6a5991 solid 3px;
+  border: #6a5991 solid 2px;
   border-radius: 5px;
   margin: 1rem 0;
   padding: 1rem;
@@ -247,7 +328,6 @@ input.chat-text-input:focus {
 
 .chat-message {
   margin-bottom: 0.5rem;
-  font-size: 1.6rem;
 }
 
 .timestamp-message {

@@ -1,10 +1,10 @@
-<div class="text-white text-3xl mt-3">
-Connected Users: <%= @connected_users |> length %>
+<div class="text-white text-2xl mt-3">
+Users: (<%= @connected_users |> length %>)
 </div>
 <div class="bg-gray-400 p-4 m-6 mb-7 rounded-lg">
   <ul>
     <%= for username <- @connected_users do %>
-      <li style="list-style: none;" class="<%= if username == @user.username do "text-purple-900" end %>">
+      <li style="list-style: none;" class="<%= if username == @user.username do "text-purple-900" end %> text-xl">
         <%= username %>
       </li>
     <% end %>

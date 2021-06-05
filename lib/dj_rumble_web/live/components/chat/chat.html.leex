@@ -17,7 +17,7 @@
           <%= for message <- @messages do %>
 
 
-            <p class="chat-message">
+            <p class="chat-message text-lg">
               <%= render_message(message) %>
             </p>
 
@@ -41,7 +41,7 @@
             phx_blur: "stop_typing",
             phx_target: @myself,
             placeholder: "",
-            class: "chat-text-input button-effect"
+            class: "chat-text-input"
           %>
         </form>
       </div>
