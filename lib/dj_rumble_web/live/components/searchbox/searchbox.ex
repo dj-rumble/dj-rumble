@@ -16,6 +16,7 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
      socket
      |> assign(:search_results, [])
      |> assign(:search_query, "")
+     |> assign(:opened, true)
      |> assign(assigns)}
   end
 
@@ -106,6 +107,13 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
         +
       </a>
     """
+  end
+
+  @impl true
+  def handle_event("open_search_modal", _, socket) do
+    IO.inspect("Open Modal Event")
+
+    {:noreply, socket}
   end
 
   defp parse_int(str) do
