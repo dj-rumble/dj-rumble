@@ -16,6 +16,7 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
      socket
      |> assign(:search_results, [])
      |> assign(:search_query, "")
+     |> assign(:opened, true)
      |> assign(assigns)}
   end
 

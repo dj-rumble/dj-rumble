@@ -7,14 +7,16 @@
   {"lib/dj_rumble/rounds/supervisor.ex", :callback_type_mismatch, 14},
   {"lib/dj_rumble_web/controllers/user_settings_controller.ex", :app_call, 45},
   {"lib/dj_rumble_web/live/live_helpers.ex", :call, 24},
+  {"lib/dj_rumble_web/live/live_helpers.ex", :call, 29},
   {"lib/dj_rumble_web/live/room_live/index.html.leex", :call, 1},
   {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 3},
   {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 9},
   {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 16},
   {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 19},
   {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 24},
-  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 33},
-  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 38},
-  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 40},
-  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 49}
+  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 27},
+  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 32},
+  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 41},
+  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 48},
+  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 59}
 ]

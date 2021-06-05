@@ -59,11 +59,10 @@
 }
 
 .phx-modal-content {
-  background-color: #fefefe;
-  margin: 15% auto;
+  background-color: transparent;
+  margin: 10% auto;
   padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
+  width: 60%;
 }
 
 .phx-modal-close {
@@ -120,6 +119,11 @@
 }
 
 /*       Search       */
+.search-button {
+  width: 8.5rem !important;
+  min-height: 8.5rem !important;
+}
+
 .search-input {
   margin-bottom: 0px;
 }
@@ -235,6 +239,10 @@ input.chat-text-input:focus {
 .chat-panel, .peers-panel, .room-settings, .live-inside-box {
   padding: 1em;
   background-color: #ccc;
+}
+
+.chat-messages {
+  text-align: left;
 }
 
 .chat-message {

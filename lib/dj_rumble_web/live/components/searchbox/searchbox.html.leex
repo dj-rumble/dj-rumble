@@ -1,42 +1,44 @@
-<div class="text-white text-3xl mt-3">
-  Search
-</div>
+<div class="bg-gray-800 rounded-lg flex flex-col flex-grow text-center shadow-sm">
+  <div class="text-white text-3xl mt-3">
+    Search
+  </div>
 
-<div class="text-white px-6 mt-3">
-  <form
-      class="search-input"
-      id="search-form"
-      phx-change="search"
-      phx-submit="submit"
-      phx-target="<%= @myself %>"
-    >
-      <%=
-        text_input :search_field,
-        :query,
-        placeholder: "🎵 Search like it's Youtube...",
-        class: "mt-4 shadow-inner-input border-0",
-        autofocus: false,
-        "phx-debounce": "300"
-      %>
-    </form>
-</div>
+  <div class="text-white px-6 mt-3">
+    <form
+        class="search-input"
+        id="search-form"
+        phx-change="search"
+        phx-submit="submit"
+        phx-target="<%= @myself %>"
+      >
+        <%=
+          text_input :search_field,
+          :query,
+          placeholder: "🎵 Search like it's Youtube...",
+          class: "mt-4 shadow-inner-input border-0",
+          autofocus: false,
+          "phx-debounce": "300"
+        %>
+      </form>
+  </div>
 
-<div class="p-2 mx-6 mb-7 rounded-lg">
-  <ul>
-    <%= for {video, index} <- @search_results do %>
-      <div class="grid grid-cols-4 gap-2 search-result separator bg-gray-400">
-        <div class="align-center">
-          <%= img_tag(video.img_url, width: parse_int(video.img_width) * 1.2) %>
-        </div>
-        <div class="col-span-2 grid grid-rows-2">
-          <div class="row-span-2">
-            <p class="font-bold"><%= video.title %></p>
+  <div class="p-2 mx-6 mb-7 rounded-lg">
+    <ul>
+      <%= for {video, index} <- @search_results do %>
+        <div class="grid grid-cols-4 gap-2 search-result separator bg-gray-400">
+          <div class="align-center">
+            <%= img_tag(video.img_url, width: parse_int(video.img_width) * 1.2) %>
+          </div>
+          <div class="col-span-2 grid grid-rows-2">
+            <div class="row-span-2">
+              <p class="font-bold"><%= video.title %></p>
+            </div>
+          </div>
+          <div class="col-span-1 add-button-container">
+              <%= render_button("add", index, @myself) %>
           </div>
         </div>
-        <div class="col-span-1 add-button-container">
-            <%= render_button("add", index, @myself) %>
-        </div>
-      </div>
-    <% end %>
-  </ul>
+      <% end %>
+    </ul>
+  </div>
 </div>
