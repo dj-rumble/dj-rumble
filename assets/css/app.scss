@@ -3,12 +3,13 @@
 @import "./themes.scss";
 @import "./progressive-range.scss";
 @import "./scrollbar.scss";
+@import "./hearts.scss";
 
 .rooms-container {
 
   .room-item {
     margin-bottom: 0px;
-  
+
     &.separator {
       border-bottom-style: groove;
       border-bottom-width: 1px;

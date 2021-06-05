@@ -176,6 +176,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
   def handle_info({:receive_message, params}, socket),
     do: handle_receive_chat_message(params, socket)
 
+  def handle_info({:receive_score, params}, socket), do: handle_receive_score(params, socket)
+
   @doc """
   Receives a local message to continuously update the Liveview
 
@@ -358,6 +360,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
      socket
      |> assign(:messages, socket.assigns.messages ++ [message])
      |> push_event("receive_new_message", %{})}
+  end
+
+  def handle_receive_score(type, socket) do
+    {:noreply,
+     socket
+     |> push_event("receive_score", %{type: type})}
   end
 
   defp assign_page_title(socket, title) do
