@@ -7,11 +7,11 @@ defmodule DjRumble.RoomsFixtures do
   alias DjRumble.Repo
   alias DjRumble.Rooms
 
-  def rooms_fixture(n \\ 2) do
-    for _n <- 0..n, do: room_fixture()
+  def rooms_fixture(n \\ 3) do
+    for _n <- 1..n, do: room_fixture()
   end
 
-  def room_fixture(attrs \\ %{}) do
+  def room_fixture(attrs \\ %{}, opts \\ %{preload: false}) do
     random_words = Enum.join(Faker.Lorem.words(5), " ")
 
     {:ok, room} =
@@ -22,11 +22,14 @@ defmodule DjRumble.RoomsFixtures do
       })
       |> Rooms.create_room()
 
-    room
+    case opts.preload do
+      false -> room
+      true -> Repo.preload(room, :videos)
+    end
   end
 
-  def videos_fixture(n \\ 2) do
-    for _n <- 0..n, do: video_fixture()
+  def videos_fixture(n \\ 3) do
+    for _n <- 1..n, do: video_fixture()
   end
 
   def video_fixture(attrs \\ %{}) do

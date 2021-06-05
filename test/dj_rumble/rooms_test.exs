@@ -1,4 +1,7 @@
 defmodule DjRumble.RoomsTest do
+  @moduledoc """
+  Rooms context tests
+  """
   use DjRumble.DataCase
 
   alias DjRumble.Rooms

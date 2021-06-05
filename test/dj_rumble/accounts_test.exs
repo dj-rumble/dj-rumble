@@ -1,4 +1,7 @@
 defmodule DjRumble.AccountsTest do
+  @moduledoc """
+  Accounts context tests
+  """
   use DjRumble.DataCase
 
   alias DjRumble.Accounts

@@ -60,6 +60,7 @@ config :dj_rumble, DjRumbleWeb.Endpoint,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
+      ~r"lib/dj_rumble/.*(ex)$",
       ~r"lib/dj_rumble_web/(live|views)/.*(ex)$",
       ~r"lib/dj_rumble_web/templates/.*(eex)$",
       ~r"lib/dj_rumble_web/live/components/.*(leex|ex)$"
@@ -71,7 +72,9 @@ config :tubex, Tubex, api_key: System.get_env("YOUTUBE_API_KEY")
 config :dj_rumble, DjRumble.Mailer, adapter: Bamboo.LocalAdapter
 
 # Do not include metadata nor timestamps in development logs
-config :logger, :console, format: "[$level] $message\n"
+config :logger, :console,
+  format: "$time $metadata[$level] $message\n",
+  metadata: [:request_id, :mfa]
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
@@ -87,7 +90,7 @@ config :git_hooks,
   hooks: [
     pre_commit: [
       tasks: [
-        {:mix_task, :format, []},
+        {:mix_task, :format, ["--check-formatted"]},
         {:mix_task, :"eslint.fix"}
       ]
     ]

@@ -4,6 +4,7 @@ defmodule DjRumble.MixProject do
   def project do
     [
       app: :dj_rumble,
+      dialyzer: [plt_add_deps: :transitive],
       version: "0.1.0",
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -45,6 +46,7 @@ defmodule DjRumble.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:algae, "~> 1.3"},
       {:bamboo, "~> 1.6"},
       {:bcrypt_elixir, "~> 2.0"},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
@@ -55,7 +57,9 @@ defmodule DjRumble.MixProject do
       {:floki, ">= 0.27.0"},
       {:gettext, "~> 0.11"},
       {:git_hooks, "~> 0.6.2", only: [:dev], runtime: false},
+      {:html_entities, "~> 0.5.2"},
       {:jason, "~> 1.0"},
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:phoenix, "~> 1.5.8"},
       {:phoenix_ecto, "~> 4.1"},
       {:postgrex, ">= 0.0.0"},

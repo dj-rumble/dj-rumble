@@ -32,12 +32,11 @@ defmodule DjRumbleWeb.Live.Components.Chat do
         %{messages: messages, room: room, username: username} = assigns
         new_message = %{message: message, username: username}
         message = Chat.create_message(:chat_message, new_message)
-        messages = messages ++ [message]
 
         Phoenix.PubSub.broadcast(
           DjRumble.PubSub,
           "room:" <> room.slug,
-          {:receive_messages, %{messages: messages}}
+          {:receive_message, message}
         )
 
         {:noreply, socket}

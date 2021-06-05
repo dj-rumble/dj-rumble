@@ -9,7 +9,6 @@ defmodule DjRumble.Repo.Migrations.CreateRoomsVideos do
       timestamps()
     end
 
-    create index(:rooms_videos, [:room_id])
-    create index(:rooms_videos, [:video_id])
+    create unique_index(:rooms_videos, [:room_id, :video_id])
   end
 end
