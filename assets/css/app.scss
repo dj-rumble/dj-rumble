@@ -8,7 +8,7 @@
 
   .room-item {
     margin-bottom: 0px;
-  
+
     &.separator {
       border-bottom-style: groove;
       border-bottom-width: 1px;
@@ -119,6 +119,11 @@
 }
 
 /*       Search       */
+.search-button {
+  width: 8.5rem !important;
+  min-height: 8.5rem !important;
+}
+
 .search-input {
   margin-bottom: 0px;
 }
@@ -234,6 +239,10 @@ input.chat-text-input:focus {
 .chat-panel, .peers-panel, .room-settings, .live-inside-box {
   padding: 1em;
   background-color: #ccc;
+}
+
+.chat-messages {
+  text-align: left;
 }
 
 .chat-message {
