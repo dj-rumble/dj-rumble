@@ -10,7 +10,7 @@
     round_info: @round_info
   %>
 
-  <div class="grid grid-rows-6 grid-cols-12 grid-flow-col gap-6 mb-12" style="max-height: 85vh;">
+  <div class="grid grid-rows-6 grid-cols-12 grid-flow-col gap-6 mb-12 shadow-sm" style="max-height: 85vh;">
     <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-1 row-end-4 text-center p-4">
       <%= live_component @socket, DjRumbleWeb.Live.Components.VideoPlayer,
         id: "djrumble-video-player"
@@ -19,14 +19,14 @@
         id: "djrumble-player-controls"
       %>
     </div>
-    <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 row-start-4 row-end-6 text-center overflow-y-scroll">
+    <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 row-start-4 row-end-6 text-center overflow-y-scroll shadow-sm">
       <%= live_component @socket, DjRumbleWeb.Live.Components.Playlist,
         id: "djrumble-playlist",
         current_round: @current_round,
         next_rounds: @next_rounds
       %>
     </div>
-    <div class="flex flex-col rounded-lg bg-gray-800 col-start-9 col-end-13 row-start-1 row-end-6 text-center align-middle overflow-y-scroll">
+    <div class="flex flex-col rounded-lg bg-gray-800 col-start-9 col-end-13 row-start-1 row-end-6 text-center align-middle overflow-y-scroll shadow-sm">
       <div class="flex-none">
         <%= live_component @socket, DjRumbleWeb.Live.Components.ConnectedUsers,
           id: "djrumble-connected-users",
@@ -43,12 +43,20 @@
         room: @room
       %>
     </div>
-    <div class="rounded-lg bg-gray-800 col-start-1 col-end-13 row-start-6 row-end-7 text-center overflow-y-scroll" style="height: 40vh;">
-      <%= live_component @socket, DjRumbleWeb.Live.Components.Searchbox,
-        id: "djrumble-searchbox",
-        matchmaking_server: @matchmaking_server,
-        room: @room
-      %>
-    </div>
   </div>
+
+  <div style="width: 100% !important; z-index: 1; position: absolute; bottom: 0; left:0; right:0;" class="flex flex-grow">
+    <%= live_component @socket, DjRumbleWeb.Live.Components.SearchFab,
+      id: "djrumble-searchfab"
+    %>
+  </div>
+
+  <div style="width: 100% !important; z-index: 1; position: absolute; left:0; right:0;" class="flex flex-grow">
+    <%= live_component @socket, DjRumbleWeb.Live.Components.Searchbox,
+      id: "djrumble-searchbox",
+      matchmaking_server: @matchmaking_server,
+      room: @room
+    %>
+  </div>
+
 <% end %>
