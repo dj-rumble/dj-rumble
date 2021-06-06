@@ -1,7 +1,7 @@
 defmodule DjRumble.Repo.Migrations.DeleteUsersVideos do
   use Ecto.Migration
 
-  def down do
+  def change do
     drop table(:users_videos)
   end
 end

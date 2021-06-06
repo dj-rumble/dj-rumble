@@ -13,6 +13,8 @@ defmodule DjRumble.Rooms.Room do
 
     many_to_many :users, DjRumble.Accounts.User, join_through: DjRumble.Rooms.UserRoom
 
+    has_many :users_rooms_videos, DjRumble.Collections.UserRoomVideo
+
     timestamps()
   end
 
