@@ -1,20 +1,25 @@
-<div class="flex justify-center">
+<div class="justify-center" style="position: fixed; bottom: 0; left: 50%">
 
-  <%= live_component @socket, DjRumbleWeb.Live.Components.Searchbox,
-    id: "djrumble-searchbox-modal",
-    matchmaking_server: @matchmaking_server,
-    room: @room
-  do %>
+  <button
+    style=""
+    id="<%= @id %>"
+    phx-click="open"
+    phx-target="#djrumble-searchbox-modal-menu"
+    class="
+      flex justify-center	items-center
+      bg-indigo-800 hover:bg-indigo-700
+      w-24 h-24
+      text-white border-b-4 border-indigo-900
+      hover:shadow-inner-button
+      transform hover:scale-90
+      rounded-full
+    ">
+    <svg
+      class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+      style="min-height: 2rem; min-width: 2rem"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+  </button>
 
-    <button
-      id="djrumble-searchbox-modal-button"
-      phx-click="open"
-      phx-target="#djrumble-searchbox-settings-menu"
-      class="search-button bg-purple-800 hover:bg-purple-700 text-white border-b-4  border-purple-900 hover:border-purple-800 rounded-full">
-      <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-    </button>
-
-  <% end %>
 </div>

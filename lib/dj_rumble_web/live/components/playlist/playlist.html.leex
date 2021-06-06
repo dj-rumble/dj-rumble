@@ -1,5 +1,5 @@
 <div class="p-4 m-6 rounded-lg">
-  <div class="grid grid-cols-4 gap-2 playlist-selected-video separator">
+  <div class="grid grid-cols-4 gap-2 playlist-selected-video border-indigo-400 separator">
     <div class="align-center w-3/4 self-center rounded-xl">
       <%= img_tag(
         @current_video.img_url,
@@ -34,11 +34,11 @@
         <%= img_tag(video.img_url, width: parse_int(video.img_width) * 1.2) %>
       </div>
       <div class="col-span-5 grid grid-rows-2 self-center">
-        <div class="row-span-2 text-left text-gray-400">
-          <p class="font-bold"><%= video.title %></p>
+        <div class="row-span-3 text-left text-gray-400">
+          <p class="font-bold m-0"><%= video.title %></p>
         </div>
         <div class="row-span-2 text-left text-gray-400 text-lg">
-          <p class="font-bold"><%= video.description %></p>
+          <p class="font-bold m-0"><%= video.description %></p>
         </div>
       </div>
     </div>

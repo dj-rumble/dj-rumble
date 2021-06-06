@@ -1,12 +1,18 @@
-<div class="text-white text-2xl mt-3">
-Users: (<%= @connected_users |> length %>)
-</div>
-<div class="bg-gray-400 p-4 m-6 mb-7 rounded-lg">
-  <ul>
-    <%= for username <- @connected_users do %>
-      <li style="list-style: none;" class="<%= if username == @user.username do "text-purple-900" end %> text-xl">
-        <%= username %>
-      </li>
-    <% end %>
-  </ul>
+<div class="grid grid-rows-6 h-full py-1">
+  <div class="row-span-1 py-1 w-full h-full">
+    <div class="text-white bg-green-500 rounded-t-lg rounded-b-md h-full self-center">
+      <div class="flex h-full justify-center items-center text-3xl">
+        Users (<%= @connected_users |> length %>)
+      </div>
+    </div>
+  </div>
+  <div class="row-span-5 py-1 bg-gray-400 pr-1 rounded-md">
+    <div class="pr-1 overflow-y-scroll h-full bg-gray-400">
+      <div class="bg-gray-400 px-2 text-left text-xl">
+        <div class="" style="">
+          <%= render_users(@user.username, @connected_users, @myself) %>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
