@@ -27,8 +27,8 @@ defmodule DjRumble.Rooms.Matchmaking do
     GenServer.call(server, :get_state)
   end
 
-  def create_round(server, video) do
-    GenServer.call(server, {:schedule_round, video})
+  def create_round(server, video, user) do
+    GenServer.call(server, {:schedule_round, {video, user}})
   end
 
   def join(server, pid) do
@@ -71,13 +71,15 @@ defmodule DjRumble.Rooms.Matchmaking do
   end
 
   @impl GenServer
-  def handle_call({:schedule_round, video}, _from, state) do
+  def handle_call({:schedule_round, {video, user}}, _from, state) do
     state = %{
       state
-      | next_rounds: state.next_rounds ++ [schedule_round(video, state.room)]
+      | next_rounds: state.next_rounds ++ [schedule_round(video, state.room, user)]
     }
 
-    Logger.info(fn -> "Scheduled a round for video title: #{video.title}" end)
+    Logger.info(fn ->
+      "Scheduled a round for video title: #{video.title}, added by user: #{user.username}"
+    end)
 
     {:reply, :ok, state}
   end
@@ -99,8 +101,8 @@ defmodule DjRumble.Rooms.Matchmaking do
   @impl GenServer
   def handle_call(:list_next_rounds, _from, state) do
     next_rounds =
-      Enum.map(state.next_rounds, fn {_ref, {pid, video, _time}} ->
-        %{round: RoundServer.get_round(pid), video: video}
+      Enum.map(state.next_rounds, fn {_ref, {pid, video, _time, user}} ->
+        %{round: RoundServer.get_round(pid), video: video, user: user}
       end)
 
     {:reply, next_rounds, state}
@@ -110,8 +112,8 @@ defmodule DjRumble.Rooms.Matchmaking do
   def handle_call(:get_current_round, _from, state) do
     response =
       case state.current_round do
-        {_ref, {pid, video, _time}} ->
-          %{round: RoundServer.get_round(pid), video: video}
+        {_ref, {pid, video, _time, user}} ->
+          %{round: RoundServer.get_round(pid), video: video, user: user}
 
         nil ->
           video =
@@ -119,7 +121,7 @@ defmodule DjRumble.Rooms.Matchmaking do
               title: "Waiting for the next round"
             })
 
-          %{round: nil, video: video}
+          %{round: nil, video: video, user: nil}
       end
 
     {:reply, response, state}
@@ -132,7 +134,7 @@ defmodule DjRumble.Rooms.Matchmaking do
         :ok = Process.send(self(), :prepare_next_round, [])
 
       :waiting_for_details ->
-        {_ref, {_pid, video, 0 = time}} = state.current_round
+        {_ref, {_pid, video, 0 = time, _user}} = state.current_round
 
         Logger.info(fn -> "Sending a playback details request." end)
 
@@ -145,7 +147,7 @@ defmodule DjRumble.Rooms.Matchmaking do
         nil
 
       :playing ->
-        {_ref, {round_pid, %{video_id: video_id}, _time}} = state.current_round
+        {_ref, {round_pid, %{video_id: video_id}, _time, user}} = state.current_round
         Logger.info(fn -> "Sending current round details." end)
 
         elapsed_time =
@@ -154,7 +156,7 @@ defmodule DjRumble.Rooms.Matchmaking do
             round -> round.elapsed_time
           end
 
-        :ok = send_playback_details(pid, elapsed_time, video_id)
+        :ok = send_playback_details(pid, elapsed_time, video_id, user)
     end
 
     {:reply, :ok, state}
@@ -162,7 +164,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
   @impl GenServer
   def handle_cast({:score, type}, state) do
-    {_ref, {round_pid, _video, _time}} = state.current_round
+    {_ref, {round_pid, _video, _time, _user}} = state.current_round
 
     %Round.InProgress{} = RoundServer.score(round_pid, type)
 
@@ -191,7 +193,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     state =
       case state.current_round do
-        {ref, {pid, video, 0 = _time}} ->
+        {ref, {pid, video, 0 = _time, user}} ->
           parsed_time = trunc(time)
 
           :ok = RoundServer.set_round_time(pid, parsed_time)
@@ -211,12 +213,12 @@ defmodule DjRumble.Rooms.Matchmaking do
 
           %{
             state
-            | current_round: {ref, {pid, video, parsed_time}},
+            | current_round: {ref, {pid, video, parsed_time, user}},
               status: :countdown
           }
 
         # This case is needed because race conditions happen when the broadcasted pids answer
-        {_ref, {_pid, _video, _}} ->
+        {_ref, {_pid, _video, _time, _user}} ->
           state
       end
 
@@ -240,13 +242,13 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     Process.demonitor(ref)
 
-    {_ref, {_pid, video, _}} = state.current_round
+    {_ref, {_pid, video, _time, user}} = state.current_round
 
     state = %{
       state
       | current_round: nil,
         finished_rounds: [round | state.finished_rounds],
-        next_rounds: state.next_rounds ++ [schedule_round(video, state.room)],
+        next_rounds: state.next_rounds ++ [schedule_round(video, state.room, user)],
         status: :cooldown
     }
 
@@ -280,14 +282,14 @@ defmodule DjRumble.Rooms.Matchmaking do
     {:noreply, state}
   end
 
-  defp schedule_round(video, room) do
+  defp schedule_round(video, room, user) do
     %{slug: slug} = room
     {:ok, pid} = RoundSupervisor.start_round_server(RoundSupervisor, {slug, 0})
     ref = Process.monitor(pid)
 
     :ok = Channels.broadcast(:room, slug, {:round_scheduled, RoundServer.get_round(pid)})
 
-    {ref, {pid, video, 0}}
+    {ref, {pid, video, 0, user}}
   end
 
   defp prepare_next_round(state) do
@@ -299,7 +301,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
         %{state | status: :idle}
 
-      [{_ref, {_pid, video, 0 = time}} = next_round | next_rounds] ->
+      [{_ref, {_pid, video, 0 = time, _user}} = next_round | next_rounds] ->
         :ok = Channels.unsubscribe(:matchmaking_details_request, slug)
         :ok = Channels.subscribe(:matchmaking_details_request, slug)
 
@@ -326,11 +328,13 @@ defmodule DjRumble.Rooms.Matchmaking do
     )
   end
 
-  defp send_playback_details(pid, time, video_id) do
+  defp send_playback_details(pid, time, video_id, user) do
+    video_details = %{time: time, videoId: video_id}
+
     :ok =
       Process.send(
         pid,
-        {:receive_playback_details, %{time: time, videoId: video_id}},
+        {:receive_playback_details, %{video_details: video_details, user: user}},
         []
       )
   end
@@ -359,7 +363,7 @@ defmodule DjRumble.Rooms.Matchmaking do
     #       {Gladiators.get_gladiator(left.id), Gladiators.get_gladiator(right.id)},
     #       battle.outcome
     #     )
-    {_ref, {pid, video, _time}} = state.current_round
+    {_ref, {pid, video, _time, user}} = state.current_round
 
     # Worths to check if its dead, if not, use the next function:
     # RoundSupervisor.terminate_round_server(RoundSupervisor, pid)
@@ -373,7 +377,8 @@ defmodule DjRumble.Rooms.Matchmaking do
         {:round_started,
          %{
            round: RoundServer.get_round(pid),
-           video_details: %{videoId: video.video_id, time: 0, title: video.title}
+           video_details: %{videoId: video.video_id, time: 0, title: video.title},
+           added_by: user
          }}
       )
 

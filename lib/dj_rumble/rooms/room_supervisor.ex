@@ -14,16 +14,20 @@ defmodule DjRumble.Rooms.RoomSupervisor do
 
     Logger.info(fn -> "RoomSupervisor started with pid: #{inspect(pid)}" end)
 
-    Rooms.list_rooms()
-    |> Enum.each(fn room ->
-      room = DjRumble.Repo.preload(room, :videos)
-      {:ok, _pid} = DynamicSupervisor.start_child(__MODULE__, {RoomServer, {room}})
-    end)
+    :ok =
+      Rooms.list_rooms()
+      |> Enum.each(fn room ->
+        room = Rooms.preload_room(room, users_rooms_videos: [:video, :user])
+
+        {:ok, _pid} = DynamicSupervisor.start_child(__MODULE__, {RoomServer, {room}})
+      end)
 
     {:ok, pid}
   end
 
   def start_room_server(supervisor, room) do
+    room = Rooms.preload_room(room, users_rooms_videos: [:video, :user])
+
     DynamicSupervisor.start_child(supervisor, {RoomServer, {room}})
   end
 

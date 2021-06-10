@@ -17,5 +17,5 @@
   {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 27},
   {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 34},
   {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 42},
-  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 64}
+  {"lib/dj_rumble_web/live/room_live/show.html.leex", :call, 65}
 ]

@@ -58,7 +58,8 @@
           id: "djrumble-searchbox-modal",
           matchmaking_server: @matchmaking_server,
           room: @room,
-          state: @state
+          state: @state,
+          user: @user
         do %>
 
           <%= live_component @socket, DjRumbleWeb.Live.Components.SearchFab,

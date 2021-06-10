@@ -7,6 +7,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   require Logger
 
+  alias DjRumble.Collections
   alias DjRumble.Repo
   alias DjRumble.Rooms
   alias DjRumble.Rooms.{MatchmakingSupervisor, RoomServer, RoomSupervisor}
@@ -232,15 +233,32 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Args:** `%Video{}`
   """
   def handle_create_round(video, %{assigns: assigns} = socket) do
-    %{matchmaking_server: matchmaking_server, room: room} = assigns
+    case assigns.visitor do
+      true ->
+        {:noreply, socket}
 
-    {:ok, video} = Rooms.create_video(Map.from_struct(video))
+      false ->
+        %{
+          matchmaking_server: matchmaking_server,
+          room: %{id: room_id},
+          user: %{id: user_id} = user
+        } = assigns
 
-    {:ok, _room_video} = Rooms.create_room_video(%{room_id: room.id, video_id: video.id})
+        {:ok, video} = Rooms.create_video(Map.from_struct(video))
 
-    :ok = RoomServer.create_round(matchmaking_server, video)
+        {:ok, _room_video} = Rooms.create_room_video(%{room_id: room_id, video_id: video.id})
 
-    {:noreply, socket}
+        {:ok, _user_room_video} =
+          Collections.create_user_room_video(%{
+            room_id: room_id,
+            user_id: user_id,
+            video_id: video.id
+          })
+
+        :ok = RoomServer.create_round(matchmaking_server, video, user)
+
+        {:noreply, socket}
+    end
   end
 
   @doc """
@@ -263,8 +281,10 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Topic:** `"room:<room_slug>:ready"`
   * **Args:** `%{videoId: String.t(), time: non_neg_integer(), title: String.t()}`
   """
-  def handle_playback_details(video_details, socket) do
-    Logger.info(fn -> "Received video details: #{inspect(video_details)}" end)
+  def handle_playback_details(%{video_details: video_details, user: user}, socket) do
+    Logger.info(fn ->
+      "Received video details: #{inspect(video_details)}, added by: #{inspect(user)}"
+    end)
 
     {:noreply,
      socket
@@ -327,10 +347,10 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Args:** `%Round.InProgress{}`
   """
   def handle_round_started(
-        %{round: %Round.InProgress{} = round, video_details: video_details},
+        %{round: %Round.InProgress{} = round, video_details: video_details, added_by: user},
         socket
       ) do
-    Logger.info(fn -> "Round Started: #{inspect(round)}" end)
+    Logger.info(fn -> "Round Started: #{inspect(round)}, added by #{inspect(user)}" end)
 
     {:noreply,
      socket
