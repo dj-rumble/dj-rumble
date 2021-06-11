@@ -2,13 +2,16 @@
   <div class="grid grid-cols-4 gap-2 playlist-selected-video border-indigo-400 separator">
     <div class="align-center w-3/4 self-center rounded-xl">
       <%= img_tag(
-        @current_video.img_url,
-        width: parse_int(@current_video.img_width) * 1.2, class: "rounded")
+        @current_round.video.img_url,
+        width: parse_int(@current_round.video.img_width) * 1.2, class: "rounded")
       %>
     </div>
     <div class="col-span-2 grid grid-rows-2 self-center">
       <div class="row-span-2 text-center text-2xl">
-        <p class="font-bold"><%= @current_video.title %></p>
+        <p class="font-bold">
+          <%= @current_round.video.title %>
+          <%= render_dj(@current_round, @socket) %>
+        </p>
       </div>
       <div class="grid grid-cols-2 grid grid-rows-2">
         <div class="

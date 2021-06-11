@@ -19,11 +19,9 @@ defmodule DjRumbleWeb.Live.Components.Playlist do
       |> Enum.map(fn %{video: video} -> video end)
       |> Enum.with_index()
 
-    %{video: current_video} = current_round
-
     {:ok,
      socket
-     |> assign(:current_video, current_video)
+     |> assign(:current_round, current_round)
      |> assign(:room_server, room_server)
      |> assign(:videos, videos)}
   end
@@ -56,6 +54,19 @@ defmodule DjRumbleWeb.Live.Components.Playlist do
         <%= icon %>
       </a>
     """
+  end
+
+  defp render_dj(current_round, assigns) do
+    case Map.get(current_round, :user) do
+      nil ->
+        ~L"""
+        """
+
+      user ->
+        ~L"""
+          by, <span class="text-indigo-900"><%= user.username%></span>
+        """
+    end
   end
 
   defp parse_int(str) do
