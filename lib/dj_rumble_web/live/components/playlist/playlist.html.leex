@@ -1,47 +1,15 @@
-<div class="p-4 m-6 rounded-lg">
-  <div class="grid grid-cols-4 gap-2 playlist-selected-video border-indigo-400 separator">
-    <div class="align-center w-3/4 self-center rounded-xl">
-      <%= img_tag(
-        @current_round.video.img_url,
-        width: parse_int(@current_round.video.img_width) * 1.2, class: "rounded")
-      %>
-    </div>
-    <div class="col-span-2 grid grid-rows-2 self-center">
-      <div class="row-span-2 text-center text-2xl">
-        <p class="font-bold">
-          <%= @current_round.video.title %>
-          <%= render_dj(@current_round, @socket) %>
-        </p>
-      </div>
-      <div class="grid grid-cols-2 grid grid-rows-2">
-        <div class="
-        col-span-1 justify-self-center text-4xl	cursor-pointer
-        transform hover:scale-110
-      ">
-          <%= render_score_button(:positive, @myself) %>
-        </div>
-        <div class="
-          col-span-1 justify-self-center text-4xl	cursor-pointer
-          transform hover:scale-110
-        ">
-          <%= render_score_button(:negative, @myself) %>
-        </div>
-      </div>
-    </div>
-    <div class="col-span-1">
-    </div>
-  </div>
+<div class="pr-1 m-2 rounded-lg">
   <%= for { video, _index } <- @videos do %>
-    <div class="grid grid-cols-6 gap-2 playlist-video separator bg-gray-800 shadow-card">
-      <div class="col-span-1 align-center w-3/4 self-center rounded">
-        <%= img_tag(video.img_url, width: parse_int(video.img_width) * 1.2) %>
+    <div class="grid grid-cols-8 gap-2 playlist-video separator bg-gray-800 shadow-card rounded-lg">
+      <div class="col-span-1 align-center w-3/4 self-center">
+        <%= img_tag(video.img_url, class: "rounded-l-md") %>
       </div>
-      <div class="col-span-5 grid grid-rows-2 self-center">
-        <div class="row-span-3 text-left text-gray-400">
+      <div class="col-span-7 grid grid-rows-2 self-center pl-1">
+        <div class="row-span-3 text-left text-gray-400 text-xl">
           <p class="font-bold m-0"><%= video.title %></p>
         </div>
         <div class="row-span-2 text-left text-gray-400 text-lg">
-          <p class="font-bold m-0"><%= video.description %></p>
+          <p class="m-0"><%= video.description %></p>
         </div>
       </div>
     </div>

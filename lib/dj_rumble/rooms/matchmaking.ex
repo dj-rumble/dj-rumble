@@ -147,16 +147,12 @@ defmodule DjRumble.Rooms.Matchmaking do
         nil
 
       :playing ->
-        {_ref, {round_pid, %{video_id: video_id}, _time, user}} = state.current_round
+        {_ref, {round_pid, video, _time, user}} = state.current_round
         Logger.info(fn -> "Sending current round details." end)
 
-        elapsed_time =
-          case RoundServer.get_round(round_pid) do
-            %Round.InProgress{elapsed_time: elapsed_time} -> elapsed_time
-            round -> round.elapsed_time
-          end
+        round = RoundServer.get_round(round_pid)
 
-        :ok = send_playback_details(pid, elapsed_time, video_id, user)
+        :ok = send_playback_details(pid, round, video, user)
     end
 
     {:reply, :ok, state}
@@ -328,13 +324,14 @@ defmodule DjRumble.Rooms.Matchmaking do
     )
   end
 
-  defp send_playback_details(pid, time, video_id, user) do
-    video_details = %{time: time, videoId: video_id}
+  defp send_playback_details(pid, round, video, user) do
+    video_details = %{time: round.elapsed_time, videoId: video.video_id}
 
     :ok =
       Process.send(
         pid,
-        {:receive_playback_details, %{video_details: video_details, user: user}},
+        {:receive_playback_details,
+         %{round: round, video: video, video_details: video_details, added_by: user}},
         []
       )
   end
@@ -377,7 +374,8 @@ defmodule DjRumble.Rooms.Matchmaking do
         {:round_started,
          %{
            round: RoundServer.get_round(pid),
-           video_details: %{videoId: video.video_id, time: 0, title: video.title},
+           video_details: %{videoId: video.video_id, time: 0},
+           video: video,
            added_by: user
          }}
       )

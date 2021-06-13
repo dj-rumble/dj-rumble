@@ -694,7 +694,8 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert_received({:receive_countdown, 3000})
 
       assert_receive(
-        {:receive_playback_details, %{video_details: %{videoId: ^video_id, time: 1}, user: ^user}}
+        {:receive_playback_details,
+         %{video_details: %{videoId: ^video_id, time: 1}, added_by: ^user, video: ^video}}
       )
     end
 

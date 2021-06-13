@@ -53,7 +53,7 @@ defmodule DjRumble.Rooms.Video do
         %{
           channel_title: "",
           description: "",
-          img_height: "120",
+          img_height: "90",
           img_url:
             "http://journey.coca-cola.com/content/dam/journey/lc/es/private/cultura/2018/5-mayo/Portada-vinyl--1-.gif",
           img_width: "120",

@@ -1,29 +1,29 @@
 <div id="ui-feedback-data" phx-hook="UiFeedback">
   <%= if connected?(@socket) do %>
-    <%= live_component @socket, DjRumbleWeb.Live.Components.Navbar,
+
+    <%= live_component DjRumbleWeb.Live.Components.Navbar,
       visitor: @visitor,
       username: @user.username,
       homepage: true
     %>
 
-    <%= live_component @socket, DjRumbleWeb.Live.Components.RoundInfo,
-      id: "djrumble-round-info",
-      round_info: @round_info
-    %>
-
-    <div class="grid grid-rows-6 grid-cols-12 grid-flow-col gap-6 mb-12" style="max-height: 85vh;">
+    <div class="grid grid-rows-6 grid-cols-12 grid-flow-col gap-6" style="max-height: 85vh;">
       <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-1 row-end-4 text-center p-4 shadow-card">
-        <%= live_component @socket, DjRumbleWeb.Live.Components.VideoPlayer,
-          id: "djrumble-video-player"
-        %>
-        <%= live_component @socket, DjRumbleWeb.Live.Components.PlayerControls,
-          id: "djrumble-player-controls"
-        %>
+        <div class="grid grid-rows-6 h-full w-full">
+          <div class="row-span-6 relative" >
+            <%= live_component DjRumbleWeb.Live.Components.RoundInfo,
+              id: "djrumble-round-info",
+              round_info: @round_info
+            %>
+            <%= live_component DjRumbleWeb.Live.Components.VideoPlayer,
+              id: "djrumble-video-player"
+            %>
+          </div>
+        </div>
       </div>
       <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 row-start-4 row-end-6 text-center overflow-y-scroll shadow-card">
-        <%= live_component @socket, DjRumbleWeb.Live.Components.Playlist,
+        <%= live_component DjRumbleWeb.Live.Components.Playlist,
           id: "djrumble-playlist",
-          current_round: @current_round,
           next_rounds: @next_rounds,
           room_server: @room_server
         %>
@@ -31,7 +31,7 @@
       <div class="rounded-lg bg-gray-800 col-start-9 col-end-13 row-start-1 row-end-6 text-center align-middle shadow-card px-3 h-full">
         <div class="grid grid-rows-6 h-full">
           <div class="row-span-2 mb-5 h-full">
-            <%= live_component @socket, DjRumbleWeb.Live.Components.ConnectedUsers,
+            <%= live_component DjRumbleWeb.Live.Components.ConnectedUsers,
               id: "djrumble-connected-users",
               connected_users: @connected_users,
               user: @user
@@ -39,7 +39,7 @@
           </div>
 
           <div class="row-span-4 mb-3">
-            <%= live_component @socket, DjRumbleWeb.Live.Components.Chat,
+            <%= live_component DjRumbleWeb.Live.Components.Chat,
               id: "djrumble-chat",
               visitor: @visitor,
               username: @user.username,
@@ -49,26 +49,44 @@
           </div>
         </div>
       </div>
+      <div class="col-start-1 col-end-13 row-start-6 row-end-7 self-end">
+        <div class="rounded-lg bg-gray-800 grid grid-cols-12 shadow-card">
+
+          <div class="col-start-1 col-end-4 self-center h-full">
+            <%= live_component DjRumbleWeb.Live.Components.CurrentRound,
+              id: "djrumble-current-round",
+              current_round: @current_round
+            %>
+          </div>
+
+          <div class="col-start-4 col-end-10 text-center">
+            <%= live_component DjRumbleWeb.Live.Components.PlayerControls,
+              id: "djrumble-player-controls",
+              room_server: @room_server
+            %>
+          </div>
+
+          <div class="col-start-12 col-end-12 flex self-center justify-self-center	p-4">
+            <%= live_component DjRumbleWeb.Live.Components.SearchFab,
+              id: "djrumble-searchbox-modal-button-1"
+            %>
+          </div>
+
+        </div>
+      </div>
     </div>
 
-    <div style="width: 100% !important; z-index: 1; position: absolute; bottom: 0; left:0; right:0;" class="flex flex-grow">
-      <div class="flex justify-center" style="width: 100%">
+    <div class="absolute inset-y-1/4 left-0 right-0 pr-4 h-0">
 
-        <%= live_component @socket, DjRumbleWeb.Live.Components.Searchbox,
-          id: "djrumble-searchbox-modal",
-          matchmaking_server: @matchmaking_server,
-          room: @room,
-          state: @state,
-          user: @user
-        do %>
+      <%= live_component DjRumbleWeb.Live.Components.Searchbox,
+        id: "djrumble-searchbox-modal",
+        matchmaking_server: @matchmaking_server,
+        room: @room,
+        state: @state,
+        user: @user
+      do %>
 
-          <%= live_component @socket, DjRumbleWeb.Live.Components.SearchFab,
-            id: "djrumble-searchbox-modal-button"
-          %>
-
-        <% end %>
-
-      </div>
+      <% end %>
 
     </div>
 

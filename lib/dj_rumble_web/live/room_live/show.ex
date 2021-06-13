@@ -208,7 +208,6 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
     socket =
       socket
-      |> assign(:current_round, RoomServer.get_current_round(matchmaking_server))
       |> assign(:next_rounds, RoomServer.list_next_rounds(matchmaking_server))
 
     {:noreply, socket}
@@ -281,13 +280,18 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Topic:** `"room:<room_slug>:ready"`
   * **Args:** `%{videoId: String.t(), time: non_neg_integer(), title: String.t()}`
   """
-  def handle_playback_details(%{video_details: video_details, user: user}, socket) do
+  def handle_playback_details(
+        %{video: video, video_details: video_details, added_by: user} = current_round,
+        socket
+      ) do
     Logger.info(fn ->
       "Received video details: #{inspect(video_details)}, added by: #{inspect(user)}"
     end)
 
     {:noreply,
      socket
+     |> assign_page_title(video.title)
+     |> assign(:current_round, current_round)
      |> push_event("receive_player_state", video_details)}
   end
 
@@ -347,14 +351,20 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Args:** `%Round.InProgress{}`
   """
   def handle_round_started(
-        %{round: %Round.InProgress{} = round, video_details: video_details, added_by: user},
+        %{
+          round: %Round.InProgress{} = round,
+          video_details: video_details,
+          added_by: user,
+          video: video
+        } = current_round,
         socket
       ) do
     Logger.info(fn -> "Round Started: #{inspect(round)}, added by #{inspect(user)}" end)
 
     {:noreply,
      socket
-     |> assign_page_title(video_details.title)
+     |> assign_page_title(video.title)
+     |> assign(:current_round, current_round)
      |> push_event("receive_player_state", video_details)}
   end
 

@@ -1,26 +1,57 @@
-<div
-  id="player-syncing-controls"
-  class="mg-0 rounded-lg rounded-tl-none rounded-tr-none"
->
-  <div class="inline-flex items-center justify-center p-4 flex w-full" style="height: 4vh;">
-    <div class="inline-flex items-center justify-center p-4">
-      <span id="yt-video-start-time" class="video-time-tracker text-white">
-        -
-      </span>
+<div class="grid grid-rows-2 gap-0">
+  <div class="row-span-1">
+    <div class="grid grid-cols-4 items-center justify-center h-full">
+
+    <div class="
+      col-span-1 justify-self-center text-4xl	cursor-pointer
+      transform hover:scale-110
+    ">
+      <%= render_score_button(:positive, @myself) %>
     </div>
-    <form class="slider-form">
-      <input
-        class="progressive-slider p-4 w-full"
-        id="video-time-control"
-        value="0"
-        type="range"
-        min="0" max="100" step="1"
-      />
-    </form>
-    <div class="inline-flex items-center justify-center p-4">
-      <span id="yt-video-end-time" class="video-time-tracker text-white">
-        -
-      </span>
+
+    <div class="col-span-2 justify-self-center">
+      <span class="text-gray-400">Score</span>
     </div>
+
+    <div class="
+      col-span-1 justify-self-center text-4xl	cursor-pointer
+      transform hover:scale-110
+    ">
+      <%= render_score_button(:negative, @myself) %>
+    </div>
+
+    </div>
+  </div>
+  <div class="row-span-1">
+
+    <div
+      id="player-syncing-controls"
+      class="mg-0 rounded-lg rounded-tl-none rounded-tr-none w-full"
+    >
+      <div class="grid grid-cols-6 items-center justify-center p-4">
+        <div class="col-span-1 justify-self-end p-4 pr-2">
+          <span id="yt-video-start-time" class="video-time-tracker text-gray-400 text-xl">
+            -
+          </span>
+        </div>
+        <div class="col-span-4 w-full">
+          <form class="slider-form">
+            <input
+              class="progressive-slider p-4 w-full"
+              id="video-time-control"
+              value="0"
+              type="range"
+              min="0" max="100" step="1"
+            />
+          </form>
+        </div>
+        <div class="col-span-1 justify-self-start p-4">
+          <span id="yt-video-end-time" class="video-time-tracker text-gray-400 text-xl">
+            -
+          </span>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>

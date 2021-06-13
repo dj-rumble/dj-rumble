@@ -5,9 +5,41 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
 
   use DjRumbleWeb, :live_component
 
-  def update(assigns, socket) do
+  alias DjRumble.Rooms.RoomServer
+
+  def update(%{room_server: room_server}, socket) do
     {:ok,
      socket
-     |> assign(assigns)}
+     |> assign(:room_server, room_server)}
+  end
+
+  def handle_event("score", %{"score" => type}, socket) do
+    %{room_server: room_server} = socket.assigns
+
+    :ok = RoomServer.score(room_server, self(), String.to_atom(type))
+
+    {:noreply, socket}
+  end
+
+  defp render_score_button(type, assigns) do
+    icon =
+      case type do
+        :positive -> "👍"
+        :negative -> "👎"
+      end
+
+    id = "djrumble-score-#{Atom.to_string(type)}"
+
+    ~L"""
+      <a
+        id="<%= id %>"
+        class=""
+        phx-click="score"
+        phx-value-score=<%= type %>
+        phx-target="<%= assigns %>"
+      >
+        <%= icon %>
+      </a>
+    """
   end
 end
