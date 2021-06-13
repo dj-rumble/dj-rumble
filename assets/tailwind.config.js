@@ -16,6 +16,10 @@ module.exports = {
         'card': '0px 0px 0px #000000, 4px 4px 4px #000000',
       }
     },
+    fontFamily: {
+      'sans': ['Helvetica', 'Arial', 'sans-serif'],
+      'street-ruler': ['Street Ruler']
+    }
   },
   variants: {
     extend: {},
