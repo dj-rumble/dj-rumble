@@ -355,3 +355,23 @@ input.chat-text-input:focus {
   color: $primary;
 }
 /*       End Chat       */
+
+/* Score buttons Start */
+
+.score-button #like-background path {
+  fill: #34d399 !important;
+}
+
+.score-button #like-layer-2 {
+  fill: rgb(17, 24, 39);
+}
+
+.score-button #dislike-background path {
+  fill: #EF4444 !important;
+}
+
+.score-button #dislike-layer-2 {
+  fill: rgb(17, 24, 39);
+}
+
+/* Score buttons End */
