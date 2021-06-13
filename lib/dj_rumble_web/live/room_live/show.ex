@@ -72,6 +72,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:round_info, "")
              |> assign(:current_round, current_round)
              |> assign(:next_rounds, next_rounds)
+             |> assign(:scoring_enabled, false)
              |> assign(:state, "CLOSED")
              |> assign(:show_search_modal, false)}
         end
@@ -292,6 +293,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
      socket
      |> assign_page_title(video.title)
      |> assign(:current_round, current_round)
+     |> assign(:scoring_enabled, true)
      |> push_event("receive_player_state", video_details)}
   end
 
@@ -365,6 +367,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
      socket
      |> assign_page_title(video.title)
      |> assign(:current_round, current_round)
+     |> assign(:scoring_enabled, true)
      |> push_event("receive_player_state", video_details)}
   end
 
@@ -380,6 +383,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
     {:noreply,
      socket
+     |> assign(:scoring_enabled, false)
      |> assign(:round_info, "Round finished. Results...")}
   end
 

@@ -7,9 +7,12 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
 
   alias DjRumble.Rooms.RoomServer
 
-  def update(%{room_server: room_server}, socket) do
+  def update(assigns, socket) do
+    %{room_server: room_server, scoring_enabled: scoring_enabled} = assigns
+
     {:ok,
      socket
+     |> assign(:scoring_enabled, scoring_enabled)
      |> assign(:room_server, room_server)}
   end
 
@@ -21,30 +24,43 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
     {:noreply, socket}
   end
 
-  defp render_score_button(type, assigns) do
+  defp render_score_button(type, is_scoring_enabled, assigns) do
     icon =
       case type do
         :positive -> "like"
         :negative -> "dislike"
       end
 
-    id = "djrumble-score-#{Atom.to_string(type)}"
+    case is_scoring_enabled do
+      true ->
+        classes = "enabled cursor-pointer transform hover:scale-110"
+        id = "djrumble-score-#{Atom.to_string(type)}"
 
-    ~L"""
-      <a
-        id="<%= id %>"
-        class=""
-        phx-click="score"
-        phx-value-score=<%= type %>
-        phx-target="<%= assigns %>"
-      >
-        <%= PhoenixInlineSvg.Helpers.svg_image(
-            DjRumbleWeb.Endpoint,
-            "buttons/#{icon}",
-            class: "h-12 w-12 score-button cursor-pointer transform hover:scale-110"
-          )
-        %>
-      </a>
-    """
+        ~L"""
+          <a
+            id="<%= id %>"
+            phx-click="score"
+            phx-value-score=<%= type %>
+            phx-target="<%= assigns %>"
+          >
+            <%= render_svg_button(icon, classes) %>
+          </a>
+        """
+
+      false ->
+        classes = "disabled"
+
+        ~L"""
+          <a><%= render_svg_button(icon, classes) %></a>
+        """
+    end
+  end
+
+  defp render_svg_button(icon, classes) do
+    PhoenixInlineSvg.Helpers.svg_image(
+      DjRumbleWeb.Endpoint,
+      "buttons/#{icon}",
+      class: "h-16 w-16 score-button #{classes}"
+    )
   end
 end

@@ -358,20 +358,29 @@ input.chat-text-input:focus {
 
 /* Score buttons Start */
 
-.score-button #like-background path {
+.score-button #like-layer-1,
+.score-button #dislike-layer-1 {
+  fill: rgb(17, 24, 39);
+}
+
+.score-button.enabled #like-layer-2 {
+  fill: #064E3B;
+}
+.score-button.enabled #dislike-layer-2 {
+  fill: #7F1D1D;
+}
+
+.score-button.enabled #like-background path {
   fill: #34d399 !important;
 }
 
-.score-button #like-layer-2 {
-  fill: rgb(17, 24, 39);
-}
-
-.score-button #dislike-background path {
+.score-button.enabled #dislike-background path {
   fill: #EF4444 !important;
 }
 
-.score-button #dislike-layer-2 {
-  fill: rgb(17, 24, 39);
+.score-button.disabled #like-background path,
+.score-button.disabled #dislike-background path {
+  fill: #666 !important;
 }
 
 /* Score buttons End */
