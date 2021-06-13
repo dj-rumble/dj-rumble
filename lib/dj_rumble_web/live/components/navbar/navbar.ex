@@ -13,7 +13,7 @@ defmodule DjRumbleWeb.Live.Components.Navbar do
 
   def render(assigns) do
     ~L"""
-      <div class="flex flex-row-reverse text-gray-300">
+      <div class="flex flex-row-reverse text-gray-300 font-street-ruler text-4xl">
         <%= render_navbar(assigns.visitor, assigns.username, assigns.homepage, @socket) %>
       </div>
     """
@@ -45,7 +45,7 @@ defmodule DjRumbleWeb.Live.Components.Navbar do
     ~L"""
       <div class="m-2">
         <p>
-          Hello, <span class="text-green-300"><%= username %></span>
+          Hello, <span class="text-green-300 font-sans text-2xl"><%= username %></span>
         </p>
       </div>
     """

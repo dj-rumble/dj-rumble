@@ -1,6 +1,6 @@
 <div class="grid grid-rows-2 gap-0">
   <div class="row-span-1">
-    <div class="grid grid-cols-4 items-center justify-center h-full">
+    <div class="grid grid-cols-4 items-center justify-center h-full p-6">
 
       <div class="col-span-1 flex justify-end">
         <%= render_score_button(:positive, @scoring_enabled, @myself) %>
@@ -8,10 +8,10 @@
 
       <div class="col-span-2 grid grid-rows-2 justify-self-center">
         <div class="row-span-1">
-          <span class="text-gray-400">Live Score</span>
+          <span class="text-gray-400 text-5xl font-street-ruler">Live Score</span>
         </div>
         <div class="row-span-1">
-          <span class="text-gray-400 text-2xl">0</span>
+          <span class="text-gray-400 text-5xl font-street-ruler">0</span>
         </div>
       </div>
 
@@ -21,6 +21,7 @@
 
     </div>
   </div>
+
   <div class="row-span-1">
 
     <div
