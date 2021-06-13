@@ -24,8 +24,8 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
   defp render_score_button(type, assigns) do
     icon =
       case type do
-        :positive -> "👍"
-        :negative -> "👎"
+        :positive -> "like"
+        :negative -> "dislike"
       end
 
     id = "djrumble-score-#{Atom.to_string(type)}"
@@ -38,7 +38,12 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
         phx-value-score=<%= type %>
         phx-target="<%= assigns %>"
       >
-        <%= icon %>
+        <%= PhoenixInlineSvg.Helpers.svg_image(
+            DjRumbleWeb.Endpoint,
+            "buttons/#{icon}",
+            class: "h-12 w-12 score-button cursor-pointer transform hover:scale-110"
+          )
+        %>
       </a>
     """
   end
