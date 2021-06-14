@@ -8,10 +8,15 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
   alias DjRumble.Rooms.RoomServer
 
   def update(assigns, socket) do
-    %{room_server: room_server, scoring_enabled: scoring_enabled} = assigns
+    %{
+      live_score: live_score,
+      room_server: room_server,
+      scoring_enabled: scoring_enabled
+    } = assigns
 
     {:ok,
      socket
+     |> assign(:live_score, live_score)
      |> assign(:scoring_enabled, scoring_enabled)
      |> assign(:room_server, room_server)}
   end

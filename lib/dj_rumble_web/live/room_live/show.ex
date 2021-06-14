@@ -65,6 +65,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
              socket
              |> assign(:connected_users, connected_users)
              |> assign(:joined, false)
+             |> assign(:live_score, 0)
              |> assign(:matchmaking_server, matchmaking_server)
              |> assign(:messages, [])
              |> assign(:room, room)
@@ -279,12 +280,14 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   * **From:** `Matchmaking`
   * **Topic:** `"room:<room_slug>:ready"`
-  * **Args:** `%{videoId: String.t(), time: non_neg_integer(), title: String.t()}`
+  %{round: round, video: video, video_details: video_details, added_by: user
+  * **Args:** `%{video_details: %{videoId: String.t(), time: non_neg_integer(), title: String.t()}, round: %Round.InProgress{}, video: %Video{}, added_by: %User{}}`
   """
-  def handle_playback_details(
-        %{video: video, video_details: video_details, added_by: user} = current_round,
-        socket
-      ) do
+  def handle_playback_details(params, socket) do
+    %{video: video, video_details: video_details, added_by: user, round: round} = params
+
+    {positives, negatives} = round.score
+
     Logger.info(fn ->
       "Received video details: #{inspect(video_details)}, added by: #{inspect(user)}"
     end)
@@ -292,8 +295,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
     {:noreply,
      socket
      |> assign_page_title(video.title)
-     |> assign(:current_round, current_round)
+     |> assign(:current_round, params)
      |> assign(:scoring_enabled, true)
+     |> assign(:live_score, positives - negatives)
      |> push_event("receive_player_state", video_details)}
   end
 
@@ -412,9 +416,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
      |> push_event("receive_new_message", %{})}
   end
 
-  def handle_receive_score(type, socket) do
+  def handle_receive_score(%{type: type, round: round}, socket) do
+    {positives, negatives} = round.score
+
     {:noreply,
      socket
+     |> assign(:live_score, positives - negatives)
      |> push_event("receive_score", %{type: type})}
   end
 

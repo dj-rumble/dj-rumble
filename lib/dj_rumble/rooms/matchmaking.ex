@@ -44,7 +44,7 @@ defmodule DjRumble.Rooms.Matchmaking do
   end
 
   def score(server, type) do
-    GenServer.cast(server, {:score, type})
+    GenServer.call(server, {:score, type})
   end
 
   def initial_state(args) do
@@ -159,12 +159,12 @@ defmodule DjRumble.Rooms.Matchmaking do
   end
 
   @impl GenServer
-  def handle_cast({:score, type}, state) do
+  def handle_call({:score, type}, _from, state) do
     {_ref, {round_pid, _video, _time, _user}} = state.current_round
 
-    %Round.InProgress{} = RoundServer.score(round_pid, type)
+    %Round.InProgress{} = round = RoundServer.score(round_pid, type)
 
-    {:noreply, state}
+    {:reply, round, state}
   end
 
   @impl GenServer

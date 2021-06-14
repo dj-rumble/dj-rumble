@@ -89,11 +89,14 @@ defmodule DjRumble.Room.MatchmakingTest do
     end
 
     defp do_score(server, score) do
-      :ok = Matchmaking.score(server, score)
+      Matchmaking.score(server, score)
     end
 
     defp do_scores(server, scores) do
-      Enum.each(scores, &do_score(server, &1))
+      for score <- scores do
+        do_score(server, score)
+      end
+      |> List.last()
     end
 
     test "start_link/1 starts a matchmaking server", %{pid: pid} do
@@ -273,7 +276,7 @@ defmodule DjRumble.Room.MatchmakingTest do
     test "score/2 is called once and returns :ok", %{pid: pid, state: state, user: user} do
       # Setup
       time = 30
-      %{videos: [video | _videos] = videos} = state.room
+      %{videos: videos} = state.room
       videos_users = Enum.map(videos, &{&1, user})
       :ok = schedule_and_start_round(pid, videos_users, time)
       %{round: %Round.InProgress{score: initial_score}} = get_current_round(pid)
@@ -282,19 +285,19 @@ defmodule DjRumble.Room.MatchmakingTest do
       {1, 0} = evaluated_score = get_evaluated_score(score, initial_score)
 
       # Exercise
-      :ok = do_scores(pid, score)
+      round = do_scores(pid, score)
 
       # Verify
-      %{
-        round: %Round.InProgress{score: ^evaluated_score},
-        video: ^video,
-        user: ^user
-      } = get_current_round(pid)
+      %Round.InProgress{score: ^evaluated_score} = round
     end
 
-    test "score/2 is called many times and returns :ok", %{pid: pid, state: state, user: user} do
+    test "score/2 is called many times and returns a round with an updated score", %{
+      pid: pid,
+      state: state,
+      user: user
+    } do
       # Setup
-      %{videos: [video | _videos] = videos} = state.room
+      %{videos: videos} = state.room
       time = 30
       videos_users = Enum.map(videos, &{&1, user})
       :ok = schedule_and_start_round(pid, videos_users, time)
@@ -304,14 +307,10 @@ defmodule DjRumble.Room.MatchmakingTest do
       {3, 0} = evaluated_score = get_evaluated_score(score, initial_score)
 
       # Exercise
-      :ok = do_scores(pid, score)
+      round = do_scores(pid, score)
 
       # Verify
-      %{
-        round: %Round.InProgress{score: ^evaluated_score},
-        video: ^video,
-        user: ^user
-      } = get_current_round(pid)
+      %Round.InProgress{score: ^evaluated_score} = round
     end
 
     test "score/2 is called many times with mixed scores and returns :ok", %{
@@ -320,7 +319,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       user: user
     } do
       # Setup
-      %{videos: [video | _videos] = videos} = state.room
+      %{videos: videos} = state.room
       time = 30
       videos_users = Enum.map(videos, &{&1, user})
       :ok = schedule_and_start_round(pid, videos_users, time)
@@ -330,14 +329,10 @@ defmodule DjRumble.Room.MatchmakingTest do
       evaluated_score = get_evaluated_score(score, initial_score)
 
       # Exercise
-      :ok = do_scores(pid, score)
+      round = do_scores(pid, score)
 
       # Verify
-      %{
-        round: %Round.InProgress{score: ^evaluated_score},
-        video: ^video,
-        user: ^user
-      } = get_current_round(pid)
+      %Round.InProgress{score: ^evaluated_score} = round
     end
   end
 
@@ -418,9 +413,9 @@ defmodule DjRumble.Room.MatchmakingTest do
     end
 
     defp handle_score(state, type) do
-      response = Matchmaking.handle_cast({:score, type}, state)
+      response = Matchmaking.handle_call({:score, type}, nil, state)
 
-      {:noreply, new_state} = response
+      {:reply, %Round.InProgress{} = _round, new_state} = response
 
       assert new_state == state
 
@@ -699,7 +694,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       )
     end
 
-    test "handle_cast/2 :: {:score, :positive} is called once and returns :ok", %{
+    test "handle_call/3 :: {:score, :positive} is called once", %{
       state: state,
       user: user
     } do
@@ -728,7 +723,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       {_scores, _state} = handle_scores(state, scores)
     end
 
-    test "handle_cast/2 :: {:score, :positive} is called many times and returns :ok", %{
+    test "handle_call/3 :: {:score, :positive} is called many times", %{
       state: state,
       user: user
     } do
