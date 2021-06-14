@@ -22,10 +22,6 @@ defmodule DjRumble.Rooms.RoomServer do
     GenServer.call(pid, :join)
   end
 
-  def get_narration(pid) do
-    GenServer.call(pid, :get_narration)
-  end
-
   def list_next_rounds(matchmaking_server) do
     Matchmaking.list_next_rounds(matchmaking_server)
   end
@@ -52,9 +48,12 @@ defmodule DjRumble.Rooms.RoomServer do
 
   @impl GenServer
   def init({room} = _init_arg) do
+    # coveralls-ignore-start
     Logger.info(fn ->
       "RoomServer started with pid: #{inspect(self())} for room: #{room.slug}"
     end)
+
+    # coveralls-ignore-stop
 
     {:ok, matchmaking_server} =
       MatchmakingSupervisor.start_matchmaking_server(MatchmakingSupervisor, room)

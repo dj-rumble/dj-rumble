@@ -85,20 +85,6 @@ defmodule DjRumble.Rooms.Matchmaking do
   end
 
   @impl GenServer
-  def handle_call(:prepare_initial_round, _from, state) do
-    # coveralls-ignore-start
-    Logger.info(fn ->
-      "Preparing an initial round."
-    end)
-
-    # coveralls-ignore-stop
-
-    state = prepare_next_round(state)
-
-    {:reply, :ok, state}
-  end
-
-  @impl GenServer
   def handle_call(:list_next_rounds, _from, state) do
     next_rounds =
       Enum.map(state.next_rounds, fn {_ref, {pid, video, _time, user}} ->
