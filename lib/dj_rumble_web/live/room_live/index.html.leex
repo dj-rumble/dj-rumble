@@ -1,60 +1,64 @@
-<%= live_component DjRumbleWeb.Live.Components.Navbar,
-  visitor: @visitor,
-  username: @user.username,
-  homepage: false
-%>
+<%= if connected?(@socket) do %>
 
-<h3 class="text-gray-50 p-4 m-4 text-5xl font-street-ruler">Dj Rooms</h3>
+  <%= live_component DjRumbleWeb.Live.Components.Navbar,
+    visitor: @visitor,
+    username: @user.username,
+    homepage: false
+  %>
 
-<%= if @live_action in [:new, :edit] do %>
-  <%= live_modal @socket, DjRumbleWeb.RoomLive.FormComponent,
-    id: @room.id || :new,
-    title: @page_title,
-    action: @live_action,
-    room: @room,
-    return_to: Routes.room_index_path(@socket, :index) %>
-<% end %>
+  <h3 class="text-gray-50 p-4 m-4 text-5xl font-street-ruler">Dj Rooms</h3>
 
-<div
-  class="rooms-container text-gray-50"
->
-  <%= if @rooms != [] do %>
+  <%= if @live_action in [:new, :edit] do %>
+    <%= live_modal @socket, DjRumbleWeb.RoomLive.FormComponent,
+      id: @room.id || :new,
+      title: @page_title,
+      action: @live_action,
+      room: @room,
+      return_to: Routes.room_index_path(@socket, :index) %>
+  <% end %>
 
-  <div class="mb-4">
-    <ul class="like-list grid gap-2 grid-cols-1 lg:grid-cols-2 m-2">
-    <%= for room <- @rooms do %>
-      <li class="room-item col-span-1 hover:text-green-300 px-2 cursor-pointer round">
-        <div class="flex grid grid-cols-8 xl:grid-cols-12 shadow-card">
+  <div
+    class="rooms-container text-gray-50"
+  >
+    <%= if @rooms != [] do %>
 
-          <div class="
-            col-span-2 row-span-1
-            sm:col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-2
-            self-center justify-self-center
-          ">
-            <%= Phoenix.View.render DjRumbleWeb.AlbumCoverGridView,
-              "album_cover_grid.html",
-              videos: room.videos
-            %>
+    <div class="mb-4">
+      <ul class="like-list grid gap-2 grid-cols-1 lg:grid-cols-2 m-2">
+      <%= for room <- @rooms do %>
+        <li class="room-item col-span-1 hover:text-green-300 px-2 cursor-pointer round">
+          <div class="flex grid grid-cols-8 xl:grid-cols-12 shadow-card">
+
+            <div class="
+              col-span-2 row-span-1
+              sm:col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-2
+              self-center justify-self-center
+            ">
+              <%= Phoenix.View.render DjRumbleWeb.AlbumCoverGridView,
+                "album_cover_grid.html",
+                videos: room.videos
+              %>
+            </div>
+
+            <div
+              class="
+                p-4
+                col-span-6 row-span-1
+                sm:col-span-5 md:col-span-6 lg:col-span-6 xl:col-span-10
+              "
+              phx-click="redirect_room"
+              phx-value-slug="<%= room.slug %>"
+            >
+              <p class="text-2xl"><%= room.name %></p>
+            </div>
           </div>
+        </li>
+      <% end %>
+      </ul>
+    </div>
 
-          <div
-            class="
-              p-4
-              col-span-6 row-span-1
-              sm:col-span-5 md:col-span-6 lg:col-span-6 xl:col-span-10
-            "
-            phx-click="redirect_room"
-            phx-value-slug="<%= room.slug %>"
-          >
-            <p class="text-2xl"><%= room.name %></p>
-          </div>
-        </div>
-      </li>
+    <% else %>
+      <p><span>Go ahead, create the first room!</span></p>
     <% end %>
-    </ul>
   </div>
 
-  <% else %>
-    <p><span>Go ahead, create the first room!</span></p>
-  <% end %>
-</div>
+<% end %>
