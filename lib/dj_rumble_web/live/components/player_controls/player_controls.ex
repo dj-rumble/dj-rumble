@@ -36,10 +36,11 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
         :negative -> "dislike"
       end
 
+    id = "djrumble-score-#{Atom.to_string(type)}"
+
     case is_scoring_enabled do
       true ->
         classes = "enabled cursor-pointer transform hover:scale-110"
-        id = "djrumble-score-#{Atom.to_string(type)}"
 
         ~L"""
           <a
@@ -56,7 +57,11 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
         classes = "disabled"
 
         ~L"""
-          <a><%= render_svg_button(icon, classes) %></a>
+          <a
+            id="<%= id %>"
+          >
+            <%= render_svg_button(icon, classes) %>
+          </a>
         """
     end
   end

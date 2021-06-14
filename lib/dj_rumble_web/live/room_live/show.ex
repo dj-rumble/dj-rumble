@@ -73,7 +73,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:round_info, "")
              |> assign(:current_round, current_round)
              |> assign(:next_rounds, next_rounds)
-             |> assign(:scoring_enabled, false)
+             |> assign_scoring_enabled(:disable)
              |> assign(:state, "CLOSED")
              |> assign(:show_search_modal, false)}
         end
@@ -296,7 +296,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
      socket
      |> assign_page_title(video.title)
      |> assign(:current_round, params)
-     |> assign(:scoring_enabled, true)
+     |> assign_scoring_enabled(:check_user)
      |> assign(:live_score, positives - negatives)
      |> push_event("receive_player_state", video_details)}
   end
@@ -371,7 +371,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
      socket
      |> assign_page_title(video.title)
      |> assign(:current_round, current_round)
-     |> assign(:scoring_enabled, true)
+     |> assign_scoring_enabled(:check_user)
      |> push_event("receive_player_state", video_details)}
   end
 
@@ -387,7 +387,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
     {:noreply,
      socket
-     |> assign(:scoring_enabled, false)
+     |> assign_scoring_enabled(:disable)
      |> assign(:round_info, "Round finished. Results...")}
   end
 
@@ -407,7 +407,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
   Receives a chat message
 
   * **From:** `Broadcast
-  * **Topic:** `String.t()`. Example: `room:<room_slug>`
+  * **Topic:** `"room:<room_slug>"`
   """
   def handle_receive_chat_message(message, socket) do
     {:noreply,
@@ -416,6 +416,13 @@ defmodule DjRumbleWeb.RoomLive.Show do
      |> push_event("receive_new_message", %{})}
   end
 
+  @doc """
+  Receives a %Round.InProgress{} score
+
+  * **From:** `RoomServer` (broadcast)
+  * **Topic:** `"room:<slug>"`
+  * **Args:** `{:positive | :negative, %Round.InProgress{}}`
+  """
   def handle_receive_score(%{type: type, round: round}, socket) do
     {positives, negatives} = round.score
 
@@ -436,5 +443,11 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   defp schedule_next_tick do
     Process.send_after(self(), :tick, @tick_rate)
+  end
+
+  defp assign_scoring_enabled(socket, :disable), do: assign(socket, :scoring_enabled, false)
+
+  defp assign_scoring_enabled(socket, :check_user) do
+    assign(socket, :scoring_enabled, !socket.assigns.visitor)
   end
 end
