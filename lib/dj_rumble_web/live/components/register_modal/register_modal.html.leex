@@ -6,9 +6,18 @@
   <%= live_component DjRumbleWeb.Components.Modal,
     id: "#{@id}-menu",
     title: "#{@title}",
-    extra_classes: "transition duration-700 transform -translate-y-1 focus-within:scale-110",
+    extra_classes: "transition duration-700 transform opacity-95 focus-within:scale-110 focus-within:opacity-100",
     state: @state
     do %>
+
+      <div class="flex flex-row-reverse text-gray-300">
+        <div class="m-2">
+          Already registered?
+          <%= link to: Routes.user_session_path(@socket, :new), class: "text-green-300 transform hover:scale-110" do %>
+            Sign in!
+          <% end %>
+        </div>
+      </div>
 
       <div>
         <%= form_for @changeset, Routes.user_registration_path(@socket, :create),

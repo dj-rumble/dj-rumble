@@ -1,10 +1,9 @@
 <div>
 
   <button
-    style=""
     id="<%= @id %>"
-    phx-click="open"
-    phx-target="#djrumble-searchbox-modal-menu"
+    phx-click="<%= @click_event %>"
+    phx-target="#<%= @event_target %>"
     class="
       flex justify-center	items-center
       bg-indigo-800 hover:bg-indigo-700

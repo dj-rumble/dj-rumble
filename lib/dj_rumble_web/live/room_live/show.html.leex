@@ -70,7 +70,8 @@
 
           <div class="col-start-12 col-end-12 flex self-center justify-self-center	p-4">
             <%= live_component DjRumbleWeb.Live.Components.SearchFab,
-              id: "djrumble-searchbox-modal-button-1"
+              id: "djrumble-searchbox-modal-button-1",
+              is_search_enabled: !@visitor
             %>
           </div>
 
