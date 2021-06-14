@@ -7,13 +7,14 @@ defmodule DjRumbleWeb.Live.Components.SearchFab do
 
   @impl true
   def update(assigns, socket) do
+    {click_event, event_target} =
+      case assigns.is_search_enabled do
+        true ->
+          {"open", "djrumble-searchbox-modal-menu"}
 
-    {click_event, event_target} = case assigns.is_search_enabled do
-      true ->
-        {"open", "djrumble-searchbox-modal-menu"}
-      false ->
-        {"open", "djrumble-register-modal-menu"}
-    end
+        false ->
+          {"open", "djrumble-register-modal-menu"}
+      end
 
     {:ok,
      socket
