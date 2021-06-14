@@ -37,7 +37,9 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
       end
 
     id = "djrumble-score-#{Atom.to_string(type)}"
-    shared_classes = "cursor-pointer transform hover:scale-110"
+
+    shared_classes =
+      "cursor-pointer shadow-2xl transition duration-500 ease-in-out transform hover:scale-110 hover:shadow-sm"
 
     case is_scoring_enabled do
       true ->
