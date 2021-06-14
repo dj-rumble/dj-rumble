@@ -6,11 +6,11 @@
 
   <%= render_block(@inner_block) %>
 
-  <%= live_component @socket, DjRumbleWeb.Components.Modal,
+  <%= live_component DjRumbleWeb.Components.Modal,
     id: "#{@id}-menu",
     title: "Search video",
-    extra_classes: "large",
-    state: @searchbox_state
+    extra_classes: "",
+    state: @state
     do %>
 
     <div class="bg-gray-800 rounded-lg flex flex-col flex-grow text-center shadow-sm">

@@ -37,10 +37,11 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
       end
 
     id = "djrumble-score-#{Atom.to_string(type)}"
+    shared_classes = "cursor-pointer transform hover:scale-110"
 
     case is_scoring_enabled do
       true ->
-        classes = "enabled cursor-pointer transform hover:scale-110"
+        classes = "#{shared_classes} enabled"
 
         ~L"""
           <a
@@ -54,11 +55,13 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
         """
 
       false ->
-        classes = "disabled"
+        classes = "#{shared_classes} disabled"
 
         ~L"""
           <a
             id="<%= id %>"
+            phx-click="open"
+            phx-target="#djrumble-register-modal-menu"
           >
             <%= render_svg_button(icon, classes) %>
           </a>

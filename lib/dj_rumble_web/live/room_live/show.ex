@@ -75,6 +75,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:next_rounds, next_rounds)
              |> assign_scoring_enabled(:disable)
              |> assign(:searchbox_state, "CLOSED")
+             |> assign(:register_modal_state, "CLOSED")
              |> assign(:show_search_modal, false)}
         end
 

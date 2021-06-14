@@ -84,11 +84,17 @@
         id: "djrumble-searchbox-modal",
         matchmaking_server: @matchmaking_server,
         room: @room,
-        searchbox_state: @searchbox_state,
+        state: @searchbox_state,
         user: @user
       do %>
 
       <% end %>
+
+      <%= live_component DjRumbleWeb.Live.Components.RegisterModal,
+        id: "djrumble-register-modal",
+        state: @register_modal_state,
+        user: @user
+      %>
 
     </div>
 
