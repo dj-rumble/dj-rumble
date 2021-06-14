@@ -12,7 +12,10 @@ defmodule DjRumbleWeb.Live.Components.RegisterModal do
   def update(assigns, socket) do
     {:ok,
      socket
-     |> assign(:changeset, Accounts.change_user_registration(%User{}))
+     |> assign(
+       :changeset,
+       Accounts.change_user_registration(%User{username: assigns.user.username})
+     )
      |> assign(:title, "Become a DJ and start voting!")
      |> assign(assigns)}
   end
