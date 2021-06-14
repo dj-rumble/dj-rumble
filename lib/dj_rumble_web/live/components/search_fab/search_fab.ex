@@ -11,9 +11,4 @@ defmodule DjRumbleWeb.Live.Components.SearchFab do
      socket
      |> assign(assigns)}
   end
-
-  @impl true
-  def handle_event("open_search_modal", _, socket) do
-    {:noreply, socket}
-  end
 end
