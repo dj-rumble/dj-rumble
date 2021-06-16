@@ -48,14 +48,11 @@ defmodule DjRumble.Rounds.Round do
     %Round.Scheduled{round | time: time}
   end
 
-  def set_score(%Round.InProgress{} = round, :positive) do
-    {positives, negatives} = round.score
-    %Round.InProgress{round | score: {positives + 1, negatives}}
-  end
+  def set_score(%Round.InProgress{} = round, type) do
+    {score, action} = apply_score(round, type)
 
-  def set_score(%Round.InProgress{} = round, :negative) do
-    {positives, negatives} = round.score
-    %Round.InProgress{round | score: {positives, negatives + 1}}
+    %Round.InProgress{round | score: score}
+    |> log_action(action)
   end
 
   def start(%Round.Scheduled{} = round) do
@@ -97,6 +94,12 @@ defmodule DjRumble.Rounds.Round do
     {time, action}
   end
 
+  defp apply_score(%Round.InProgress{} = round, type) do
+    action = Action.from_properties(ActionsDeck.score_action_properties(type, round.elapsed_time))
+    score = Action.apply(action, round)
+    {score, action}
+  end
+
   defp check_if_finished(
          %Round.InProgress{elapsed_time: elapsed_time, time: time, score: {dislikes, likes}} =
            round
@@ -127,7 +130,7 @@ defmodule DjRumble.Rounds.Round do
     end
   end
 
-  # defp log_action(%Round.InProgress{log: log} = round, action) do
-  #   %Round.InProgress{round | log: Log.append(log, action)}
-  # end
+  defp log_action(%Round.InProgress{log: log} = round, action) do
+    %Round.InProgress{round | log: Log.append(log, action)}
+  end
 end

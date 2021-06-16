@@ -695,7 +695,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       )
     end
 
-    @tag :wip
     test "handle_call/3 :: {:score, :positive} is called once with no alive round process", %{
       state: state,
       user: user
@@ -726,7 +725,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       {:reply, :error, _state} = Matchmaking.handle_call({:score, :positive}, nil, state)
     end
 
-    @tag :wip
     test "handle_call/3 :: {:score, :positive} is called once", %{
       state: state,
       user: user
@@ -759,7 +757,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert round.score == get_evaluated_score(scores, {0, 0})
     end
 
-    @tag :wip
     test "handle_call/3 :: {:score, :positive} is called many times", %{
       state: state,
       user: user
