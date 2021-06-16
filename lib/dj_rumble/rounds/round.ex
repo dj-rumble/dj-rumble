@@ -59,14 +59,13 @@ defmodule DjRumble.Rounds.Round do
     Round.InProgress.new(round.id, round.time, round.elapsed_time, round.score)
   end
 
-  def finish(%Round.InProgress{} = round) do
-    # TODO: do not just :continue but get the result calculated
+  def finish(%Round.InProgress{} = round, outcome) do
     Round.Finished.new(
       round.id,
       round.time,
       round.elapsed_time,
       round.score,
-      :continue,
+      outcome,
       round.log
     )
   end
@@ -105,29 +104,31 @@ defmodule DjRumble.Rounds.Round do
            round
        ) do
     case {time, dislikes, likes} do
-      {n, _, _} when n == elapsed_time ->
-        %Round.Finished{
-          id: round.id,
-          time: round.time,
-          elapsed_time: round.elapsed_time,
-          score: round.score,
-          outcome: round.outcome,
-          log: round.log
-        }
+      {n, positives, negatives} when n == elapsed_time ->
+        finish(round, get_outcome(positives, negatives))
 
-      {_, n, _} when n >= 8 ->
+      {_, positives, negatives} ->
         %Round.InProgress{
           id: round.id,
           time: round.time,
           elapsed_time: round.elapsed_time,
           score: round.score,
-          outcome: :thrown,
+          outcome: get_outcome(positives, negatives),
           log: round.log
         }
-
-      _ ->
-        round
     end
+  end
+
+  defp get_outcome(positives, negatives) when positives < negatives do
+    :thrown
+  end
+
+  defp get_outcome(positives, negatives) when positives > negatives do
+    :continue
+  end
+
+  defp get_outcome(_positives, _negatives) do
+    :continue
   end
 
   defp log_action(%Round.InProgress{log: log} = round, action) do
