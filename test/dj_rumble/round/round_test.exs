@@ -18,7 +18,7 @@ defmodule DjRumble.Round.RoundTest do
       assert score == {0, 0}
     end
 
-    test "set_time/1 returns an updated scheduled round" do
+    test "set_time/2 returns an updated scheduled round" do
       time = 10
 
       %Round.Scheduled{elapsed_time: elapsed_time, time: ^time, score: score} =
@@ -74,17 +74,18 @@ defmodule DjRumble.Round.RoundTest do
       assert log == Log.new()
     end
 
-    test "finish/1 returns a finished round" do
+    test "finish/2 returns a finished round" do
       time = 5
       round = %Round.InProgress{time: time}
+      outcome = :continue
 
       %Round.Finished{
         time: ^time,
         elapsed_time: elapsed_time,
         score: score,
         log: log,
-        outcome: outcome
-      } = Round.finish(round)
+        outcome: ^outcome
+      } = Round.finish(round, outcome)
 
       assert elapsed_time == 0
       assert score == {0, 0}
@@ -114,6 +115,70 @@ defmodule DjRumble.Round.RoundTest do
       time = 1
       round = %Round.InProgress{time: time}
       %Round.Finished{elapsed_time: 1, time: ^time} = Round.simulate_tick(round)
+    end
+
+    test "simulate_tick/1 given a round that is in progress with a :thrown outcome returns a round that is in progress with a :continue outcome when positives score points are greater than negatives score points" do
+      time = 5
+      outcome = :thrown
+      score = {2, 1}
+      round = %Round.InProgress{time: time, score: score, outcome: outcome}
+      %Round.InProgress{time: ^time, outcome: :continue} = Round.simulate_tick(round)
+    end
+
+    test "simulate_tick/1 given a round that is in progress with a :continue outcome returns a round that is in progress with a :thrown outcome when positives score points are smaller than negatives score points" do
+      time = 5
+      outcome = :continue
+      score = {1, 2}
+      round = %Round.InProgress{time: time, score: score, outcome: outcome}
+      %Round.InProgress{time: ^time, outcome: :thrown} = Round.simulate_tick(round)
+    end
+
+    test "simulate_tick/1 given a round that is in progress with a :continue outcome returns a round that is in progress with the same :continue outcome when positives score points are greater than negatives score points" do
+      time = 5
+      outcome = :continue
+      score = {2, 1}
+      round = %Round.InProgress{time: time, score: score, outcome: outcome}
+      %Round.InProgress{time: ^time, outcome: :continue} = Round.simulate_tick(round)
+    end
+
+    test "simulate_tick/1 given a round that is in progress with a :thrown outcome returns a round that is in progress with the same :thrown outcome when positives score points are smaller than negatives score points" do
+      time = 5
+      outcome = :thrown
+      score = {1, 2}
+      round = %Round.InProgress{time: time, score: score, outcome: outcome}
+      %Round.InProgress{time: ^time, outcome: :thrown} = Round.simulate_tick(round)
+    end
+
+    test "simulate_tick/1 given a round that is in progress with a :thrown outcome returns a finished round with a :continue outcome when positives score points are greater than negatives score points" do
+      time = 1
+      outcome = :thrown
+      score = {2, 1}
+      round = %Round.InProgress{time: time, score: score, outcome: outcome}
+      %Round.Finished{time: ^time, outcome: :continue} = Round.simulate_tick(round)
+    end
+
+    test "simulate_tick/1 given a round that is in progress with a :continue outcome returns a finished round with a :thrown outcome when positives score points are smaller than negatives score points" do
+      time = 1
+      outcome = :continue
+      score = {1, 2}
+      round = %Round.InProgress{time: time, score: score, outcome: outcome}
+      %Round.Finished{time: ^time, outcome: :thrown} = Round.simulate_tick(round)
+    end
+
+    test "simulate_tick/1 given a round that is in progress with a :continue outcome returns a finished round with the same :continue outcome when positives score points are greater than negatives score points" do
+      time = 1
+      outcome = :continue
+      score = {2, 1}
+      round = %Round.InProgress{time: time, score: score, outcome: outcome}
+      %Round.Finished{time: ^time, outcome: :continue} = Round.simulate_tick(round)
+    end
+
+    test "simulate_tick/1 given a round that is in progress with a :thrown outcome returns a finished round with the same :thrown outcome when positives score points are smaller than negatives score points" do
+      time = 1
+      outcome = :thrown
+      score = {1, 2}
+      round = %Round.InProgress{time: time, score: score, outcome: outcome}
+      %Round.Finished{time: ^time, outcome: :thrown} = Round.simulate_tick(round)
     end
   end
 end
