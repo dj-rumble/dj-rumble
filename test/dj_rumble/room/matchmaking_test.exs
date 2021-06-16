@@ -415,16 +415,17 @@ defmodule DjRumble.Room.MatchmakingTest do
     defp handle_score(state, type) do
       response = Matchmaking.handle_call({:score, type}, nil, state)
 
-      {:reply, %Round.InProgress{} = _round, new_state} = response
+      {:reply, %Round.InProgress{} = round, new_state} = response
 
       assert new_state == state
 
-      state
+      {round, state}
     end
 
     defp handle_scores(state, scores) do
-      Enum.reduce(scores, {[], state}, fn score, {scores, state} ->
-        {scores ++ [score], handle_score(state, score)}
+      Enum.reduce(scores, {[], nil, state}, fn score, {scores, _round, state} ->
+        {round, state} = handle_score(state, score)
+        {scores ++ [score], round, state}
       end)
     end
 
@@ -694,6 +695,38 @@ defmodule DjRumble.Room.MatchmakingTest do
       )
     end
 
+    @tag :wip
+    test "handle_call/3 :: {:score, :positive} is called once with no alive round process", %{
+      state: state,
+      user: user
+    } do
+      # Setup
+      video = video_fixture()
+
+      video_time = 10
+
+      %{current_round: current_round, next_rounds: next_rounds} =
+        state =
+        state
+        |> handle_schedule_round(video, user)
+        |> handle_prepare_next_round()
+
+      assert is_valid_round(:prepared, current_round, %{video: video, time: 0})
+      assert next_rounds == []
+
+      state =
+        state
+        |> handle_receive_video_time(video_time)
+        |> handle_start_next_round()
+
+      {_ref, {round_pid, _video, _time, _user}} = state.current_round
+
+      true = Process.exit(round_pid, :kill)
+
+      {:reply, :error, _state} = Matchmaking.handle_call({:score, :positive}, nil, state)
+    end
+
+    @tag :wip
     test "handle_call/3 :: {:score, :positive} is called once", %{
       state: state,
       user: user
@@ -720,9 +753,13 @@ defmodule DjRumble.Room.MatchmakingTest do
       scores = generate_score(:positive, 10)
 
       # Exercise
-      {_scores, _state} = handle_scores(state, scores)
+      {_scores, round, _state} = handle_scores(state, scores)
+
+      # Verify
+      assert round.score == get_evaluated_score(scores, {0, 0})
     end
 
+    @tag :wip
     test "handle_call/3 :: {:score, :positive} is called many times", %{
       state: state,
       user: user
@@ -749,7 +786,10 @@ defmodule DjRumble.Room.MatchmakingTest do
       scores = generate_score(:mixed, 10)
 
       # Exercise
-      {_scores, _state} = handle_scores(state, scores)
+      {_scores, round, _state} = handle_scores(state, scores)
+
+      # Verify
+      assert round.score == get_evaluated_score(scores, {0, 0})
     end
 
     test "handle_info/2 :: {:receive_video_time, non_neg_integer()} is called with a single scheduled round state and does not reply",

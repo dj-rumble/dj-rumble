@@ -105,12 +105,20 @@ defmodule DjRumble.Rooms.RoomServer do
   def handle_cast({:score, _from, type}, state) do
     %{matchmaking_server: matchmaking_server} = state
 
-    round = Matchmaking.score(matchmaking_server, type)
+    case Matchmaking.score(matchmaking_server, type) do
+      :error ->
+        {:noreply, state}
 
-    :ok =
-      Channels.broadcast(:room, state.room.slug, {:receive_score, %{type: type, round: round}})
+      round ->
+        :ok =
+          Channels.broadcast(
+            :room,
+            state.room.slug,
+            {:receive_score, %{type: type, round: round}}
+          )
 
-    {:noreply, state}
+        {:noreply, state}
+    end
   end
 
   @impl GenServer

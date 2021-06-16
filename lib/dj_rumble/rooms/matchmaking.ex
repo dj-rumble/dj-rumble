@@ -148,9 +148,16 @@ defmodule DjRumble.Rooms.Matchmaking do
   def handle_call({:score, type}, _from, state) do
     {_ref, {round_pid, _video, _time, _user}} = state.current_round
 
-    %Round.InProgress{} = round = RoundServer.score(round_pid, type)
+    response =
+      case Process.alive?(round_pid) do
+        true ->
+          %Round.InProgress{} = RoundServer.score(round_pid, type)
 
-    {:reply, round, state}
+        false ->
+          :error
+      end
+
+    {:reply, response, state}
   end
 
   @impl GenServer

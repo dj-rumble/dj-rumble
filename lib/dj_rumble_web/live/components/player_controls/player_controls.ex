@@ -11,13 +11,15 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
     %{
       live_score: live_score,
       room_server: room_server,
-      scoring_enabled: scoring_enabled
+      scoring_enabled: scoring_enabled,
+      visitor: visitor
     } = assigns
 
     {:ok,
      socket
      |> assign(:live_score, live_score)
      |> assign(:scoring_enabled, scoring_enabled)
+     |> assign(:visitor, visitor)
      |> assign(:room_server, room_server)}
   end
 
@@ -29,7 +31,7 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
     {:noreply, socket}
   end
 
-  defp render_score_button(type, is_scoring_enabled, assigns) do
+  defp render_score_button(type, is_scoring_enabled, visitor, assigns) do
     icon =
       case type do
         :positive -> "like"
@@ -59,11 +61,17 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls do
       false ->
         classes = "#{shared_classes} disabled"
 
+        {click, event} =
+          case visitor do
+            true -> {"open", "#djrumble-register-modal-menu"}
+            false -> {"", ""}
+          end
+
         ~L"""
           <a
             id="<%= id %>"
-            phx-click="open"
-            phx-target="#djrumble-register-modal-menu"
+            phx-click="<%= click %>"
+            phx-target="<%= event %>"
           >
             <%= render_svg_button(icon, classes) %>
           </a>

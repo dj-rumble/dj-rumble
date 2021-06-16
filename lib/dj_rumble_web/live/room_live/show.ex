@@ -287,8 +287,6 @@ defmodule DjRumbleWeb.RoomLive.Show do
   def handle_playback_details(params, socket) do
     %{video: video, video_details: video_details, added_by: user, round: round} = params
 
-    {positives, negatives} = round.score
-
     Logger.info(fn ->
       "Received video details: #{inspect(video_details)}, added by: #{inspect(user)}"
     end)
@@ -298,7 +296,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
      |> assign_page_title(video.title)
      |> assign(:current_round, params)
      |> assign_scoring_enabled(:check_user)
-     |> assign(:live_score, positives - negatives)
+     |> assign_live_score(round)
      |> push_event("receive_player_state", video_details)}
   end
 
@@ -373,6 +371,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
      |> assign_page_title(video.title)
      |> assign(:current_round, current_round)
      |> assign_scoring_enabled(:check_user)
+     |> assign_live_score(round)
      |> push_event("receive_player_state", video_details)}
   end
 
@@ -425,11 +424,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Args:** `{:positive | :negative, %Round.InProgress{}}`
   """
   def handle_receive_score(%{type: type, round: round}, socket) do
-    {positives, negatives} = round.score
-
     {:noreply,
      socket
-     |> assign(:live_score, positives - negatives)
+     |> assign_live_score(round)
      |> push_event("receive_score", %{type: type})}
   end
 
@@ -450,5 +447,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   defp assign_scoring_enabled(socket, :check_user) do
     assign(socket, :scoring_enabled, !socket.assigns.visitor)
+  end
+
+  defp assign_live_score(socket, 0), do: assign(socket, :live_score, 0)
+
+  defp assign_live_score(socket, round) do
+    {positives, negatives} = round.score
+    assign(socket, :live_score, positives - negatives)
   end
 end
