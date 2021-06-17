@@ -1,4 +1,4 @@
-import { spawnHeart } from '../lib/animations'
+import { dropConfetti, spawnHeart } from '../lib/animations'
 
 const UiFeedback = () => ({
   mounted() {
@@ -7,6 +7,10 @@ const UiFeedback = () => ({
       const container = document.getElementById(elementId)
 
       spawnHeart(container, type)
+    })
+
+    this.handleEvent('drop_confetti', () => {
+      dropConfetti()
     })
   }
 })
