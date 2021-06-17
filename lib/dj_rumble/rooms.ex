@@ -122,6 +122,19 @@ defmodule DjRumble.Rooms do
     Room.changeset(room, attrs)
   end
 
+  @doc """
+  Returns a preloaded `%Room{}`.
+
+  ## Examples
+
+      iex> Rooms.preload_room(room)
+      %Room{}
+
+  """
+  def preload_room(%Room{} = room, attrs \\ []) do
+    Repo.preload(room, attrs)
+  end
+
   alias DjRumble.Rooms.Video
 
   @doc """

@@ -29,6 +29,8 @@ defmodule DjRumbleWeb do
 
   def view do
     quote do
+      use PhoenixInlineSvg.Helpers
+
       use Phoenix.View,
         root: "lib/dj_rumble_web/templates",
         namespace: DjRumbleWeb

@@ -19,6 +19,8 @@ defmodule DjRumble.Rooms.Video do
     many_to_many :rooms, DjRumble.Rooms.Room, join_through: "rooms_videos"
     many_to_many :users, DjRumble.Accounts.User, join_through: "users_videos"
 
+    has_many :users_rooms_videos, DjRumble.Collections.UserRoomVideo
+
     timestamps()
   end
 
@@ -51,7 +53,7 @@ defmodule DjRumble.Rooms.Video do
         %{
           channel_title: "",
           description: "",
-          img_height: "120",
+          img_height: "90",
           img_url:
             "http://journey.coca-cola.com/content/dam/journey/lc/es/private/cultura/2018/5-mayo/Portada-vinyl--1-.gif",
           img_width: "120",

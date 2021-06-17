@@ -1,13 +1,17 @@
 require Logger
 
+alias DjRumble.Accounts.User
+alias DjRumble.Repo
 alias DjRumble.Rooms
+alias DjRumble.Collections
 
-schema_upper = "RoomVideo"
-schema_plural = "rooms videos"
+schema_upper = "userRoomVideo"
+schema_plural = "users rooms videos"
 
 # This script assumes the videos and rooms seeds have already been loaded.
 try do
   # Fetches current rooms and videos
+  user_ids = Repo.all(User) |> Enum.map(& &1.id)
   room_ids = Rooms.list_rooms() |> Enum.map(fn room -> room.id end)
   video_ids = Rooms.list_videos() |> Enum.map(fn video -> video.id end)
   single_video_rooms = Enum.with_index(Enum.take(room_ids, 3))
@@ -23,12 +27,14 @@ try do
         4 -> vulf_video_ids
         5 -> short_video_ids
       end
-    for video_id <- video_ids, do: {room_id, video_id}
-  end
-  |> List.flatten()
-  |> Enum.map(fn {room_id, video_id} ->
-    {:ok, room_video} = Rooms.create_room_video(%{room_id: room_id, video_id: video_id})
-    room_video
+
+    for video_id <- video_ids do
+      random_user_id = Enum.at(user_ids, Enum.random(0..length(user_ids) - 1))
+      {room_id, video_id, random_user_id}
+    end
+  end |> List.flatten() |> Enum.map(fn {room_id, video_id, user_id} ->
+    {:ok, user_room_video} = Collections.create_user_room_video(%{room_id: room_id, user_id: user_id, video_id: video_id})
+    user_room_video
   end)
   |> length()
 rescue

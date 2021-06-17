@@ -17,7 +17,7 @@ defmodule DjRumble.Accounts.User do
     field :confirmed_at, :naive_datetime
 
     many_to_many :rooms, DjRumble.Rooms.Room, join_through: DjRumble.Rooms.UserRoom
-    # many_to_many :videos, DjRumble.Rooms.Video, join_through: DjRumble.Rooms.UserVideo
+    has_many :users_rooms_videos, DjRumble.Collections.UserRoomVideo
 
     timestamps()
   end
