@@ -119,6 +119,13 @@ defmodule DjRumbleWeb.RoomLive.Show do
   end
 
   @impl true
+  def handle_event("drop_confetti", _, socket) do
+    {:noreply,
+     socket
+     |> push_event("drop_confetti", %{})}
+  end
+
+  @impl true
   def handle_event("open_search_modal", _, socket) do
     {:noreply,
      socket

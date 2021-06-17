@@ -6,13 +6,15 @@
       homepage: true
     %>
 
+    <canvas id="confetti-canvas" style="width: 100% !important; height: 95% !important; z-index: 1; position: absolute;"></canvas>
+
     <%= live_component @socket, DjRumbleWeb.Live.Components.RoundInfo,
       id: "djrumble-round-info",
       round_info: @round_info
     %>
 
     <div class="grid grid-rows-6 grid-cols-12 grid-flow-col gap-6 mb-12" style="max-height: 85vh;">
-      <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-1 row-end-4 text-center p-4 shadow-card">
+      <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-1 row-end-4 text-center p-4 shadow-card" style="z-index: 2;">
         <%= live_component @socket, DjRumbleWeb.Live.Components.VideoPlayer,
           id: "djrumble-video-player"
         %>
@@ -20,7 +22,7 @@
           id: "djrumble-player-controls"
         %>
       </div>
-      <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 row-start-4 row-end-6 text-center overflow-y-scroll shadow-card">
+      <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 row-start-4 row-end-6 text-center overflow-y-scroll shadow-card" style="z-index: 2;">
         <%= live_component @socket, DjRumbleWeb.Live.Components.Playlist,
           id: "djrumble-playlist",
           current_round: @current_round,
@@ -28,7 +30,7 @@
           room_server: @room_server
         %>
       </div>
-      <div class="rounded-lg bg-gray-800 col-start-9 col-end-13 row-start-1 row-end-6 text-center align-middle shadow-card px-3 h-full">
+      <div class="rounded-lg bg-gray-800 col-start-9 col-end-13 row-start-1 row-end-6 text-center align-middle shadow-card px-3 h-full" style="z-index: 2;">
         <div class="grid grid-rows-6 h-full">
           <div class="row-span-2 mb-5 h-full">
             <%= live_component @socket, DjRumbleWeb.Live.Components.ConnectedUsers,
@@ -52,6 +54,11 @@
     </div>
 
     <div style="width: 100% !important; z-index: 1; position: absolute; bottom: 0; left:0; right:0;" class="flex flex-grow">
+
+      <%= live_component @socket, DjRumbleWeb.Live.Components.ConfettiFab,
+        id: "djrumble-confetti-button"
+      %>
+
       <div class="flex justify-center" style="width: 100%">
 
         <%= live_component @socket, DjRumbleWeb.Live.Components.Searchbox,
