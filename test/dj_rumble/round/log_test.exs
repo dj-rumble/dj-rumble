@@ -23,7 +23,6 @@ defmodule DjRumble.Round.LogTest do
         Log.append(log, action)
     end
 
-    @tag :wip
     test "append/2 with %Action.Score{type: :positive} returns a log with a new action and a new upvoted narration" do
       %Log{actions: [], narrations: []} = log = Log.new()
       action_time = 1
@@ -33,7 +32,6 @@ defmodule DjRumble.Round.LogTest do
         Log.append(log, action)
     end
 
-    @tag :wip
     test "append/2 with %Action.Score{type: :negative} returns a log with a new action and a new downvoted narration" do
       %Log{actions: [], narrations: []} = log = Log.new()
       action_time = 1

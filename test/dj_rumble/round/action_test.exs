@@ -21,7 +21,6 @@ defmodule DjRumble.Round.ActionTest do
       assert Action.from_properties(properties) == %Action.CountTime{time: 1}
     end
 
-    @tag :wip
     test "apply/2 with %Action.Score{type: :positive} returns a positive score" do
       type = :positive
       amount = 1
@@ -31,7 +30,6 @@ defmodule DjRumble.Round.ActionTest do
       assert Action.apply(action, round) == {1, 0}
     end
 
-    @tag :wip
     test "apply/2 with %Action.Score{type: :negative} returns a negative score" do
       type = :negative
       amount = 1

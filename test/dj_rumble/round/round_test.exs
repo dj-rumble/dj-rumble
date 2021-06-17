@@ -74,10 +74,10 @@ defmodule DjRumble.Round.RoundTest do
       assert log == Log.new()
     end
 
-    test "finish/2 returns a finished round" do
+    test "finish/1 returns a finished round" do
       time = 5
-      round = %Round.InProgress{time: time}
       outcome = :continue
+      round = %Round.InProgress{time: time, outcome: outcome}
 
       %Round.Finished{
         time: ^time,
@@ -85,7 +85,7 @@ defmodule DjRumble.Round.RoundTest do
         score: score,
         log: log,
         outcome: ^outcome
-      } = Round.finish(round, outcome)
+      } = Round.finish(round)
 
       assert elapsed_time == 0
       assert score == {0, 0}

@@ -117,6 +117,8 @@ defmodule DjRumble.Rooms.RoomServer do
             {:receive_score, %{type: type, round: round}}
           )
 
+        # disable button to pid
+
         {:noreply, state}
     end
   end

@@ -9,6 +9,8 @@ defmodule DjRumble.Round.RoundServerTest do
 
   alias DjRumble.Rounds.{Log, Round, RoundServer}
 
+  alias DjRumbleWeb.Channels
+
   describe "round_server client interface" do
     setup do
       room = room_fixture()
@@ -406,6 +408,25 @@ defmodule DjRumble.Round.RoundServerTest do
           {:noreply, {^slug, %Round.InProgress{}} = state} = response
           state
         end)
+    end
+
+    test "handle_info/2 :: :tick is called with a round that is in progress, sends a broadcast message and and does not reply",
+         %{room: room, state: state} do
+      %{slug: slug} = room
+
+      :ok = Channels.subscribe(:room, slug)
+
+      _state =
+        state
+        |> handle_set_round_time(2)
+        |> handle_start_round()
+        |> handle_score(:negative)
+        |> handle_tick(fn response ->
+          {:noreply, {^slug, %Round.InProgress{}} = state} = response
+          state
+        end)
+
+      assert_receive {:outcome_changed, %{round: %Round.InProgress{outcome: :thrown}}}
     end
 
     test "handle_info/2 :: :tick is called with a round that is in finished and stops", %{

@@ -59,13 +59,13 @@ defmodule DjRumble.Rounds.Round do
     Round.InProgress.new(round.id, round.time, round.elapsed_time, round.score)
   end
 
-  def finish(%Round.InProgress{} = round, outcome) do
+  def finish(%Round.InProgress{} = round) do
     Round.Finished.new(
       round.id,
       round.time,
       round.elapsed_time,
       round.score,
-      outcome,
+      round.outcome,
       round.log
     )
   end
@@ -84,6 +84,7 @@ defmodule DjRumble.Rounds.Round do
     round = %Round.InProgress{round | elapsed_time: time}
 
     round
+    |> check_outcome()
     |> check_if_finished()
   end
 
@@ -99,35 +100,45 @@ defmodule DjRumble.Rounds.Round do
     {score, action}
   end
 
+  defp check_outcome(%Round.InProgress{outcome: outcome, score: score} = round) do
+    case get_outcome_by_score(score) do
+      ^outcome ->
+        round
+
+      outcome ->
+        %Round.InProgress{round | outcome: outcome}
+    end
+  end
+
   defp check_if_finished(
          %Round.InProgress{elapsed_time: elapsed_time, time: time, score: {dislikes, likes}} =
            round
        ) do
     case {time, dislikes, likes} do
-      {n, positives, negatives} when n == elapsed_time ->
-        finish(round, get_outcome(positives, negatives))
+      {n, _, _} when n == elapsed_time ->
+        finish(round)
 
-      {_, positives, negatives} ->
+      {_, _positives, _negatives} ->
         %Round.InProgress{
           id: round.id,
           time: round.time,
           elapsed_time: round.elapsed_time,
           score: round.score,
-          outcome: get_outcome(positives, negatives),
+          outcome: round.outcome,
           log: round.log
         }
     end
   end
 
-  defp get_outcome(positives, negatives) when positives < negatives do
+  defp get_outcome_by_score({positives, negatives}) when positives < negatives do
     :thrown
   end
 
-  defp get_outcome(positives, negatives) when positives > negatives do
+  defp get_outcome_by_score({positives, negatives}) when positives > negatives do
     :continue
   end
 
-  defp get_outcome(_positives, _negatives) do
+  defp get_outcome_by_score({_positives, _negatives}) do
     :continue
   end
 

@@ -198,6 +198,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   def handle_info({:receive_score, params}, socket), do: handle_receive_score(params, socket)
 
+  def handle_info({:outcome_changed, params}, socket), do: handle_outcome_changed(params, socket)
+
   @doc """
   Receives a local message to continuously update the Liveview
 
@@ -428,6 +430,19 @@ defmodule DjRumbleWeb.RoomLive.Show do
      socket
      |> assign_live_score(round)
      |> push_event("receive_score", %{type: type})}
+  end
+
+  @doc """
+  Receives a `%Round.InProgress{}` whenever the outcome changes
+
+  * **From:** `RoundServer` (broadcast)
+  * **Topic:** `"room:<slug>"`
+  * **Args:** %{round: %Round.InProgress{}}
+  """
+  def handle_outcome_changed(%{round: round}, socket) do
+    Logger.info(fn -> "Outcome for current round changed: [#{round.outcome}]" end)
+
+    {:noreply, socket}
   end
 
   defp assign_page_title(socket, title) do
