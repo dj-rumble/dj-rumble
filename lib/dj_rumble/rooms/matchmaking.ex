@@ -231,13 +231,31 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     Process.demonitor(ref)
 
-    {_ref, {_pid, video, _time, user}} = state.current_round
+    {_ref, {_pid, video, _time, finished_round_user}} = state.current_round
+
+    {current_user_rounds, other_rounds} =
+      Enum.reduce(state.next_rounds, {[], []}, fn {_ref, {_pid, _video, _time, user}} = round,
+                                                  {current_user_rounds, other_rounds} ->
+        case user == finished_round_user do
+          true -> {current_user_rounds ++ [round], other_rounds}
+          false -> {current_user_rounds, other_rounds ++ [round]}
+        end
+      end)
+
+    next_rounds =
+      case round.outcome do
+        :continue ->
+          current_user_rounds ++ other_rounds
+
+        :thrown ->
+          other_rounds ++ current_user_rounds
+      end
 
     state = %{
       state
       | current_round: nil,
         finished_rounds: [round | state.finished_rounds],
-        next_rounds: state.next_rounds ++ [schedule_round(video, state.room, user)],
+        next_rounds: next_rounds ++ [schedule_round(video, state.room, finished_round_user)],
         status: :cooldown
     }
 
