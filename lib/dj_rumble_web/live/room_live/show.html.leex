@@ -7,6 +7,8 @@
       homepage: true
     %>
 
+    <canvas id="confetti-canvas" style="width: 100% !important; height: 95% !important; z-index: 1; position: absolute;"></canvas>
+
     <div class="grid grid-rows-9 grid-cols-12 grid-flow-col gap-6" style="max-height: 85vh;">
       <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-2 row-end-5 text-center p-4 shadow-card">
         <div class="grid grid-rows-6 h-full w-full">
@@ -38,7 +40,7 @@
             %>
           </div>
 
-          <div class="row-span-4 mb-3">
+          <div class="row-span-4 mb-3" style=" z-index: 2">
             <%= live_component DjRumbleWeb.Live.Components.Chat,
               id: "djrumble-chat",
               visitor: @visitor,
@@ -59,7 +61,7 @@
             %>
           </div>
 
-          <div class="col-start-4 col-end-10 text-center">
+          <div class="col-start-4 col-end-10 text-center" style=" z-index: 2">
             <%= live_component DjRumbleWeb.Live.Components.PlayerControls,
               id: "djrumble-player-controls",
               room_server: @room_server,
@@ -67,12 +69,17 @@
             %>
           </div>
 
-          <div class="col-start-12 col-end-12 flex self-center justify-self-center p-4">
+          <div class="col-start-10 col-end-11 flex self-center justify-self-center p-4" style=" z-index: 2">
+            <%= live_component DjRumbleWeb.Live.Components.ConfettiFab,
+              id: "djrumble-confetti-button"
+            %>
+          </div>
+
+          <div class="col-start-12 col-end-12 flex self-center justify-self-center p-4" style=" z-index: 2">
             <%= live_component DjRumbleWeb.Live.Components.SearchFab,
               id: "djrumble-searchbox-modal-button-1"
             %>
           </div>
-
         </div>
       </div>
     </div>
