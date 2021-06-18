@@ -139,7 +139,7 @@ defmodule DjRumble.Rounds.Round do
   end
 
   defp get_outcome_by_score({_positives, _negatives}) do
-    :continue
+    :thrown
   end
 
   defp log_action(%Round.InProgress{log: log} = round, action) do
