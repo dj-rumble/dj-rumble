@@ -10,7 +10,7 @@
     <div class="grid grid-rows-6 grid-cols-12 grid-flow-col gap-6" style="max-height: 85vh;">
       <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-1 row-end-4 text-center p-4 shadow-card">
         <div class="grid grid-rows-6 h-full w-full">
-          <div class="row-span-6 relative" >
+          <div class="row-span-6 relative overflow-hidden">
             <%= live_component DjRumbleWeb.Live.Components.RoundInfo,
               id: "djrumble-round-info",
               round_info: @round_info

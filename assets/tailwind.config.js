@@ -17,7 +17,12 @@ module.exports = {
           'inset 0px 0px 20px #323637, inset -2px 0px 2px #323637 !important',
         'inner-input':
           'inset -4px -4px 10px #323637, inset 4px 4px 10px #080a0a'
-      }
+      },
+      transitionDuration: {
+        '2000': '2000ms',
+        '2500': '2500ms',
+        '3000': '3000ms'
+       }
     },
     fontFamily: {
       'sans': ['Helvetica', 'Arial', 'sans-serif'],

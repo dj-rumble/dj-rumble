@@ -3,11 +3,24 @@
     class="
       flex absolute h-full w-full
       justify-center items-center
-      font-bold text-3xl text-gray-300 bg-black bg-transparent
+      font-bold text-9xl text-gray-300 bg-black bg-transparent
+      font-street-ruler
     "
   >
     <div class="">
       <%= @round_info %>
     </div>
   </div>
+<% else %>
+
+  <div
+    class="
+      absolute h-full w-full
+      bg-black
+      overflow-hidden
+      transition duration-3000 ease-in-out transform -translate-y-full
+    "
+  >
+  </div>
+
 <% end %>
