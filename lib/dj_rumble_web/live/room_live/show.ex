@@ -200,6 +200,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   def handle_info({:outcome_changed, params}, socket), do: handle_outcome_changed(params, socket)
 
+  def handle_info({:update_scoring_enabled, params}, socket),
+    do: handle_update_scoring_enabled(params, socket)
+
   @doc """
   Receives a local message to continuously update the Liveview
 
@@ -445,6 +448,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
     {:noreply, socket}
   end
 
+  def handle_update_scoring_enabled(scoring_enabled, socket) do
+    {:noreply,
+     socket
+     |> assign(:scoring_enabled, scoring_enabled)}
+  end
+
   defp assign_page_title(socket, title) do
     assign(socket, :page_title, title)
   end
@@ -458,10 +467,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
     Process.send_after(self(), :tick, @tick_rate)
   end
 
-  defp assign_scoring_enabled(socket, :disable), do: assign(socket, :scoring_enabled, false)
+  defp assign_scoring_enabled(socket, :disable),
+    do: assign(socket, :scoring_enabled, %{positive: false, negative: false})
 
   defp assign_scoring_enabled(socket, :check_user) do
-    assign(socket, :scoring_enabled, !socket.assigns.visitor)
+    is_enabled = !socket.assigns.visitor
+    assign(socket, :scoring_enabled, %{positive: is_enabled, negative: is_enabled})
   end
 
   defp assign_live_score(socket, 0), do: assign(socket, :live_score, 0)

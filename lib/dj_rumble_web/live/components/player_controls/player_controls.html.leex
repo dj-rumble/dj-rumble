@@ -1,25 +1,14 @@
 <div class="grid grid-rows-2 gap-0">
   <div class="row-span-1">
-    <div class="grid grid-cols-4 items-center justify-center h-full p-6">
 
-      <div class="col-span-1 flex justify-end">
-        <%= render_score_button(:positive, @scoring_enabled, @visitor, @myself) %>
-      </div>
+    <%= live_component DjRumbleWeb.Live.Components.PlayerControls.ScorePanel,
+      id: "dj-rumble-score-panel",
+      room_server: @room_server,
+      scoring_enabled: @scoring_enabled,
+      live_score: @live_score,
+      visitor: @visitor
+    %>
 
-      <div class="col-span-2 grid grid-rows-2 justify-self-center">
-        <div class="row-span-1">
-          <span class="text-gray-400 text-5xl font-street-ruler">Live Score</span>
-        </div>
-        <div class="row-span-1">
-          <span class="text-gray-400 text-5xl font-street-ruler"><%= @live_score %></span>
-        </div>
-      </div>
-
-      <div class="col-span-1 flex justify-start">
-        <%= render_score_button(:negative, @scoring_enabled, @visitor, @myself) %>
-      </div>
-
-    </div>
   </div>
 
   <div class="row-span-1">
