@@ -5,8 +5,11 @@ defmodule DjRumble.Room.RoomServerTest do
   use DjRumble.DataCase
   use ExUnit.Case
 
+  import DjRumble.AccountsFixtures
+  import DjRumble.CollectionsFixtures
   import DjRumble.RoomsFixtures
 
+  alias DjRumble.Rooms
   alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor, RoomServer, Video}
   alias DjRumble.Rounds.Round
 
@@ -21,11 +24,19 @@ defmodule DjRumble.Room.RoomServerTest do
 
   describe "room_server client interface" do
     setup do
-      %{room: %{slug: slug, videos: videos} = room} =
-        room_videos_fixture(
-          %{room: room_fixture(), videos: videos_fixture(3)},
-          %{preload: true}
-        )
+      room = room_fixture()
+      videos = videos_fixture(3)
+      user = user_fixture()
+
+      :ok =
+        Enum.each(videos, fn video ->
+          user_room_video = %{user: user, room: room, video: video}
+          user_room_video_fixture(user_room_video)
+        end)
+
+      room = Rooms.preload_room(room, users_rooms_videos: [:video, :user])
+
+      %{slug: slug} = room
 
       room_genserver_pid = start_supervised!({RoomServer, {room}})
 
@@ -54,7 +65,8 @@ defmodule DjRumble.Room.RoomServerTest do
         matchmaking_server: matchmaking_server_pid,
         pid: room_genserver_pid,
         room: room,
-        state: initial_state
+        state: initial_state,
+        user: user
       }
     end
 
@@ -70,6 +82,12 @@ defmodule DjRumble.Room.RoomServerTest do
       is_pid(pid) and Process.alive?(pid)
     end
 
+    def get_videos_users(room) do
+      Enum.map(room.users_rooms_videos, fn user_room_video ->
+        {user_room_video.video, user_room_video.user}
+      end)
+    end
+
     defp prepare_next_round(matchmaking_server) do
       Process.send(matchmaking_server, :prepare_next_round, [])
     end
@@ -82,8 +100,14 @@ defmodule DjRumble.Room.RoomServerTest do
       Process.send(matchmaking_server, :start_next_round, [])
     end
 
-    defp create_rounds(matchmaking_server, videos) do
-      Enum.each(videos, &assert(RoomServer.create_round(matchmaking_server, &1) == :ok))
+    defp create_round(matchmaking_server, video, user) do
+      RoomServer.create_round(matchmaking_server, video, user)
+    end
+
+    defp create_rounds(matchmaking_server, videos_users) do
+      Enum.each(videos_users, fn {video, user} ->
+        assert(create_round(matchmaking_server, video, user) == :ok)
+      end)
     end
 
     defp do_score(server, {pid, score}) do
@@ -94,8 +118,8 @@ defmodule DjRumble.Room.RoomServerTest do
       Enum.each(pids_scores, &do_score(server, &1))
     end
 
-    defp start_round(matchmaking_server, videos, time) do
-      :ok = create_rounds(matchmaking_server, videos)
+    defp schedule_and_start_round(matchmaking_server, videos_users, time) do
+      :ok = create_rounds(matchmaking_server, videos_users)
       :ok = prepare_next_round(matchmaking_server)
       :ok = receive_video_time(matchmaking_server, time)
       :ok = start_next_round(matchmaking_server)
@@ -123,13 +147,15 @@ defmodule DjRumble.Room.RoomServerTest do
       matchmaking_server: matchmaking_server,
       state: state
     } do
+      videos_users = get_videos_users(state.room)
+
       next_rounds = RoomServer.list_next_rounds(matchmaking_server)
 
-      assert length(next_rounds) == length(state.room.videos)
+      assert length(next_rounds) == length(videos_users)
 
       :ok =
-        Enum.zip(next_rounds, state.room.videos)
-        |> Enum.each(fn {%{round: round, video: round_video}, video} ->
+        Enum.zip(next_rounds, videos_users)
+        |> Enum.each(fn {%{round: round, video: round_video, user: round_user}, {video, user}} ->
           %Round.Scheduled{
             elapsed_time: 0,
             score: {0, 0},
@@ -137,6 +163,7 @@ defmodule DjRumble.Room.RoomServerTest do
           } = round
 
           assert round_video == video
+          assert round_user == user
         end)
     end
 
@@ -158,14 +185,14 @@ defmodule DjRumble.Room.RoomServerTest do
            state: state
          } do
       # Setup
-      [video | _videos] = state.room.videos
-      :ok = create_rounds(matchmaking_server, [video])
+      [{video, user} | _videos_users] = get_videos_users(state.room)
+      :ok = create_rounds(matchmaking_server, [{video, user}])
       # Exercise
       current_round = RoomServer.get_current_round(matchmaking_server)
 
       # Verify
       video = placeholder_video()
-      %{round: nil, video: ^video} = current_round
+      %{round: nil, video: ^video, user: nil} = current_round
     end
 
     test "get_current_round/1 returns an empty round with a placeholder video when there are some next rounds",
@@ -174,146 +201,138 @@ defmodule DjRumble.Room.RoomServerTest do
            state: state
          } do
       # Setup
-      %{videos: videos} = state.room
-      :ok = create_rounds(matchmaking_server, videos)
+      [{_video, _user} | _videos_users] = videos_users = get_videos_users(state.room)
 
+      :ok = create_rounds(matchmaking_server, videos_users)
       # Exercise
       current_round = RoomServer.get_current_round(matchmaking_server)
 
       # Verify
       video = placeholder_video()
-      %{round: nil, video: ^video} = current_round
+      %{round: nil, video: ^video, user: nil} = current_round
     end
 
-    @tag wip: true
     test "get_current_round/1 returns a scheduled round with a video when there is a current round",
          %{
            matchmaking_server: matchmaking_server,
            state: state
          } do
       # Setup
-      [video | _videos] = videos = state.room.videos
-      :ok = create_rounds(matchmaking_server, videos)
+      [{video, user} | _videos_users] = videos_users = get_videos_users(state.room)
+      :ok = create_rounds(matchmaking_server, videos_users)
       :ok = prepare_next_round(matchmaking_server)
 
       # Exercise
       current_round = RoomServer.get_current_round(matchmaking_server)
 
       # Verify
-      %{video: ^video} = current_round
-
       %{
         round: %Round.Scheduled{
           elapsed_time: 0,
           score: {0, 0},
           time: 0
         },
-        video: ^video
+        video: ^video,
+        user: ^user
       } = current_round
     end
 
-    @tag wip: true
     test "get_current_round/1 returns a scheduled round with a video when there are some current rounds",
          %{
            matchmaking_server: matchmaking_server,
            state: state
          } do
       # Setup
-      [video | _videos] = videos = state.room.videos
-      :ok = create_rounds(matchmaking_server, videos)
+      [{video, user} | _videos_users] = videos_users = get_videos_users(state.room)
+      :ok = create_rounds(matchmaking_server, videos_users)
       :ok = prepare_next_round(matchmaking_server)
 
       # Exercise
       current_round = RoomServer.get_current_round(matchmaking_server)
 
       # Verify
-      %{video: ^video} = current_round
-
       %{
         round: %Round.Scheduled{
           elapsed_time: 0,
           score: {0, 0},
           time: 0
         },
-        video: ^video
+        video: ^video,
+        user: ^user
       } = current_round
     end
 
-    @tag wip: true
     test "get_current_round/1 returns a round that is in progress with a video when there is a next round",
          %{
            matchmaking_server: matchmaking_server,
            state: state
          } do
       # Setup
-      [video | _videos] = videos = state.room.videos
+      [{video, user} | _videos_users] = videos_users = get_videos_users(state.room)
       time = 30
-      :ok = start_round(matchmaking_server, videos, time)
+      :ok = schedule_and_start_round(matchmaking_server, videos_users, time)
 
       # Exercise
       current_round = RoomServer.get_current_round(matchmaking_server)
 
       # Verify
-      %{video: ^video} = current_round
-
       %{
         round: %Round.InProgress{
           elapsed_time: 0,
           score: {0, 0},
           time: ^time
         },
-        video: ^video
+        video: ^video,
+        user: ^user
       } = current_round
     end
 
-    @tag wip: true
     test "get_current_round/1 returns a round that is in progress with a video when there are some next rounds",
          %{
            matchmaking_server: matchmaking_server,
-           state: state
+           state: state,
+           user: user
          } do
       # Setup
-      [video | _videos] = videos = state.room.videos
+      [{video, _user} | _videos_users] = videos_users = get_videos_users(state.room)
       time = 30
-      :ok = start_round(matchmaking_server, videos, time)
+      :ok = schedule_and_start_round(matchmaking_server, videos_users, time)
 
       # Exercise
       current_round = RoomServer.get_current_round(matchmaking_server)
 
       # Verify
-      %{video: ^video} = current_round
-
       %{
         round: %Round.InProgress{
           elapsed_time: 0,
           score: {0, 0},
           time: ^time
         },
-        video: ^video
+        video: ^video,
+        user: ^user
       } = current_round
     end
 
-    test "create_round/1 returns :ok and a round is scheduled", %{
+    test "create_round/3 returns :ok and a round is scheduled", %{
       matchmaking_server: matchmaking_server,
       state: state
     } do
       # Setup
-      [video | _videos] = state.room.videos
+      [{video, user} | _videos_users] = get_videos_users(state.room)
 
       # Exercise
-      :ok = RoomServer.create_round(matchmaking_server, video)
+      :ok = create_round(matchmaking_server, video, user)
     end
 
-    @tag wip: true
     test "score/2 is called once and returns :ok", %{
       matchmaking_server: matchmaking_server,
       pid: pid,
       state: state
     } do
       # Setup
-      videos = state.room.videos
+      videos_users = get_videos_users(state.room)
       time = 30
-      :ok = start_round(matchmaking_server, videos, time)
+      :ok = schedule_and_start_round(matchmaking_server, videos_users, time)
       players = spawn_players(1)
       scores = generate_score(:positive, 1)
 
@@ -323,16 +342,15 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok = do_scores(pid, players_scores)
     end
 
-    @tag wip: true
     test "score/2 is called many times and returns :ok", %{
       matchmaking_server: matchmaking_server,
       pid: pid,
       state: state
     } do
       # Setup
-      videos = state.room.videos
+      videos_users = get_videos_users(state.room)
       time = 30
-      :ok = start_round(matchmaking_server, videos, time)
+      :ok = schedule_and_start_round(matchmaking_server, videos_users, time)
       players = spawn_players(5)
       scores = generate_score(:positive, 5)
 
@@ -433,6 +451,20 @@ defmodule DjRumble.Room.RoomServerTest do
       Enum.reduce(pids, {[], state}, fn pid, {pids, state} ->
         state = handle_join(state, pid)
         {pids ++ [pid], handle_joined(state, pid)}
+      end)
+    end
+
+    defp handle_score(state, {pid, score}) do
+      response = RoomServer.handle_cast({:score, pid, score}, state)
+
+      {:noreply, ^state} = response
+
+      state
+    end
+
+    defp handle_scores(state, pids_scores) do
+      Enum.reduce(pids_scores, {[], state}, fn {pid, score}, {pids, acc_state} ->
+        {pids ++ [pid], handle_score(acc_state, {pid, score})}
       end)
     end
 
@@ -581,7 +613,8 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok = Channels.subscribe(:player_is_ready, state.room.slug)
 
       %{video_id: video_id} = video = video_fixture()
-      :ok = Matchmaking.create_round(matchmaking_server, video)
+      user = user_fixture()
+      :ok = Matchmaking.create_round(matchmaking_server, video, user)
       :erlang.trace(matchmaking_server, true, [:receive])
 
       {pids, state} =
@@ -612,7 +645,6 @@ defmodule DjRumble.Room.RoomServerTest do
       end)
     end
 
-    @tag wip: true
     test "handle_cast/2 :: {:score, PID, :positive} is called once time and returns :ok", %{
       state: state
     } do
@@ -629,7 +661,6 @@ defmodule DjRumble.Room.RoomServerTest do
       _state = handle_scores(state, players_scores)
     end
 
-    @tag wip: true
     test "handle_cast/2 :: {:score, PID, :positive} is called many times and returns :ok every time",
          %{state: state} do
       # Setup
@@ -645,7 +676,6 @@ defmodule DjRumble.Room.RoomServerTest do
       _state = handle_scores(state, players_scores)
     end
 
-    @tag wip: true
     test "handle_cast/2 :: {:score, PID, :negative} is called once time and returns :ok", %{
       state: state
     } do
@@ -662,7 +692,6 @@ defmodule DjRumble.Room.RoomServerTest do
       _state = handle_scores(state, players_scores)
     end
 
-    @tag wip: true
     test "handle_cast/2 :: {:score, PID, :negative} is called many times and returns :ok every time",
          %{state: state} do
       # Setup
@@ -678,7 +707,6 @@ defmodule DjRumble.Room.RoomServerTest do
       _state = handle_scores(state, players_scores)
     end
 
-    @tag wip: true
     test "handle_cast/2 :: {:score, PID, type} is called many times with mixed scores and returns :ok every time",
          %{state: state} do
       # Setup
@@ -692,20 +720,6 @@ defmodule DjRumble.Room.RoomServerTest do
 
       # Exercise
       _state = handle_scores(state, players_scores)
-    end
-
-    defp handle_score(state, {pid, score}) do
-      response = RoomServer.handle_cast({:score, pid, score}, state)
-
-      {:noreply, ^state} = response
-
-      state
-    end
-
-    defp handle_scores(state, pids_scores) do
-      Enum.reduce(pids_scores, {[], state}, fn {pid, score}, {pids, acc_state} ->
-        {pids ++ [pid], handle_score(acc_state, {pid, score})}
-      end)
     end
 
     test "handle_info/2 :: {:DOWN, ref, :process, pid, reason} is called one time and returns a state without players",

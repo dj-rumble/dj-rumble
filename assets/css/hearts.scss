@@ -13,25 +13,25 @@
 
 @keyframes floatUpwards {
   from {
-    top: 50%;
+    top: 85%;
   }
   to {
-    top: -100px;
+    top: 0%;
   }
 }
 
 @keyframes swayWays {
   0% {
     transform: rotate(12deg);
-    left: -0.3%;
+    left: 49.7%;
   }
   33%{
     transform: rotate(-2deg);
-    left: 0.7%;
+    left: 50.7%;
   }
   100% {
     transform: rotate(0deg);
-    left:-12%;
+    left: 38%;
   }
 }
 
@@ -47,8 +47,8 @@
 /* //  HEART CODE */
 .altheart {
   background: url(http://static.indigoimages.ca/2016/shop/113439_img25_twotoneheart.png) no-repeat center;
-  width: 24px;
-  height: 21px;
+  width: 1px;
+  height: 1px;
   position: relative;
   display: block;
 }
@@ -59,11 +59,12 @@
 
 .heart:before,
 .heart:after {
+  background: transparent;
   position: absolute;
   content: "";
-  left: 18px;
-  top: 0;
-  width: 18px;
+  left: 17px;
+  top: -5px;
+  width: 17px;
   height: 30px;
   -moz-border-radius: 20px 50% 0 0;
   border-radius: 30px 30px 0 0;
@@ -85,9 +86,11 @@
 }
 .heart.positive:before,
 .heart.positive:after {
-  background: #CC2022;
+  background: #B91C1C;
+  border: 2px solid #B91C1C;
 }
 .heart.negative:before,
 .heart.negative:after {
-  background: #4420FF;
+  background: #6D28D9;
+  border: 2px solid #6D28D9;
 }

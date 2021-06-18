@@ -34,8 +34,8 @@ defmodule DjRumble.Rooms.RoomServer do
     Matchmaking.get_current_round(matchmaking_server)
   end
 
-  def create_round(matchmaking_server, video) do
-    Matchmaking.create_round(matchmaking_server, video)
+  def create_round(matchmaking_server, video, user) do
+    Matchmaking.create_round(matchmaking_server, video, user)
   end
 
   def score(pid, from, type) do
@@ -59,9 +59,11 @@ defmodule DjRumble.Rooms.RoomServer do
     {:ok, matchmaking_server} =
       MatchmakingSupervisor.start_matchmaking_server(MatchmakingSupervisor, room)
 
-    Enum.each(room.videos, fn video ->
-      :ok = Matchmaking.create_round(matchmaking_server, video)
-    end)
+    :ok =
+      Enum.map(room.users_rooms_videos, &{&1.video, &1.user})
+      |> Enum.each(fn {video, user} ->
+        :ok = Matchmaking.create_round(matchmaking_server, video, user)
+      end)
 
     state = initial_state(%{matchmaking_server: matchmaking_server, room: room})
 

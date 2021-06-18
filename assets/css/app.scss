@@ -252,9 +252,7 @@
 
 .playlist-video {
   border: #0e0e0e99 solid 1px;
-  border-radius: 5px;
   margin: 1rem 0;
-  padding: 1rem;
   background: #bbbbbb;
   box-shadow: 0px 0px 3px 0px #22222255;
 }
@@ -357,3 +355,42 @@ input.chat-text-input:focus {
   color: $primary;
 }
 /*       End Chat       */
+
+
+/*     Current video    */
+.current-round-video-img {
+  display: block;
+  border-radius: 50%;
+  height: 7em;
+  width: 7em;
+  margin: 0;
+  border: 1px solid black;
+}
+/* Score buttons Start */
+
+.score-button #like-layer-1,
+.score-button #dislike-layer-1 {
+  fill: rgb(17, 24, 39);
+}
+
+.score-button.enabled #like-layer-2 {
+  fill: #064E3B;
+}
+.score-button.enabled #dislike-layer-2 {
+  fill: #7F1D1D;
+}
+
+.score-button.enabled #like-background path {
+  fill: #34d399 !important;
+}
+
+.score-button.enabled #dislike-background path {
+  fill: #EF4444 !important;
+}
+
+.score-button.disabled #like-background path,
+.score-button.disabled #dislike-background path {
+  fill: #666 !important;
+}
+
+/* Score buttons End */

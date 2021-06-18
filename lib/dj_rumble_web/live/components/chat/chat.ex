@@ -64,7 +64,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
   defp render_timestamp(timestamp) do
     ~E"""
-      <span class="timestamp <%= timestamp.class %>">
+      <span class="text-sm timestamp <%= timestamp.class %>">
         [<%= timestamp.value %>]
       </span>
     """

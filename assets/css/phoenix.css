@@ -2,6 +2,13 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+@font-face {
+  font-family: 'Street Ruler';
+  src: url('../static/fonts/Street-Ruler.ttf');
+  font-weight: normal;
+  font-style: normal
+}
+
 /* Includes some default style for the starter application.
  * This can be safely deleted to start fresh.
  */
@@ -26,6 +33,5 @@ li{list-style: none;}
 .container{
   margin: 0 auto;
   padding: 0;
-  position: relative;
   width: 100%
 }

@@ -8,16 +8,17 @@ defmodule DjRumble.Rooms.Room do
   schema "rooms" do
     field :name, :string
     field :slug, :string
-    field :video_tracker, :string, default: ""
 
     many_to_many :videos, DjRumble.Rooms.Video, join_through: "rooms_videos"
 
     many_to_many :users, DjRumble.Accounts.User, join_through: DjRumble.Rooms.UserRoom
 
+    has_many :users_rooms_videos, DjRumble.Collections.UserRoomVideo
+
     timestamps()
   end
 
-  @fields [:name, :slug, :video_tracker]
+  @fields [:name, :slug]
 
   @doc false
   def changeset(room, attrs) do

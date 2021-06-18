@@ -1,10 +1,10 @@
-<%= live_component @socket, DjRumbleWeb.Live.Components.Navbar,
+<%= live_component DjRumbleWeb.Live.Components.Navbar,
   visitor: @visitor,
   username: @user.username,
   homepage: false
 %>
 
-<h3 class="text-gray-50 p-4 m-4">Dj Rooms</h3>
+<h3 class="text-gray-50 p-4 m-4 text-5xl font-street-ruler">Dj Rooms</h3>
 
 <%= if @live_action in [:new, :edit] do %>
   <%= live_modal @socket, DjRumbleWeb.RoomLive.FormComponent,
