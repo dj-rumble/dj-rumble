@@ -123,10 +123,14 @@ defmodule DjRumbleWeb.RoomLive.Show do
   end
 
   @impl true
-  def handle_event("drop_confetti", _, socket) do
-    {:noreply,
-     socket
-     |> push_event("drop_confetti", %{})}
+  def handle_event("throw_confetti_interaction", _, socket) do
+    Channels.broadcast(
+      :room,
+      socket.assigns.room.slug,
+      {:throw_confetti_interaction, %{user: socket.assigns.user.username}}
+    )
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -209,6 +213,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   def handle_info({:update_scoring_enabled, params}, socket),
     do: handle_update_scoring_enabled(params, socket)
+
+  def handle_info({:throw_confetti_interaction, params}, socket),
+    do: handle_throw_confetti_interaction(params, socket)
 
   @doc """
   Receives a local message to continuously update the Liveview
@@ -460,6 +467,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
     {:noreply,
      socket
      |> assign(:scoring_enabled, scoring_enabled)}
+  end
+
+  def handle_throw_confetti_interaction(%{user: username}, socket) do
+    {:noreply,
+     socket
+     |> push_event("throw_confetti_interaction", %{user: username})}
   end
 
   defp assign_page_title(socket, title) do

@@ -1,5 +1,8 @@
 import confetti from "canvas-confetti";
 
+let confettiAlreadyFalling = false
+let randomConfettiWasUsedByMap = {}
+
 export const spawnHeart = (container, voteType) => {
   const iconContainer = document.createElement('div')
   iconContainer.classList.add('hearts-wrapper')
@@ -19,11 +22,6 @@ export const spawnHeart = (container, voteType) => {
   }, 3000)
 }
 
-function randomInRange(min, max) {
-  return Math.random() * (max - min) + min;
-}
-
-let confettiAlreadyFalling = false
 export const dropConfetti = () => {
   if (!confettiAlreadyFalling) {
     confettiAlreadyFalling = true
@@ -65,46 +63,76 @@ export const dropConfetti = () => {
       }
     }());
   }
-
-  // (function frame() {
-  //   var timeLeft = animationEnd - Date.now();
-  //   var ticks = Math.max(1000, 500 * (timeLeft / duration));
-  //   skew = Math.max(0.8, skew - 0.001);
-
-  //   confetti({
-  //     particleCount: 1,
-  //     startVelocity: 0,
-  //     ticks: ticks,
-  //     origin: {
-  //       x: Math.random(),
-  //       // since particles fall down, skew start toward the top
-  //       y: (Math.random() * skew) - 0.2
-  //     },
-  //     colors: [ Math.floor(Math.random()*16777215).toString(16) ],
-  //     gravity: randomInRange(0.4, 1.9),
-  //     scalar: randomInRange(0.4, 2),
-  //     drift: randomInRange(-0.4, 0.4)
-  //   });
-
-  //   if (timeLeft > 0) {
-  //     requestAnimationFrame(frame);
-  //   }
-  // }())
-
-  // let canvas = document.getElementById('confetti-canvas');
-  // let confettiSettings =
-  //   {
-  //     clock: 30,
-  //     max: 333,
-  //     props: ['circle', 'square', 'triangle'],
-  //     rotate: true,
-  //     size: 1.3,
-  //     target: confettiElement
-  //   };
-  // let confetti = new ConfettiGenerator(confettiSettings);
-  // confetti.render();
-
-  // setTimeout(() => {
-  //   confetti.clear()
-  // }, 10000)
 }
+
+export const randomConfetti = (username) => {
+  if (!randomConfettiWasUsedBy(username)) {
+    randomConfettiWasUsedByMap[username] = true
+    let cooldown = 3 * 1000;
+
+    (function frame() {
+      confetti({
+        decay: 0.92,
+        origin: { x: randomInRange(0.3, 0.7), y: randomInRange(0.3, 0.7) },
+        particleCount: 200,
+        scalar: randomInRange(1.4, 1.8),
+        spread: 360,
+        startVelocity: 20
+      });
+
+      setTimeout(() => {
+        randomConfettiWasUsedByMap[username] = false
+      }, cooldown)
+    }());
+  }
+}
+
+function randomConfettiWasUsedBy(username) {
+  return randomConfettiWasUsedByMap[username]
+}
+
+function randomInRange(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+// (function frame() {
+    //   var timeLeft = animationEnd - Date.now();
+    //   var ticks = Math.max(1000, 500 * (timeLeft / duration));
+    //   skew = Math.max(0.8, skew - 0.001);
+
+    //   confetti({
+    //     particleCount: 1,
+    //     startVelocity: 0,
+    //     ticks: ticks,
+    //     origin: {
+    //       x: Math.random(),
+    //       // since particles fall down, skew start toward the top
+    //       y: (Math.random() * skew) - 0.2
+    //     },
+    //     colors: [ Math.floor(Math.random()*16777215).toString(16) ],
+    //     gravity: randomInRange(0.4, 1.9),
+    //     scalar: randomInRange(0.4, 2),
+    //     drift: randomInRange(-0.4, 0.4)
+    //   });
+
+    //   if (timeLeft > 0) {
+    //     requestAnimationFrame(frame);
+    //   }
+    // }())
+
+    // let canvas = document.getElementById('confetti-canvas');
+    // let confettiSettings =
+    //   {
+    //     clock: 30,
+    //     max: 333,
+    //     props: ['circle', 'square', 'triangle'],
+    //     rotate: true,
+    //     size: 1.3,
+    //     target: confettiElement
+    //   };
+    // let confetti = new ConfettiGenerator(confettiSettings);
+    // confetti.render();
+
+    // setTimeout(() => {
+    //   confetti.clear()
+    // }, 10000)
