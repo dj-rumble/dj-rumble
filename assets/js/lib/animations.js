@@ -19,49 +19,52 @@ export const spawnHeart = (container, voteType) => {
   }, 3000)
 }
 
-
-
 function randomInRange(min, max) {
   return Math.random() * (max - min) + min;
 }
 
+let confettiAlreadyFalling = false
 export const dropConfetti = () => {
-  let duration = 10 * 1000;
-  let animationEnd = Date.now() + duration;
-  // let skew = 1;
+  if (!confettiAlreadyFalling) {
+    confettiAlreadyFalling = true
+    let duration = 10 * 1000;
+    let animationEnd = Date.now() + duration;
+    // let skew = 1;
+    (function frame() {
+      let timeLeft = animationEnd - Date.now();
+      // launch a few confetti from the left edge
+      confetti({
+        angle: 60,
+        origin: { x: 0, y: 0.6 },
+        particleCount: 8,
+        scalar: randomInRange(0.7, 1.4),
+        spread: 75
+      });
+      // and launch a few from the right edge
+      confetti({
+        angle: 120,
+        origin: { x: 1, y: 0.6 },
+        particleCount: 8,
+        scalar: randomInRange(0.7, 1.4),
+        spread: 75
+      });
 
-  (function frame() {
-    let timeLeft = animationEnd - Date.now();
-    // launch a few confetti from the left edge
-    confetti({
-      angle: 60,
-      origin: { x: 0, y: 0.6 },
-      particleCount: 8,
-      scalar: randomInRange(0.7, 1.4),
-      spread: 75
-    });
-    // and launch a few from the right edge
-    confetti({
-      angle: 120,
-      origin: { x: 1, y: 0.6 },
-      particleCount: 8,
-      scalar: randomInRange(0.7, 1.4),
-      spread: 75
-    });
+      confetti({
+        angle: -90,
+        origin: { x: 0.5, y: -0.2 },
+        particleCount: 4,
+        scalar: randomInRange(0.7, 1.4),
+        spread: 75
+      });
 
-    confetti({
-      angle: -90,
-      origin: { x: 0.5, y: -0.2 },
-      particleCount: 4,
-      scalar: randomInRange(0.7, 1.4),
-      spread: 75
-    });
-
-    // keep going until we are out of time
-    if (timeLeft > 0) {
-      requestAnimationFrame(frame);
-    }
-  }());
+      // keep going until we are out of time
+      if (timeLeft > 0) {
+        requestAnimationFrame(frame);
+      } else {
+        confettiAlreadyFalling = false
+      }
+    }());
+  }
 
   // (function frame() {
   //   var timeLeft = animationEnd - Date.now();
