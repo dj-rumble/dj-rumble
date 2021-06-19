@@ -1,4 +1,4 @@
-import { dropConfetti, spawnHeart } from '../lib/animations'
+import { dropConfetti, randomConfetti, spawnHeart } from '../lib/animations'
 
 const UiFeedback = () => ({
   mounted() {
@@ -11,6 +11,10 @@ const UiFeedback = () => ({
 
     this.handleEvent('drop_confetti', () => {
       dropConfetti()
+    })
+
+    this.handleEvent('throw_confetti_interaction', (byUser) => {
+      randomConfetti(byUser.user)
     })
   }
 })
