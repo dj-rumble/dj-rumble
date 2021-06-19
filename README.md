@@ -129,7 +129,11 @@ cp .env.example .env
 
 #### YouTube
 
-+ `YOUTUBE_API_KEY:` Api key del servicio de búsqueda de YouTube. [*Cómo conseguir una API key*](https://console.developers.google.com/apis/api/youtube.googleapis.com/credentials)
++ `YOUTUBE_API_KEY:` Api key del servicio de búsqueda de YouTube. Más información acerca de [*cómo conseguir una API key*](https://console.developers.google.com/apis/api/youtube.googleapis.com/credentials).
+
+#### Timezone
+
++ `TZ`: Zona horaria que utiliza el servidor para timestamp de mensajes. [Listado](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) de timezones disponibles y [más información](https://www.iana.org/time-zones) sobre la base de datos de zonas horarias.
 
 ### Comandos útiles
 
