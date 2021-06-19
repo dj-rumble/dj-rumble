@@ -7,8 +7,6 @@
       homepage: true
     %>
 
-    <canvas id="confetti-canvas" style="width: 95% !important; height: 93% !important; z-index: 1; position: absolute;"></canvas>
-
     <div class="grid grid-rows-9 grid-cols-12 grid-flow-col gap-6" style="max-height: 85vh;">
       <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-2 row-end-5 text-center p-4 shadow-card">
         <div class="grid grid-rows-6 h-full w-full">
@@ -51,7 +49,7 @@
           </div>
         </div>
       </div>
-      <div class="col-start-1 col-end-13 row-start-7 row-end-8">
+      <div class="col-start-1 col-end-13 row-start-7 row-end-7">
         <div class="rounded-lg bg-gray-800 grid grid-cols-12 shadow-card">
 
           <div class="col-start-1 col-end-4 self-center h-full">
@@ -77,7 +75,7 @@
             %>
           </div>
 
-          <div class="col-start-12 col-end-12 flex self-center justify-self-start p-4" style="z-index: 2">
+          <div class="col-start-11 col-end-12 flex self-center justify-self-start p-4" style="z-index: 2">
             <%= live_component DjRumbleWeb.Live.Components.SearchFab,
               id: "djrumble-searchbox-modal-button-1",
               is_search_enabled: !@visitor
@@ -105,7 +103,8 @@
         user: @user
       %>
 
-    </div>
+      <canvas id="confetti-canvas" style="width: 95% !important; height: 93% !important; z-index: 1; position: absolute;"></canvas>
 
+    </div>
   <% end %>
 </div>
