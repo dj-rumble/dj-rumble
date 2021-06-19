@@ -123,6 +123,17 @@ defmodule DjRumbleWeb.RoomLive.Show do
   end
 
   @impl true
+  def handle_event("throw_confetti_interaction", _, socket) do
+    Channels.broadcast(
+      :room,
+      socket.assigns.room.slug,
+      {:throw_confetti_interaction, %{user: socket.assigns.user.username}}
+    )
+
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("open_search_modal", _, socket) do
     {:noreply,
      socket
@@ -202,6 +213,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   def handle_info({:update_scoring_enabled, params}, socket),
     do: handle_update_scoring_enabled(params, socket)
+
+  def handle_info({:throw_confetti_interaction, params}, socket),
+    do: handle_throw_confetti_interaction(params, socket)
 
   @doc """
   Receives a local message to continuously update the Liveview
@@ -387,7 +401,17 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Topic:** `String.t()`. Example: `"room:<room_slug>"`
   * **Args:** `%Round.Finished{}`
   """
-  def handle_round_finished(%Round.Finished{} = round, socket) do
+  def handle_round_finished(%{round: %Round.Finished{outcome: :continue} = round}, socket) do
+    Logger.info(fn -> "Round Finished: #{inspect(round)}" end)
+
+    {:noreply,
+     socket
+     |> assign_scoring_enabled(:disable)
+     |> assign(:round_info, "Round finished!")
+     |> push_event("drop_confetti", %{})}
+  end
+
+  def handle_round_finished(%{round: %Round.Finished{} = round}, socket) do
     Logger.info(fn -> "Round Finished: #{inspect(round)}" end)
 
     {:noreply,
@@ -452,6 +476,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
     {:noreply,
      socket
      |> assign(:scoring_enabled, scoring_enabled)}
+  end
+
+  def handle_throw_confetti_interaction(%{user: username}, socket) do
+    {:noreply,
+     socket
+     |> push_event("throw_confetti_interaction", %{user: username})}
   end
 
   defp assign_page_title(socket, title) do

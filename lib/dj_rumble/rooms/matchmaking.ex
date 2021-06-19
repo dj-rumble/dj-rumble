@@ -227,11 +227,16 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     # :ok = Gladiators.register_battle_result({Gladiators.get_gladiator(left.id), Gladiators.get_gladiator(right.id)}, battle.outcome)
 
-    :ok = Channels.broadcast(:room, state.room.slug, {:round_finished, round})
-
     Process.demonitor(ref)
 
     {_ref, {_pid, video, _time, finished_round_user}} = state.current_round
+
+    :ok =
+      Channels.broadcast(
+        :room,
+        state.room.slug,
+        {:round_finished, %{round: round, user: finished_round_user}}
+      )
 
     {current_user_rounds, other_rounds} =
       Enum.reduce(state.next_rounds, {[], []}, fn {_ref, {_pid, _video, _time, user}} = round,

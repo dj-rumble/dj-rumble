@@ -964,7 +964,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert Enum.member?(state.finished_rounds, round)
       assert state.status == :cooldown
 
-      assert_receive({:round_finished, ^round})
+      assert_receive({:round_finished, %{round: ^round, user: ^user}})
     end
 
     @tag :wip
@@ -1034,7 +1034,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert Enum.member?(state.finished_rounds, round)
       assert state.status == :cooldown
 
-      assert_receive({:round_finished, ^round})
+      assert_receive({:round_finished, %{round: ^round, user: ^winner_user}})
     end
 
     @tag :wip
@@ -1105,7 +1105,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert Enum.member?(state.finished_rounds, round)
       assert state.status == :cooldown
 
-      assert_receive({:round_finished, ^round})
+      assert_receive({:round_finished, %{round: ^round, user: ^user}})
     end
 
     test "handle_info/2 :: {:DOWN, ref, :process, pid, reason} is called and a crashed round is registered",
