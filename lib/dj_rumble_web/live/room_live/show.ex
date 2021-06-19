@@ -394,7 +394,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Topic:** `String.t()`. Example: `"room:<room_slug>"`
   * **Args:** `%Round.Finished{}`
   """
-  def handle_round_finished(%Round.Finished{} = round, socket) do
+  def handle_round_finished(%{round: %Round.Finished{outcome: :continue} = round}, socket) do
     Logger.info(fn -> "Round Finished: #{inspect(round)}" end)
 
     {:noreply,
@@ -402,6 +402,15 @@ defmodule DjRumbleWeb.RoomLive.Show do
      |> assign_scoring_enabled(:disable)
      |> assign(:round_info, "Round finished!")
      |> push_event("drop_confetti", %{})}
+  end
+
+  def handle_round_finished(%{round: %Round.Finished{} = round}, socket) do
+    Logger.info(fn -> "Round Finished: #{inspect(round)}" end)
+
+    {:noreply,
+     socket
+     |> assign_scoring_enabled(:disable)
+     |> assign(:round_info, "Round finished!")}
   end
 
   @doc """
