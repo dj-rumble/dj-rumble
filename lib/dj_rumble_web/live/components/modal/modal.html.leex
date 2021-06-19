@@ -1,4 +1,4 @@
-<div id="<%= @id %>" class="">
+<div id="<%= @id %>" class="<%= @extra_classes %>">
   <%= if @state == "OPEN" do %>
   <div
     phx-hook="ModalInteracting"
@@ -11,7 +11,7 @@
     }"
     x-show="open"
     @close-modal="setTimeout(() => open = false, 100)"
-    class="modal opacity-95"
+    class="modal"
   >
 
     <!-- BACKDROP -->

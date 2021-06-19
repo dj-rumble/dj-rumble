@@ -22,6 +22,18 @@ defmodule DjRumble.Room.RoomServerTest do
     Enum.map(1..n, fn _ -> type end)
   end
 
+  defp prepare_next_round(matchmaking_server) do
+    Process.send(matchmaking_server, :prepare_next_round, [])
+  end
+
+  defp receive_video_time(matchmaking_server, time) do
+    Process.send(matchmaking_server, {:receive_video_time, time}, [])
+  end
+
+  defp start_next_round(matchmaking_server) do
+    Process.send(matchmaking_server, :start_next_round, [])
+  end
+
   describe "room_server client interface" do
     setup do
       room = room_fixture()
@@ -86,18 +98,6 @@ defmodule DjRumble.Room.RoomServerTest do
       Enum.map(room.users_rooms_videos, fn user_room_video ->
         {user_room_video.video, user_room_video.user}
       end)
-    end
-
-    defp prepare_next_round(matchmaking_server) do
-      Process.send(matchmaking_server, :prepare_next_round, [])
-    end
-
-    defp receive_video_time(matchmaking_server, time) do
-      Process.send(matchmaking_server, {:receive_video_time, time}, [])
-    end
-
-    defp start_next_round(matchmaking_server) do
-      Process.send(matchmaking_server, :start_next_round, [])
     end
 
     defp create_round(matchmaking_server, video, user) do
@@ -649,6 +649,14 @@ defmodule DjRumble.Room.RoomServerTest do
       state: state
     } do
       # Setup
+      %{matchmaking_server: matchmaking_server} = state
+      video = video_fixture()
+      user = user_fixture()
+      :ok = Matchmaking.create_round(matchmaking_server, video, user)
+      :ok = prepare_next_round(matchmaking_server)
+      :ok = receive_video_time(matchmaking_server, 30)
+      :ok = start_next_round(matchmaking_server)
+
       {players, state} =
         spawn_players(1)
         |> do_join_players(state)
@@ -664,6 +672,14 @@ defmodule DjRumble.Room.RoomServerTest do
     test "handle_cast/2 :: {:score, PID, :positive} is called many times and returns :ok every time",
          %{state: state} do
       # Setup
+      %{matchmaking_server: matchmaking_server} = state
+      video = video_fixture()
+      user = user_fixture()
+      :ok = Matchmaking.create_round(matchmaking_server, video, user)
+      :ok = prepare_next_round(matchmaking_server)
+      :ok = receive_video_time(matchmaking_server, 30)
+      :ok = start_next_round(matchmaking_server)
+
       {players, state} =
         spawn_players(10)
         |> do_join_players(state)
@@ -680,6 +696,14 @@ defmodule DjRumble.Room.RoomServerTest do
       state: state
     } do
       # Setup
+      %{matchmaking_server: matchmaking_server} = state
+      video = video_fixture()
+      user = user_fixture()
+      :ok = Matchmaking.create_round(matchmaking_server, video, user)
+      :ok = prepare_next_round(matchmaking_server)
+      :ok = receive_video_time(matchmaking_server, 30)
+      :ok = start_next_round(matchmaking_server)
+
       {players, state} =
         spawn_players(1)
         |> do_join_players(state)
@@ -695,6 +719,14 @@ defmodule DjRumble.Room.RoomServerTest do
     test "handle_cast/2 :: {:score, PID, :negative} is called many times and returns :ok every time",
          %{state: state} do
       # Setup
+      %{matchmaking_server: matchmaking_server} = state
+      video = video_fixture()
+      user = user_fixture()
+      :ok = Matchmaking.create_round(matchmaking_server, video, user)
+      :ok = prepare_next_round(matchmaking_server)
+      :ok = receive_video_time(matchmaking_server, 30)
+      :ok = start_next_round(matchmaking_server)
+
       {players, state} =
         spawn_players(10)
         |> do_join_players(state)
@@ -710,6 +742,14 @@ defmodule DjRumble.Room.RoomServerTest do
     test "handle_cast/2 :: {:score, PID, type} is called many times with mixed scores and returns :ok every time",
          %{state: state} do
       # Setup
+      %{matchmaking_server: matchmaking_server} = state
+      video = video_fixture()
+      user = user_fixture()
+      :ok = Matchmaking.create_round(matchmaking_server, video, user)
+      :ok = prepare_next_round(matchmaking_server)
+      :ok = receive_video_time(matchmaking_server, 30)
+      :ok = start_next_round(matchmaking_server)
+
       {players, state} =
         spawn_players(10)
         |> do_join_players(state)

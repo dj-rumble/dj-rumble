@@ -65,6 +65,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
              socket
              |> assign(:connected_users, connected_users)
              |> assign(:joined, false)
+             |> assign(:live_score, 0)
              |> assign(:matchmaking_server, matchmaking_server)
              |> assign(:messages, [])
              |> assign(:room, room)
@@ -72,8 +73,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:round_info, "")
              |> assign(:current_round, current_round)
              |> assign(:next_rounds, next_rounds)
-             |> assign(:scoring_enabled, false)
-             |> assign(:state, "CLOSED")
+             |> assign_scoring_enabled(:disable)
+             |> assign(:searchbox_state, "CLOSED")
+             |> assign(:register_modal_state, "CLOSED")
              |> assign(:show_search_modal, false)}
         end
 
@@ -203,6 +205,11 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   def handle_info({:receive_score, params}, socket), do: handle_receive_score(params, socket)
 
+  def handle_info({:outcome_changed, params}, socket), do: handle_outcome_changed(params, socket)
+
+  def handle_info({:update_scoring_enabled, params}, socket),
+    do: handle_update_scoring_enabled(params, socket)
+
   @doc """
   Receives a local message to continuously update the Liveview
 
@@ -286,12 +293,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   * **From:** `Matchmaking`
   * **Topic:** `"room:<room_slug>:ready"`
-  * **Args:** `%{videoId: String.t(), time: non_neg_integer(), title: String.t()}`
+  %{round: round, video: video, video_details: video_details, added_by: user
+  * **Args:** `%{video_details: %{videoId: String.t(), time: non_neg_integer(), title: String.t()}, round: %Round.InProgress{}, video: %Video{}, added_by: %User{}}`
   """
-  def handle_playback_details(
-        %{video: video, video_details: video_details, added_by: user} = current_round,
-        socket
-      ) do
+  def handle_playback_details(params, socket) do
+    %{video: video, video_details: video_details, added_by: user, round: round} = params
+
     Logger.info(fn ->
       "Received video details: #{inspect(video_details)}, added by: #{inspect(user)}"
     end)
@@ -299,8 +306,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
     {:noreply,
      socket
      |> assign_page_title(video.title)
-     |> assign(:current_round, current_round)
-     |> assign(:scoring_enabled, true)
+     |> assign(:current_round, params)
+     |> assign_scoring_enabled(:check_user)
+     |> assign_live_score(round)
      |> push_event("receive_player_state", video_details)}
   end
 
@@ -374,7 +382,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
      socket
      |> assign_page_title(video.title)
      |> assign(:current_round, current_round)
-     |> assign(:scoring_enabled, true)
+     |> assign_scoring_enabled(:check_user)
+     |> assign_live_score(round)
      |> push_event("receive_player_state", video_details)}
   end
 
@@ -390,8 +399,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
     {:noreply,
      socket
-     |> assign(:scoring_enabled, false)
-     |> assign(:round_info, "Round finished. Results...")}
+     |> assign_scoring_enabled(:disable)
+     |> assign(:round_info, "Round finished!")}
   end
 
   @doc """
@@ -410,7 +419,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
   Receives a chat message
 
   * **From:** `Broadcast
-  * **Topic:** `String.t()`. Example: `room:<room_slug>`
+  * **Topic:** `"room:<room_slug>"`
   """
   def handle_receive_chat_message(message, socket) do
     {:noreply,
@@ -419,10 +428,37 @@ defmodule DjRumbleWeb.RoomLive.Show do
      |> push_event("receive_new_message", %{})}
   end
 
-  def handle_receive_score(type, socket) do
+  @doc """
+  Receives a %Round.InProgress{} score
+
+  * **From:** `RoomServer` (broadcast)
+  * **Topic:** `"room:<slug>"`
+  * **Args:** `{:positive | :negative, %Round.InProgress{}}`
+  """
+  def handle_receive_score(%{type: type, round: round}, socket) do
     {:noreply,
      socket
+     |> assign_live_score(round)
      |> push_event("receive_score", %{type: type})}
+  end
+
+  @doc """
+  Receives a `%Round.InProgress{}` whenever the outcome changes
+
+  * **From:** `RoundServer` (broadcast)
+  * **Topic:** `"room:<slug>"`
+  * **Args:** %{round: %Round.InProgress{}}
+  """
+  def handle_outcome_changed(%{round: round}, socket) do
+    Logger.info(fn -> "Outcome for current round changed: [#{round.outcome}]" end)
+
+    {:noreply, socket}
+  end
+
+  def handle_update_scoring_enabled(scoring_enabled, socket) do
+    {:noreply,
+     socket
+     |> assign(:scoring_enabled, scoring_enabled)}
   end
 
   defp assign_page_title(socket, title) do
@@ -436,5 +472,20 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   defp schedule_next_tick do
     Process.send_after(self(), :tick, @tick_rate)
+  end
+
+  defp assign_scoring_enabled(socket, :disable),
+    do: assign(socket, :scoring_enabled, %{positive: false, negative: false})
+
+  defp assign_scoring_enabled(socket, :check_user) do
+    is_enabled = !socket.assigns.visitor
+    assign(socket, :scoring_enabled, %{positive: is_enabled, negative: is_enabled})
+  end
+
+  defp assign_live_score(socket, 0), do: assign(socket, :live_score, 0)
+
+  defp assign_live_score(socket, round) do
+    {positives, negatives} = round.score
+    assign(socket, :live_score, positives - negatives)
   end
 end

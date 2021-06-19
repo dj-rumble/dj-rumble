@@ -8,6 +8,8 @@ defmodule DjRumble.Rounds.RoundServer do
 
   alias DjRumble.Rounds.Round
 
+  alias DjRumbleWeb.Channels
+
   @seconds_per_tick 1
 
   @doc """
@@ -94,9 +96,14 @@ defmodule DjRumble.Rounds.RoundServer do
   end
 
   @impl GenServer
-  def handle_info(:tick, {room_slug, %Round.InProgress{} = round} = _state) do
+  def handle_info(:tick, {room_slug, %Round.InProgress{outcome: outcome} = round} = _state) do
     case Round.simulate_tick(round) do
+      %Round.InProgress{outcome: ^outcome} = round ->
+        schedule_next_tick()
+        {:noreply, {room_slug, round}}
+
       %Round.InProgress{} = round ->
+        :ok = Channels.broadcast(:room, room_slug, {:outcome_changed, %{round: round}})
         schedule_next_tick()
         {:noreply, {room_slug, round}}
 

@@ -89,11 +89,14 @@ defmodule DjRumble.Room.MatchmakingTest do
     end
 
     defp do_score(server, score) do
-      :ok = Matchmaking.score(server, score)
+      Matchmaking.score(server, score)
     end
 
     defp do_scores(server, scores) do
-      Enum.each(scores, &do_score(server, &1))
+      for score <- scores do
+        do_score(server, score)
+      end
+      |> List.last()
     end
 
     test "start_link/1 starts a matchmaking server", %{pid: pid} do
@@ -273,7 +276,7 @@ defmodule DjRumble.Room.MatchmakingTest do
     test "score/2 is called once and returns :ok", %{pid: pid, state: state, user: user} do
       # Setup
       time = 30
-      %{videos: [video | _videos] = videos} = state.room
+      %{videos: videos} = state.room
       videos_users = Enum.map(videos, &{&1, user})
       :ok = schedule_and_start_round(pid, videos_users, time)
       %{round: %Round.InProgress{score: initial_score}} = get_current_round(pid)
@@ -282,19 +285,19 @@ defmodule DjRumble.Room.MatchmakingTest do
       {1, 0} = evaluated_score = get_evaluated_score(score, initial_score)
 
       # Exercise
-      :ok = do_scores(pid, score)
+      round = do_scores(pid, score)
 
       # Verify
-      %{
-        round: %Round.InProgress{score: ^evaluated_score},
-        video: ^video,
-        user: ^user
-      } = get_current_round(pid)
+      %Round.InProgress{score: ^evaluated_score} = round
     end
 
-    test "score/2 is called many times and returns :ok", %{pid: pid, state: state, user: user} do
+    test "score/2 is called many times and returns a round with an updated score", %{
+      pid: pid,
+      state: state,
+      user: user
+    } do
       # Setup
-      %{videos: [video | _videos] = videos} = state.room
+      %{videos: videos} = state.room
       time = 30
       videos_users = Enum.map(videos, &{&1, user})
       :ok = schedule_and_start_round(pid, videos_users, time)
@@ -304,14 +307,10 @@ defmodule DjRumble.Room.MatchmakingTest do
       {3, 0} = evaluated_score = get_evaluated_score(score, initial_score)
 
       # Exercise
-      :ok = do_scores(pid, score)
+      round = do_scores(pid, score)
 
       # Verify
-      %{
-        round: %Round.InProgress{score: ^evaluated_score},
-        video: ^video,
-        user: ^user
-      } = get_current_round(pid)
+      %Round.InProgress{score: ^evaluated_score} = round
     end
 
     test "score/2 is called many times with mixed scores and returns :ok", %{
@@ -320,7 +319,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       user: user
     } do
       # Setup
-      %{videos: [video | _videos] = videos} = state.room
+      %{videos: videos} = state.room
       time = 30
       videos_users = Enum.map(videos, &{&1, user})
       :ok = schedule_and_start_round(pid, videos_users, time)
@@ -330,14 +329,10 @@ defmodule DjRumble.Room.MatchmakingTest do
       evaluated_score = get_evaluated_score(score, initial_score)
 
       # Exercise
-      :ok = do_scores(pid, score)
+      round = do_scores(pid, score)
 
       # Verify
-      %{
-        round: %Round.InProgress{score: ^evaluated_score},
-        video: ^video,
-        user: ^user
-      } = get_current_round(pid)
+      %Round.InProgress{score: ^evaluated_score} = round
     end
   end
 
@@ -418,18 +413,19 @@ defmodule DjRumble.Room.MatchmakingTest do
     end
 
     defp handle_score(state, type) do
-      response = Matchmaking.handle_cast({:score, type}, state)
+      response = Matchmaking.handle_call({:score, type}, nil, state)
 
-      {:noreply, new_state} = response
+      {:reply, %Round.InProgress{} = round, new_state} = response
 
       assert new_state == state
 
-      state
+      {round, state}
     end
 
     defp handle_scores(state, scores) do
-      Enum.reduce(scores, {[], state}, fn score, {scores, state} ->
-        {scores ++ [score], handle_score(state, score)}
+      Enum.reduce(scores, {[], nil, state}, fn score, {scores, _round, state} ->
+        {round, state} = handle_score(state, score)
+        {scores ++ [score], round, state}
       end)
     end
 
@@ -699,7 +695,37 @@ defmodule DjRumble.Room.MatchmakingTest do
       )
     end
 
-    test "handle_cast/2 :: {:score, :positive} is called once and returns :ok", %{
+    test "handle_call/3 :: {:score, :positive} is called once with no alive round process", %{
+      state: state,
+      user: user
+    } do
+      # Setup
+      video = video_fixture()
+
+      video_time = 10
+
+      %{current_round: current_round, next_rounds: next_rounds} =
+        state =
+        state
+        |> handle_schedule_round(video, user)
+        |> handle_prepare_next_round()
+
+      assert is_valid_round(:prepared, current_round, %{video: video, time: 0})
+      assert next_rounds == []
+
+      state =
+        state
+        |> handle_receive_video_time(video_time)
+        |> handle_start_next_round()
+
+      {_ref, {round_pid, _video, _time, _user}} = state.current_round
+
+      true = Process.exit(round_pid, :kill)
+
+      {:reply, :error, _state} = Matchmaking.handle_call({:score, :positive}, nil, state)
+    end
+
+    test "handle_call/3 :: {:score, :positive} is called once", %{
       state: state,
       user: user
     } do
@@ -725,10 +751,13 @@ defmodule DjRumble.Room.MatchmakingTest do
       scores = generate_score(:positive, 10)
 
       # Exercise
-      {_scores, _state} = handle_scores(state, scores)
+      {_scores, round, _state} = handle_scores(state, scores)
+
+      # Verify
+      assert round.score == get_evaluated_score(scores, {0, 0})
     end
 
-    test "handle_cast/2 :: {:score, :positive} is called many times and returns :ok", %{
+    test "handle_call/3 :: {:score, :positive} is called many times", %{
       state: state,
       user: user
     } do
@@ -754,7 +783,10 @@ defmodule DjRumble.Room.MatchmakingTest do
       scores = generate_score(:mixed, 10)
 
       # Exercise
-      {_scores, _state} = handle_scores(state, scores)
+      {_scores, round, _state} = handle_scores(state, scores)
+
+      # Verify
+      assert round.score == get_evaluated_score(scores, {0, 0})
     end
 
     test "handle_info/2 :: {:receive_video_time, non_neg_integer()} is called with a single scheduled round state and does not reply",
@@ -928,6 +960,147 @@ defmodule DjRumble.Room.MatchmakingTest do
       state = handle_round_finished(state, ref, round)
 
       # Verify
+      assert state.current_round == nil
+      assert Enum.member?(state.finished_rounds, round)
+      assert state.status == :cooldown
+
+      assert_receive({:round_finished, ^round})
+    end
+
+    @tag :wip
+    test "handle_info/2 :: {:DOWN, ref, :process, pid, {:shutdown, %Round.Finished{}} is called with a :continue outcome and the next rounds that change belong to the winner user" do
+      # Setup
+      room = room_fixture()
+      videos = videos_fixture(6)
+      user = user_fixture()
+      winner_user = user_fixture()
+
+      :ok =
+        Enum.each(Enum.with_index(videos), fn {video, index} ->
+          user =
+            case index do
+              0 -> winner_user
+              2 -> winner_user
+              5 -> winner_user
+              _ -> user
+            end
+
+          user_room_video = %{user: user, room: room, video: video}
+          user_room_video_fixture(user_room_video)
+        end)
+
+      room = Rooms.preload_room(room, users_rooms_videos: [:video, :user])
+
+      state = Matchmaking.initial_state(%{room: room})
+
+      :ok = Channels.subscribe(:room, state.room.slug)
+      [{video, _user} | _videos_users_tail] = videos_users = get_videos_users(state.room)
+
+      time = 30
+
+      %{current_round: current_round, next_rounds: next_rounds} =
+        state =
+        state
+        |> schedule_rounds(videos_users)
+        |> handle_prepare_next_round()
+
+      {_ref, {_pid, _video, _time, ^winner_user}} = current_round
+      assert is_valid_round(:prepared, current_round, %{video: video, time: 0})
+      # assert state.next_rounds == videos_users_tail
+
+      winner_queued_rounds =
+        Enum.filter(next_rounds, fn {_ref, {_pid, _video, _time, user}} ->
+          user == winner_user
+        end)
+
+      assert length(winner_queued_rounds) == 2
+
+      state =
+        state
+        |> handle_receive_video_time(time)
+        |> handle_start_next_round()
+
+      {ref, {_pid, ^video, ^time, ^winner_user}} = state.current_round
+
+      round = %Round.Finished{outcome: :continue, score: {10, 0}, elapsed_time: time}
+
+      # Exercise
+      state = handle_round_finished(state, ref, round)
+
+      assert Enum.take(state.next_rounds, length(winner_queued_rounds)) == winner_queued_rounds
+
+      # # Verify
+      assert state.current_round == nil
+      assert Enum.member?(state.finished_rounds, round)
+      assert state.status == :cooldown
+
+      assert_receive({:round_finished, ^round})
+    end
+
+    @tag :wip
+    test "handle_info/2 :: {:DOWN, ref, :process, pid, {:shutdown, %Round.Finished{}} is called with a :thrown outcome and the next rounds that change belong to the user that was waiting" do
+      # Setup
+      room = room_fixture()
+      videos = videos_fixture(6)
+      user = user_fixture()
+      waiting_user = user_fixture()
+
+      :ok =
+        Enum.each(Enum.with_index(videos), fn {video, index} ->
+          user =
+            case index do
+              2 -> waiting_user
+              3 -> waiting_user
+              5 -> waiting_user
+              _ -> user
+            end
+
+          user_room_video = %{user: user, room: room, video: video}
+          user_room_video_fixture(user_room_video)
+        end)
+
+      room = Rooms.preload_room(room, users_rooms_videos: [:video, :user])
+
+      state = Matchmaking.initial_state(%{room: room})
+
+      :ok = Channels.subscribe(:room, state.room.slug)
+      [{video, user} | _videos_users_tail] = videos_users = get_videos_users(state.room)
+
+      time = 30
+
+      %{current_round: current_round, next_rounds: next_rounds} =
+        state =
+        state
+        |> schedule_rounds(videos_users)
+        |> handle_prepare_next_round()
+
+      {_ref, {_pid, _video, _time, ^user}} = current_round
+      assert is_valid_round(:prepared, current_round, %{video: video, time: 0})
+      # assert state.next_rounds == videos_users_tail
+
+      waiting_user_queued_rounds =
+        Enum.filter(next_rounds, fn {_ref, {_pid, _video, _time, user}} ->
+          user == waiting_user
+        end)
+
+      assert length(waiting_user_queued_rounds) == 3
+
+      state =
+        state
+        |> handle_receive_video_time(time)
+        |> handle_start_next_round()
+
+      {ref, {_pid, ^video, ^time, ^user}} = state.current_round
+
+      round = %Round.Finished{outcome: :thrown, score: {0, 10}, elapsed_time: time}
+
+      # Exercise
+      state = handle_round_finished(state, ref, round)
+
+      assert Enum.take(state.next_rounds, length(waiting_user_queued_rounds)) ==
+               waiting_user_queued_rounds
+
+      # # Verify
       assert state.current_round == nil
       assert Enum.member?(state.finished_rounds, round)
       assert state.status == :cooldown

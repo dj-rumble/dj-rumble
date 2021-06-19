@@ -81,7 +81,8 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
     id = "search-element-button-#{video_index + 1}"
 
     props = %{
-      classes: "search-control-enabled clickeable add-button",
+      classes:
+        "search-control-enabled clickeable add-button transition duration-500 ease-in-out transform hover:scale-110",
       click_event: "add_to_queue",
       id: id,
       value: video_index

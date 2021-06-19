@@ -27,7 +27,7 @@ let confettiAlreadyFalling = false
 export const dropConfetti = () => {
   if (!confettiAlreadyFalling) {
     confettiAlreadyFalling = true
-    let duration = 10 * 1000;
+    let duration = 3 * 1000;
     let animationEnd = Date.now() + duration;
     // let skew = 1;
     (function frame() {

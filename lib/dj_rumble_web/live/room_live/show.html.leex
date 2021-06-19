@@ -12,7 +12,7 @@
     <div class="grid grid-rows-9 grid-cols-12 grid-flow-col gap-6" style="max-height: 85vh;">
       <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-2 row-end-5 text-center p-4 shadow-card">
         <div class="grid grid-rows-6 h-full w-full">
-          <div class="row-span-6 relative" >
+          <div class="row-span-6 relative overflow-hidden">
             <%= live_component DjRumbleWeb.Live.Components.RoundInfo,
               id: "djrumble-round-info",
               round_info: @round_info
@@ -65,7 +65,9 @@
             <%= live_component DjRumbleWeb.Live.Components.PlayerControls,
               id: "djrumble-player-controls",
               room_server: @room_server,
-              scoring_enabled: @scoring_enabled
+              scoring_enabled: @scoring_enabled,
+              live_score: @live_score,
+              visitor: @visitor
             %>
           </div>
 
@@ -77,24 +79,31 @@
 
           <div class="col-start-12 col-end-12 flex self-center justify-self-start p-4" style="z-index: 2">
             <%= live_component DjRumbleWeb.Live.Components.SearchFab,
-              id: "djrumble-searchbox-modal-button-1"
+              id: "djrumble-searchbox-modal-button-1",
+              is_search_enabled: !@visitor
             %>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="absolute inset-y-1/4 left-0 right-0 pr-4 h-0" style="z-index: 2;">
+    <div class="absolute top-0 left-0 right-0 pr-4 h-0" style="z-index: 2;">
 
       <%= live_component DjRumbleWeb.Live.Components.Searchbox,
         id: "djrumble-searchbox-modal",
         matchmaking_server: @matchmaking_server,
         room: @room,
-        state: @state,
+        state: @searchbox_state,
         user: @user
       do %>
 
       <% end %>
+
+      <%= live_component DjRumbleWeb.Live.Components.RegisterModal,
+        id: "djrumble-register-modal",
+        state: @register_modal_state,
+        user: @user
+      %>
 
     </div>
 

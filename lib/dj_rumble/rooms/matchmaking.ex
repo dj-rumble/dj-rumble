@@ -44,7 +44,7 @@ defmodule DjRumble.Rooms.Matchmaking do
   end
 
   def score(server, type) do
-    GenServer.cast(server, {:score, type})
+    GenServer.call(server, {:score, type})
   end
 
   def initial_state(args) do
@@ -80,20 +80,6 @@ defmodule DjRumble.Rooms.Matchmaking do
     Logger.info(fn ->
       "Scheduled a round for video title: #{video.title}, added by user: #{user.username}"
     end)
-
-    {:reply, :ok, state}
-  end
-
-  @impl GenServer
-  def handle_call(:prepare_initial_round, _from, state) do
-    # coveralls-ignore-start
-    Logger.info(fn ->
-      "Preparing an initial round."
-    end)
-
-    # coveralls-ignore-stop
-
-    state = prepare_next_round(state)
 
     {:reply, :ok, state}
   end
@@ -159,12 +145,19 @@ defmodule DjRumble.Rooms.Matchmaking do
   end
 
   @impl GenServer
-  def handle_cast({:score, type}, state) do
+  def handle_call({:score, type}, _from, state) do
     {_ref, {round_pid, _video, _time, _user}} = state.current_round
 
-    %Round.InProgress{} = RoundServer.score(round_pid, type)
+    response =
+      case Process.alive?(round_pid) do
+        true ->
+          %Round.InProgress{} = RoundServer.score(round_pid, type)
 
-    {:noreply, state}
+        false ->
+          :error
+      end
+
+    {:reply, response, state}
   end
 
   @impl GenServer
@@ -238,13 +231,31 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     Process.demonitor(ref)
 
-    {_ref, {_pid, video, _time, user}} = state.current_round
+    {_ref, {_pid, video, _time, finished_round_user}} = state.current_round
+
+    {current_user_rounds, other_rounds} =
+      Enum.reduce(state.next_rounds, {[], []}, fn {_ref, {_pid, _video, _time, user}} = round,
+                                                  {current_user_rounds, other_rounds} ->
+        case user == finished_round_user do
+          true -> {current_user_rounds ++ [round], other_rounds}
+          false -> {current_user_rounds, other_rounds ++ [round]}
+        end
+      end)
+
+    next_rounds =
+      case round.outcome do
+        :continue ->
+          current_user_rounds ++ other_rounds
+
+        :thrown ->
+          other_rounds ++ current_user_rounds
+      end
 
     state = %{
       state
       | current_round: nil,
         finished_rounds: [round | state.finished_rounds],
-        next_rounds: state.next_rounds ++ [schedule_round(video, state.room, user)],
+        next_rounds: next_rounds ++ [schedule_round(video, state.room, finished_round_user)],
         status: :cooldown
     }
 
