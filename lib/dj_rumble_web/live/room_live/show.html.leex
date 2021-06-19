@@ -40,7 +40,7 @@
             %>
           </div>
 
-          <div class="row-span-4 mb-3" style=" z-index: 2">
+          <div class="row-span-4 mb-3" style="z-index: 2">
             <%= live_component DjRumbleWeb.Live.Components.Chat,
               id: "djrumble-chat",
               visitor: @visitor,
@@ -61,7 +61,7 @@
             %>
           </div>
 
-          <div class="col-start-4 col-end-10 text-center" style=" z-index: 2">
+          <div class="col-start-4 col-end-10 text-center" style="z-index: 2">
             <%= live_component DjRumbleWeb.Live.Components.PlayerControls,
               id: "djrumble-player-controls",
               room_server: @room_server,
@@ -69,13 +69,13 @@
             %>
           </div>
 
-          <div class="col-start-10 col-end-11 flex self-center justify-self-center p-4" style=" z-index: 2">
+          <div class="col-start-10 col-end-11 flex flex-grow self-center justify-self-end p-4" style="z-index: 2">
             <%= live_component DjRumbleWeb.Live.Components.ConfettiFab,
               id: "djrumble-confetti-button"
             %>
           </div>
 
-          <div class="col-start-12 col-end-12 flex self-center justify-self-center p-4" style=" z-index: 2">
+          <div class="col-start-12 col-end-12 flex self-center justify-self-start p-4" style="z-index: 2">
             <%= live_component DjRumbleWeb.Live.Components.SearchFab,
               id: "djrumble-searchbox-modal-button-1"
             %>
@@ -84,7 +84,7 @@
       </div>
     </div>
 
-    <div class="absolute inset-y-1/4 left-0 right-0 pr-4 h-0">
+    <div class="absolute inset-y-1/4 left-0 right-0 pr-4 h-0" style="z-index: 2;">
 
       <%= live_component DjRumbleWeb.Live.Components.Searchbox,
         id: "djrumble-searchbox-modal",
