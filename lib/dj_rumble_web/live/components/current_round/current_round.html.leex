@@ -1,15 +1,17 @@
 <div class="grid grid-cols-6 h-full">
-  <div class="col-span-2 align-center mb-3 self-end justify-self-center rounded-xl">
+  <div class="col-span-3 align-center self-end rounded-xl">
     <%= img_tag(
       @current_round.video.img_url,
-      class: "current-round-video-img"
+      class: "rounded",
+      height: "100%",
+      width: "100%"
       )
     %>
   </div>
-  <div class="col-span-3 mb-3 self-end">
+  <div class="col-span-3 self-end">
     <div class="grid grid-rows-2 text-left text-xl text-gray-400 p-3">
       <div class="row-span-1 overflow-hidden w-full">
-        <p class="overflow-hidden overflow-ellipsis w-full max-w-full m-0">
+        <p class="overflow-hidden whitespace-nowrap overflow-ellipsis w-full max-w-full m-0">
           <%= @current_round.video.title %>
         </p>
       </div>

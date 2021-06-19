@@ -1,0 +1,65 @@
+<div
+  id="<%= @id %>"
+  class="absolute right-0 left-0 sm:inset-x-1/4 w-full sm:w-1/2 lg:w-1/4" style="margin-top: 10%"
+>
+
+  <%= live_component DjRumbleWeb.Components.Modal,
+    id: "#{@id}-menu",
+    title: "#{@title}",
+    extra_classes: "transition duration-700 transform opacity-95 focus-within:scale-110 focus-within:opacity-100",
+    state: @state
+    do %>
+
+      <div class="flex flex-row-reverse text-gray-300">
+        <div class="m-2">
+          Already registered?
+          <%= link to: Routes.user_session_path(@socket, :new), class: "text-green-300 transform hover:scale-110" do %>
+            Sign in!
+          <% end %>
+        </div>
+      </div>
+
+      <div>
+        <%= form_for @changeset, Routes.user_registration_path(@socket, :create),
+          [class: "flex flex-col bg-gray-800 rounded-lg max-w-1/4 p-4 m-6"],
+        fn f -> %>
+
+          <div class="text-white px-4 py-6">
+            <%= if @changeset.action do %>
+              <div class="rounded bg-white text-red-900 pt-4 w-full m-2 text-center">
+                <p class="mb-4 text-base">Oops, something went wrong!</p>
+                <p class="mb-4 text-base">Please check the errors below.</p>
+              </div>
+            <% end %>
+
+            <div class="mb-4">
+              <%= label f, :username, class: "" %>
+              <%= text_input f, :username, required: true, class: "border-0 shadow-inner-input" %>
+              <%= error_tag f, :username %>
+            </div>
+
+            <div class="mb-4">
+              <%= label f, :email, class: "" %>
+              <%= email_input f, :email, required: true, class: "border-0 shadow-inner-input " %>
+              <%= error_tag f, :email %>
+            </div>
+
+            <div class="mb-4">
+              <%= label f, :password, class: "" %>
+              <%= password_input f, :password, required: true, class: "border-0 shadow-inner-input " %>
+              <%= error_tag f, :password %>
+            </div>
+          </div>
+
+          <div class="mt-auto flex items-center">
+            <%= submit "Register", class: "
+              border-gray-700 bg-gray-700 w-full shadow-md
+              transition duration-500 ease-in-out hover:bg-green-500
+            " %>
+          </div>
+        <% end %>
+      </div>
+
+
+  <% end %>
+</div>

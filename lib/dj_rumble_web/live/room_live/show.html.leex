@@ -7,10 +7,10 @@
       homepage: true
     %>
 
-    <div class="grid grid-rows-9 grid-cols-12 grid-flow-col gap-6" style="max-height: 85vh;">
-      <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-2 row-end-5 text-center p-4 shadow-card">
+    <div class="grid grid-rows-6 grid-cols-12 grid-flow-col gap-6" style="max-height: 85vh;">
+      <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-1 row-end-4 text-center p-4 shadow-card">
         <div class="grid grid-rows-6 h-full w-full">
-          <div class="row-span-6 relative" >
+          <div class="row-span-6 relative overflow-hidden">
             <%= live_component DjRumbleWeb.Live.Components.RoundInfo,
               id: "djrumble-round-info",
               round_info: @round_info
@@ -21,14 +21,14 @@
           </div>
         </div>
       </div>
-      <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 row-start-5 row-end-7 text-center overflow-y-scroll shadow-card">
+      <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 row-start-4 row-end-6 text-center overflow-y-scroll shadow-card">
         <%= live_component DjRumbleWeb.Live.Components.Playlist,
           id: "djrumble-playlist",
           next_rounds: @next_rounds,
           room_server: @room_server
         %>
       </div>
-      <div class="rounded-lg bg-gray-800 col-start-9 col-end-13 row-start-2 row-end-7 text-center align-middle shadow-card px-3 h-full">
+      <div class="rounded-lg bg-gray-800 col-start-9 col-end-13 row-start-1 row-end-6 text-center align-middle shadow-card px-3 h-full">
         <div class="grid grid-rows-6 h-full">
           <div class="row-span-2 mb-5 h-full">
             <%= live_component DjRumbleWeb.Live.Components.ConnectedUsers,
@@ -49,7 +49,7 @@
           </div>
         </div>
       </div>
-      <div class="col-start-1 col-end-13 row-start-7 row-end-8">
+      <div class="col-start-1 col-end-13 row-start-6 row-end-7">
         <div class="rounded-lg bg-gray-800 grid grid-cols-12 shadow-card">
 
           <div class="col-start-1 col-end-4 self-center h-full">
@@ -63,13 +63,16 @@
             <%= live_component DjRumbleWeb.Live.Components.PlayerControls,
               id: "djrumble-player-controls",
               room_server: @room_server,
-              scoring_enabled: @scoring_enabled
+              scoring_enabled: @scoring_enabled,
+              live_score: @live_score,
+              visitor: @visitor
             %>
           </div>
 
-          <div class="col-start-12 col-end-12 flex self-center justify-self-center p-4">
+          <div class="col-start-12 col-end-12 flex self-center justify-self-center	p-4">
             <%= live_component DjRumbleWeb.Live.Components.SearchFab,
-              id: "djrumble-searchbox-modal-button-1"
+              id: "djrumble-searchbox-modal-button-1",
+              is_search_enabled: !@visitor
             %>
           </div>
 
@@ -77,17 +80,23 @@
       </div>
     </div>
 
-    <div class="absolute inset-y-1/4 left-0 right-0 pr-4 h-0">
+    <div class="absolute top-0 left-0 right-0 pr-4 h-0">
 
       <%= live_component DjRumbleWeb.Live.Components.Searchbox,
         id: "djrumble-searchbox-modal",
         matchmaking_server: @matchmaking_server,
         room: @room,
-        state: @state,
+        state: @searchbox_state,
         user: @user
       do %>
 
       <% end %>
+
+      <%= live_component DjRumbleWeb.Live.Components.RegisterModal,
+        id: "djrumble-register-modal",
+        state: @register_modal_state,
+        user: @user
+      %>
 
     </div>
 

@@ -27,10 +27,28 @@ defmodule DjRumble.Rounds.Log do
     count_time_narration(Enum.random(1..3), action)
   end
 
+  defp narrate_action(%Rounds.Action.Score{} = action) do
+    score_narration(Enum.random(1..3), action)
+  end
+
   defp count_time_narration(_, action) do
     [
       "Elapsed time: ",
       action.time
+    ]
+  end
+
+  defp score_narration(_, %Rounds.Action.Score{type: :positive, at_time: time}) do
+    [
+      "Scores positively at ",
+      time
+    ]
+  end
+
+  defp score_narration(_, %Rounds.Action.Score{type: :negative, at_time: time}) do
+    [
+      "Downvoted at ",
+      time
     ]
   end
 end

@@ -11,14 +11,14 @@ defmodule DjRumbleWeb.Live.Components.Playlist do
       room_server: room_server
     } = assigns
 
-    videos =
+    videos_users =
       next_rounds
-      |> Enum.map(fn %{video: video} -> video end)
+      |> Enum.map(fn %{video: video, user: user} -> {video, user.username} end)
       |> Enum.with_index()
 
     {:ok,
      socket
      |> assign(:room_server, room_server)
-     |> assign(:videos, videos)}
+     |> assign(:videos_users, videos_users)}
   end
 end

@@ -48,14 +48,11 @@ defmodule DjRumble.Rounds.Round do
     %Round.Scheduled{round | time: time}
   end
 
-  def set_score(%Round.InProgress{} = round, :positive) do
-    {positives, negatives} = round.score
-    %Round.InProgress{round | score: {positives + 1, negatives}}
-  end
+  def set_score(%Round.InProgress{} = round, type) do
+    {score, action} = apply_score(round, type)
 
-  def set_score(%Round.InProgress{} = round, :negative) do
-    {positives, negatives} = round.score
-    %Round.InProgress{round | score: {positives, negatives + 1}}
+    %Round.InProgress{round | score: score}
+    |> log_action(action)
   end
 
   def start(%Round.Scheduled{} = round) do
@@ -63,13 +60,12 @@ defmodule DjRumble.Rounds.Round do
   end
 
   def finish(%Round.InProgress{} = round) do
-    # TODO: do not just :continue but get the result calculated
     Round.Finished.new(
       round.id,
       round.time,
       round.elapsed_time,
       round.score,
-      :continue,
+      round.outcome,
       round.log
     )
   end
@@ -88,6 +84,7 @@ defmodule DjRumble.Rounds.Round do
     round = %Round.InProgress{round | elapsed_time: time}
 
     round
+    |> check_outcome()
     |> check_if_finished()
   end
 
@@ -97,13 +94,32 @@ defmodule DjRumble.Rounds.Round do
     {time, action}
   end
 
+  defp apply_score(%Round.InProgress{} = round, type) do
+    action = Action.from_properties(ActionsDeck.score_action_properties(type, round.elapsed_time))
+    score = Action.apply(action, round)
+    {score, action}
+  end
+
+  defp check_outcome(%Round.InProgress{outcome: outcome, score: score} = round) do
+    case get_outcome_by_score(score) do
+      ^outcome ->
+        round
+
+      outcome ->
+        %Round.InProgress{round | outcome: outcome}
+    end
+  end
+
   defp check_if_finished(
          %Round.InProgress{elapsed_time: elapsed_time, time: time, score: {dislikes, likes}} =
            round
        ) do
     case {time, dislikes, likes} do
       {n, _, _} when n == elapsed_time ->
-        %Round.Finished{
+        finish(round)
+
+      {_, _positives, _negatives} ->
+        %Round.InProgress{
           id: round.id,
           time: round.time,
           elapsed_time: round.elapsed_time,
@@ -111,23 +127,22 @@ defmodule DjRumble.Rounds.Round do
           outcome: round.outcome,
           log: round.log
         }
-
-      {_, n, _} when n >= 8 ->
-        %Round.InProgress{
-          id: round.id,
-          time: round.time,
-          elapsed_time: round.elapsed_time,
-          score: round.score,
-          outcome: :thrown,
-          log: round.log
-        }
-
-      _ ->
-        round
     end
   end
 
-  # defp log_action(%Round.InProgress{log: log} = round, action) do
-  #   %Round.InProgress{round | log: Log.append(log, action)}
-  # end
+  defp get_outcome_by_score({positives, negatives}) when positives < negatives do
+    :thrown
+  end
+
+  defp get_outcome_by_score({positives, negatives}) when positives > negatives do
+    :continue
+  end
+
+  defp get_outcome_by_score({_positives, _negatives}) do
+    :thrown
+  end
+
+  defp log_action(%Round.InProgress{log: log} = round, action) do
+    %Round.InProgress{round | log: Log.append(log, action)}
+  end
 end

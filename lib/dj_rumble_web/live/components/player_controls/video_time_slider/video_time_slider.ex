@@ -1,6 +1,6 @@
-defmodule DjRumbleWeb.Live.Components.PlayerControls do
+defmodule DjRumbleWeb.Live.Components.PlayerControls.VideoTimeSlider do
   @moduledoc """
-  Responsible for displaying the player controls
+  Responsible for displaying the video time in a slider
   """
 
   use DjRumbleWeb, :live_component
