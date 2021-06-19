@@ -64,9 +64,19 @@
 
 + [Docker](https://docs.docker.com/engine/install/ubuntu/)
 + [Docker Compose](https://docs.docker.com/compose/install/)
-+ [Elixir](https://elixir-lang.org/install.html)
++ [Elixir `1.11.4`](https://elixir-lang.org/install.html)
++ [Erlang `23.3.4`](https://erlang.org/doc/installation_guide/users_guide.html)
 
-> Elixir también puede ser instalado utilizando [`asdf`](https://asdf-vm.com/#/core-manage-asdf?id=install). [Guía de instalación alternativa](https://gist.github.com/sgobotta/514a3e452f7bc37c558fc93a2768ccd2) para `asdf`.
+Elixir y Erlang también pueden ser instalados a través del [manager `asdf`](https://asdf-vm.com/#/core-manage-asdf?id=install). [Guía de instalación alternativa](https://gist.github.com/sgobotta/514a3e452f7bc37c558fc93a2768ccd2) para `asdf`.
+
+ ```bash
+ asdf plugin-update --all
+ asdf plugin-add erlang
+ asdf plugin-add elixir
+ asdf install
+ ```
+
+Se isntalarán las versiones de Elixir y Erlang declaradas en el archivo `.tool-versions`
 
 ### Editores y extensiones recomendadas
 
