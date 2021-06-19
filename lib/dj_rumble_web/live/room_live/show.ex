@@ -400,7 +400,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
     {:noreply,
      socket
      |> assign_scoring_enabled(:disable)
-     |> assign(:round_info, "Round finished!")}
+     |> assign(:round_info, "Round finished!")
+     |> push_event("drop_confetti", %{})}
   end
 
   @doc """
