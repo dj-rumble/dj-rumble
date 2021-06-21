@@ -231,11 +231,24 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     {_ref, {_pid, video, _time, finished_round_user}} = state.current_round
 
+    finished_video =
+      Video.video_placeholder(%{
+        title: "Waiting for the next round"
+      })
+
+    video_details = %{title: video.title}
+
     :ok =
       Channels.broadcast(
         :room,
         state.room.slug,
-        {:round_finished, %{round: round, user: finished_round_user}}
+        {:round_finished,
+         %{
+           video_details: video_details,
+           video: finished_video,
+           round: round,
+           user: finished_round_user
+         }}
       )
 
     {current_user_rounds, other_rounds} =
