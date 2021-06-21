@@ -5,13 +5,13 @@
   <%= live_component DjRumbleWeb.Components.Modal,
     id: "#{@id}-menu",
     title: "Search video",
-    extra_classes: "",
-    modal_container_grid_classes: "grid grid-cols-flow w-full h-99/100",
-    modal_subcontainer_grid_classes: "col-start-4 col-end-5 self-end",
+    extra_classes: "bg-black bg-opacity-50",
+    modal_container_grid_classes: "animated fadeIn grid grid-cols-flow w-full h-screen w-screen",
+    modal_subcontainer_grid_classes: "col-start-4 col-end-5 self-end m-10",
     state: @state
   do %>
 
-      <div class="bg-gray-800 rounded-lg flex flex-col flex-grow text-center shadow-sm">
+      <div class="bg-gray-800 rounded-lg flex flex-col flex-grow text-center shadow-sm animated fadeInUp">
 
         <div class="text-white px-6 mt-3">
           <form

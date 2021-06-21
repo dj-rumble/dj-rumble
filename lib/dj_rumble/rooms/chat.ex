@@ -66,8 +66,8 @@ defmodule DjRumble.Rooms.Chat do
 
     highlight_style =
       case timestamp =~ "04:20:" || timestamp =~ "16:20:" do
-        true -> "highlight-timestamp"
-        false -> "timestamp-message"
+        true -> "text-green-400"
+        false -> "text-blue-500"
       end
 
     %{

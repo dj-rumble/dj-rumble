@@ -3,9 +3,9 @@
   <%= live_component DjRumbleWeb.Components.Modal,
     id: "#{@id}-menu",
     title: "#{@title}",
-    modal_container_grid_classes: "grid grid-cols-flow grid-rows-4 w-full h-99/100",
+    modal_container_grid_classes: "animated fadeIn grid grid-cols-flow grid-rows-4 w-full h-99/100",
     modal_subcontainer_grid_classes: "col-start-2 col-end-2 row-start-2 row-end-4 w-1/2 h-fit",
-    extra_classes: "transition duration-700 transform opacity-95 focus-within:scale-110 focus-within:opacity-100",
+    extra_classes: "bg-black bg-opacity-50",
     state: @state
     do %>
 

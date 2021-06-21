@@ -18,11 +18,15 @@ defmodule DjRumbleWeb.Components.Modal do
 
   @impl true
   def handle_event("open", _, socket) do
-    {:noreply, assign(socket, :state, "OPEN")}
+    {:noreply,
+     socket
+     |> assign(:state, "OPEN")}
   end
 
   @impl true
   def handle_event("close", _, socket) do
-    {:noreply, assign(socket, :state, "CLOSED")}
+    {:noreply,
+     socket
+     |> assign(:state, "CLOSED")}
   end
 end

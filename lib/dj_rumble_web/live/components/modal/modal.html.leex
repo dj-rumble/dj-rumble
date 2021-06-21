@@ -1,28 +1,15 @@
-<div id="<%= @id %>" class="<%= @extra_classes %>">
+<div id="<%= @id %>">
   <%= if @state == "OPEN" do %>
   <div
     phx-hook="ModalInteracting"
     id="<%= "#{@id}-modal-data" %>"
     phx-target="#<%= @id %>"
-    x-data="{ open: false }"
-    x-init="() => {
-      setTimeout(() => open = true, 100);
-      $watch('open', isOpen => $dispatch('modal-change', { open: isOpen, id: '#<%= @id %>' }))
-    }"
-    x-show="open"
-    @close-modal="setTimeout(() => open = false, 100)"
-    class="modal"
+    class="modal <%= @extra_classes %> w-screen h-screen"
   >
 
     <!-- BACKDROP -->
     <div
       x-show="open"
-      x-transition:enter="ease-out duration-300"
-      x-transition:enter-start="opacity-0"
-      x-transition:enter-end="opacity-100"
-      x-transition:leave="ease-in duration-200"
-      x-transition:leave-start="opacity-100"
-      x-transition:leave-end="opacity-0"
       class="backdrop"
     >
       <div></div>
@@ -30,14 +17,8 @@
 
     <!-- MODAL DIALOG -->
     <div
-      x-show="open"
-      x-transition:enter="ease-out duration-300"
-      x-transition:enter-start="opacity-0 mb-2 sm:mb-8 sm:mt-0 sm:scale-95"
-      x-transition:enter-end="opacity-100 mb-8 sm:mt-0 sm:scale-100"
-      x-transition:leave="ease-in duration-200"
-      x-transition:leave-start="opacity-100 mb-8 sm:mt-0 sm:scale-100"
-      x-transition:leave-end="opacity-0 mb-2 sm:mb-8 sm:mt-0 sm:scale-95"
-      class="modal-dialog <%= @extra_classes %> <%= @modal_container_grid_classes %>"
+      id="<%= @id %>-dialog"
+      class="modal-dialog <%= @modal_container_grid_classes %>"
     >
 
       <div class="shadow-card bg-gray-800 rounded-lg <%= @modal_subcontainer_grid_classes %>">
@@ -46,7 +27,6 @@
           <h5 class="modal-title"><%= assigns[:title] %></h5>
           <button
             type="button"
-            @click="open = false"
             phx-click="close"
             phx-target="<%= @myself %>"
             class="modal-close-icon text-3xl rounded-full p-0"
