@@ -43,7 +43,8 @@ defmodule DjRumble.Rounds.RoundServer do
   def initial_state(args) do
     %{
       room_slug: args.room_slug,
-      round: args.round
+      round: args.round,
+      voters: Map.new()
     }
   end
 
@@ -89,9 +90,22 @@ defmodule DjRumble.Rounds.RoundServer do
   end
 
   @impl GenServer
-  def handle_call({:score, _user, type}, _from, %{round: %Round.InProgress{} = round} = state) do
-    round = Round.set_score(round, type)
-    {:reply, round, %{state | round: round}}
+  def handle_call({:score, user, type}, _from, %{round: %Round.InProgress{} = round} = state) do
+    %{voters: voters} = state
+
+    state =
+      case Map.get(voters, user.id) do
+        nil ->
+          round = Round.set_score(round, type)
+          voters = Map.put(voters, user.id, type)
+
+          %{state | round: round, voters: voters}
+
+        _vote ->
+          state
+      end
+
+    {:reply, state.round, state}
   end
 
   @impl GenServer

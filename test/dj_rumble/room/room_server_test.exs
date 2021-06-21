@@ -336,8 +336,8 @@ defmodule DjRumble.Room.RoomServerTest do
       videos_users = get_videos_users(state.room)
       time = 30
       :ok = schedule_and_start_round(matchmaking_server, videos_users, time)
-      players = spawn_players(1)
-      users_scores = generate_score(:positive, players)
+      [{_pid, user}] = spawn_players(1)
+      users_scores = generate_score(:positive, [user])
 
       # Exercise
       :ok = do_scores(pid, users_scores)
@@ -353,7 +353,8 @@ defmodule DjRumble.Room.RoomServerTest do
       time = 30
       :ok = schedule_and_start_round(matchmaking_server, videos_users, time)
       players = spawn_players(5)
-      users_scores = generate_score(:positive, players)
+      users = Enum.map(players, fn {_pid, user} -> user end)
+      users_scores = generate_score(:positive, users)
 
       # Exercise
       :ok = do_scores(pid, users_scores)

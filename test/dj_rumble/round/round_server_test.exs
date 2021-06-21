@@ -448,6 +448,50 @@ defmodule DjRumble.Round.RoundServerTest do
       %{room_slug: ^slug, round: %Round.InProgress{score: ^evaluated_score}} = state
     end
 
+    test "handle_call/3 :: {:score, %User{}, type} is called many times by the same user with positive scores replies with a round with a score",
+         %{room: room, state: state} do
+      # Setup
+      %{slug: slug} = room
+
+      state =
+        state
+        |> handle_set_round_time(2)
+        |> handle_start_round()
+
+      user = user_fixture()
+      users = for _n <- 0..2, do: user
+      users_scores = generate_score(:positive, users)
+      scores = Enum.map(users_scores, fn {_user, score} -> score end)
+
+      # Exercise
+      {^scores, state} = handle_scores(state, users_scores)
+
+      # Verify
+      %{room_slug: ^slug, round: %Round.InProgress{score: {1, 0}}} = state
+    end
+
+    test "handle_call/3 :: {:score, %User{}, type} is called many times by the same user with negative scores replies with a round with a score",
+         %{room: room, state: state} do
+      # Setup
+      %{slug: slug} = room
+
+      state =
+        state
+        |> handle_set_round_time(2)
+        |> handle_start_round()
+
+      user = user_fixture()
+      users = for _n <- 0..2, do: user
+      users_scores = generate_score(:negative, users)
+      scores = Enum.map(users_scores, fn {_user, score} -> score end)
+
+      # Exercise
+      {^scores, state} = handle_scores(state, users_scores)
+
+      # Verify
+      %{room_slug: ^slug, round: %Round.InProgress{score: {0, 1}}} = state
+    end
+
     test "handle_info/2 :: :tick is called with a round that is in progress and does not reply",
          %{room: room, state: state} do
       %{slug: slug} = room
