@@ -73,7 +73,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:round_info, "")
              |> assign(:current_round, current_round)
              |> assign(:next_rounds, next_rounds)
-             |> assign_scoring_enabled(:disable)
+             |> assign_scoring(:disable)
              |> assign(:searchbox_state, "CLOSED")
              |> assign(:register_modal_state, "CLOSED")
              |> assign(:show_search_modal, false)}
@@ -314,7 +314,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
      socket
      |> assign_page_title(video.title)
      |> assign(:current_round, params)
-     |> assign_scoring_enabled(:check_user)
+     |> assign_scoring(:check_user)
      |> assign_live_score(round)
      |> push_event("receive_player_state", video_details)}
   end
@@ -389,7 +389,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
      socket
      |> assign_page_title(video.title)
      |> assign(:current_round, current_round)
-     |> assign_scoring_enabled(:check_user)
+     |> assign_scoring(:check_user)
      |> assign_live_score(round)
      |> push_event("receive_player_state", video_details)}
   end
@@ -401,23 +401,36 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Topic:** `String.t()`. Example: `"room:<room_slug>"`
   * **Args:** `%Round.Finished{}`
   """
-  def handle_round_finished(%{round: %Round.Finished{outcome: :continue} = round}, socket) do
+  def handle_round_finished(
+        %{round: %Round.Finished{outcome: :continue} = round, video_details: video_details} =
+          current_round,
+        socket
+      ) do
     Logger.info(fn -> "Round Finished: #{inspect(round)}" end)
+
+    short_title = String.slice(video_details.title, 0, 15)
 
     {:noreply,
      socket
-     |> assign_scoring_enabled(:disable)
-     |> assign(:round_info, "Round finished!")
+     |> assign_scoring(:disable)
+     |> assign(:current_round, current_round)
+     |> assign(:round_info, "#{short_title}... scored #{get_score(round.score)} points")
      |> push_event("drop_confetti", %{})}
   end
 
-  def handle_round_finished(%{round: %Round.Finished{} = round}, socket) do
+  def handle_round_finished(
+        %{round: %Round.Finished{} = round, video_details: video_details} = current_round,
+        socket
+      ) do
     Logger.info(fn -> "Round Finished: #{inspect(round)}" end)
+
+    short_title = String.slice(video_details.title, 0, 15)
 
     {:noreply,
      socket
-     |> assign_scoring_enabled(:disable)
-     |> assign(:round_info, "Round finished!")}
+     |> assign_scoring(:disable)
+     |> assign(:current_round, current_round)
+     |> assign(:round_info, "#{short_title}... scored #{get_score(round.score)} points")}
   end
 
   @doc """
@@ -497,18 +510,19 @@ defmodule DjRumbleWeb.RoomLive.Show do
     Process.send_after(self(), :tick, @tick_rate)
   end
 
-  defp assign_scoring_enabled(socket, :disable),
+  defp assign_scoring(socket, :disable),
     do: assign(socket, :scoring_enabled, %{positive: false, negative: false})
 
-  defp assign_scoring_enabled(socket, :check_user) do
+  defp assign_scoring(socket, :check_user) do
     is_enabled = !socket.assigns.visitor
     assign(socket, :scoring_enabled, %{positive: is_enabled, negative: is_enabled})
   end
 
+  defp get_score({positives, negatives}), do: positives - negatives
+
   defp assign_live_score(socket, 0), do: assign(socket, :live_score, 0)
 
   defp assign_live_score(socket, round) do
-    {positives, negatives} = round.score
-    assign(socket, :live_score, positives - negatives)
+    assign(socket, :live_score, get_score(round.score))
   end
 end
