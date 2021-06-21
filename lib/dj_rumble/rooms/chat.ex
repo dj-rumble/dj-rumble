@@ -16,7 +16,7 @@ defmodule DjRumble.Rooms.Chat do
   end
 
   def create_message(:track_notification, %{video: video}) do
-    %{title: title, added_by: %{user_id: user_id}} = video
+    %{title: title, added_by: %{user_id: _user_id}} = video
 
     username = "Juancito"
     #   case user_id do

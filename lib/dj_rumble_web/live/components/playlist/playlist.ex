@@ -25,13 +25,13 @@ defmodule DjRumbleWeb.Live.Components.Playlist do
   defp get_card_class(0), do: "bg-gray-700"
   defp get_card_class(_), do: "bg-gray-800"
 
-  defp get_notice_by_video_position(video_user, 0, assigns) do
+  defp get_notice_by_video_position(_video_user, 0, assigns) do
     ~L"""
     <span class="animate-pulse">Next coming!</span>
     """
   end
 
-  defp get_notice_by_video_position(video_user, _, assigns) do
+  defp get_notice_by_video_position(_video_user, _, assigns) do
     ~L"""
     <span></span>
     """
