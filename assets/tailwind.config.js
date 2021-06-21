@@ -15,6 +15,7 @@ module.exports = {
           '0px 0px 0px #000000, 4px 4px 4px #000000',
         'inner-button':
           'inset 0px 0px 20px #323637, inset -2px 0px 2px #323637 !important',
+        'inner-card-md': 'inset 0 0 10px #000000',
         'inner-input':
           'inset -4px -4px 10px #323637, inset 4px 4px 10px #080a0a'
       },
