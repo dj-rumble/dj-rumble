@@ -5,6 +5,7 @@ defmodule DjRumble.Round.RoundServerTest do
   use DjRumble.DataCase
   use ExUnit.Case
 
+  import DjRumble.AccountsFixtures
   import DjRumble.RoomsFixtures
 
   alias DjRumble.Rounds.{Log, Round, RoundServer}
@@ -71,9 +72,10 @@ defmodule DjRumble.Round.RoundServerTest do
     test "score/2 returns a round with a positive score", %{pid: pid} do
       # Setup
       :ok = RoundServer.start_round(pid)
+      user = user_fixture()
 
       # Exercise
-      round = RoundServer.score(pid, :positive)
+      round = RoundServer.score(pid, user, :positive)
 
       # Verify
       %Round.InProgress{score: {1, 0}} = round
@@ -82,9 +84,10 @@ defmodule DjRumble.Round.RoundServerTest do
     test "score/2 returns a round with a negative score", %{pid: pid} do
       # Setup
       :ok = RoundServer.start_round(pid)
+      user = user_fixture()
 
       # Exercise
-      round = RoundServer.score(pid, :negative)
+      round = RoundServer.score(pid, user, :negative)
 
       # Verify
       %Round.InProgress{score: {0, 1}} = round
