@@ -24,8 +24,8 @@ defmodule DjRumbleWeb.Live.Components.ConnectedUsers do
         has_separator = index != length(users) - 1
 
         case user do
-          ^me -> render_user(user, "text-indigo-900", has_separator, assigns)
-          _ -> render_user(user, "text-black", has_separator, assigns)
+          ^me -> render_user(user, "text-green-300", has_separator, assigns)
+          _ -> render_user(user, "text-gray-300", has_separator, assigns)
         end
       end)
 

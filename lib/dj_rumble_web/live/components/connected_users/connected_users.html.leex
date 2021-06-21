@@ -1,9 +1,9 @@
-<div class="grid grid-flow-row h-full">
+<div class="grid grid-rows-6 h-full">
   <div class="
     row-span-2 sm:row-span-2 md:row-span-1
     py-1 w-full h-full
-    bg-gray-700
-    rounded-t-lg shadow-card
+    bg-gray-600
+    rounded-t-lg
   ">
     <div class="
       text-white h-full self-center overflow-hidden
@@ -13,10 +13,10 @@
       </div>
     </div>
   </div>
-  <div class="row-span-4 sm:row-span-4 md:row-span-5 py-1 bg-gray-400 pr-1 rounded-b-md">
-    <div class="pr-1 overflow-y-scroll h-full bg-gray-400">
-      <div class="bg-gray-400 px-2 text-left text-xl">
-        <div class="" style="">
+  <div class="row-span-4 sm:row-span-4 md:row-span-5 py-1 bg-gray-800 pr-1 rounded-b-md shadow-inner-input">
+    <div class="pr-1 overflow-y-scroll h-full bg-gray-800 shadow-inner-input">
+      <div class="bg-transparent px-2 text-left text-xl">
+        <div class="p-3">
           <%= render_users(@user.username, @connected_users, @myself) %>
         </div>
       </div>
