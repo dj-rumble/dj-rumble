@@ -12,9 +12,7 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
 
   @impl true
   def update(assigns, socket) do
-    search_result = []
-
-    search_result = [
+    _search_result = [
       {%DjRumble.Rooms.Video{
          #  __meta__: #Ecto.Schema.Metadata<:built, "videos">,
          channel_title: "Vulf",
