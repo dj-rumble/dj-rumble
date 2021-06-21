@@ -34,8 +34,8 @@ defmodule DjRumble.Rooms.RoomServer do
     Matchmaking.create_round(matchmaking_server, video, user)
   end
 
-  def score(pid, from, type) do
-    GenServer.cast(pid, {:score, from, type})
+  def score(pid, user, type) do
+    GenServer.call(pid, {:score, user, type})
   end
 
   def initial_state(args) do
@@ -89,20 +89,7 @@ defmodule DjRumble.Rooms.RoomServer do
   end
 
   @impl GenServer
-  def handle_continue({:joined, pid}, state) do
-    Process.send(pid, {:welcome, "Hello!"}, [])
-
-    players_list = Map.to_list(state.players)
-
-    Logger.info(fn -> "Current players: #{length(players_list)}." end)
-
-    :ok = Matchmaking.join(state.matchmaking_server, pid)
-
-    {:noreply, state}
-  end
-
-  @impl GenServer
-  def handle_cast({:score, _from, type}, state) do
+  def handle_call({:score, _user, type}, _from, state) do
     %{matchmaking_server: matchmaking_server} = state
 
     case Matchmaking.score(matchmaking_server, type) do
@@ -119,8 +106,21 @@ defmodule DjRumble.Rooms.RoomServer do
 
         # disable button to pid
 
-        {:noreply, state}
+        {:reply, :ok, state}
     end
+  end
+
+  @impl GenServer
+  def handle_continue({:joined, pid}, state) do
+    Process.send(pid, {:welcome, "Hello!"}, [])
+
+    players_list = Map.to_list(state.players)
+
+    Logger.info(fn -> "Current players: #{length(players_list)}." end)
+
+    :ok = Matchmaking.join(state.matchmaking_server, pid)
+
+    {:noreply, state}
   end
 
   @impl GenServer

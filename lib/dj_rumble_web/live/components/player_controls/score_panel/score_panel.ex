@@ -13,6 +13,7 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls.ScorePanel do
       live_score: live_score,
       room_server: room_server,
       scoring_enabled: scoring_enabled,
+      user: user,
       visitor: visitor
     } = assigns
 
@@ -21,15 +22,19 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls.ScorePanel do
      |> assign(:id, id)
      |> assign(:live_score, live_score)
      |> assign(:scoring_enabled, scoring_enabled)
+     |> assign(:user, user)
      |> assign(:visitor, visitor)
      |> assign(:room_server, room_server)}
   end
 
-  def handle_event("score", %{"score" => type}, socket) do
-    %{room_server: room_server} = socket.assigns
+  def handle_event("score", _params, %{assigns: %{visitor: true}} = socket),
+    do: {:noreply, socket}
+
+  def handle_event("score", %{"score" => type}, %{assigns: %{visitor: false}} = socket) do
+    %{room_server: room_server, user: user} = socket.assigns
     type = String.to_atom(type)
 
-    :ok = RoomServer.score(room_server, self(), type)
+    :ok = RoomServer.score(room_server, user, type)
 
     scoring_enabled = %{positive: false, negative: false}
 
