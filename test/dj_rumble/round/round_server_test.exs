@@ -15,9 +15,14 @@ defmodule DjRumble.Round.RoundServerTest do
   describe "round_server client interface" do
     setup do
       room = room_fixture()
-      round_time = 2
-      round_genserver_pid = start_supervised!({RoundServer, {room.slug, round_time}})
-      %{room: room, round_time: round_time, pid: round_genserver_pid}
+      round_genserver_pid = start_supervised!({RoundServer, {room.slug}})
+      %{room: room, pid: round_genserver_pid}
+    end
+
+    defp tick(pid, times) do
+      for _ <- 1..times do
+        :ok = Process.send(pid, :tick, [])
+      end
     end
 
     test "start_link/1 starts a round server", %{pid: pid} do
@@ -35,22 +40,21 @@ defmodule DjRumble.Round.RoundServerTest do
 
     test "start_round/1 ticks until the round pid terminates", %{pid: pid} do
       :ok = RoundServer.start_round(pid)
-      :ok = Process.sleep(3500)
-      refute Process.alive?(pid)
+      assert Process.alive?(pid)
     end
 
-    test "get_round/1 returns a scheduled round", %{pid: pid, round_time: round_time} do
-      %Round.Scheduled{time: ^round_time, elapsed_time: elapsed_time, score: score} =
+    test "get_round/1 returns a scheduled round", %{pid: pid} do
+      %Round.Scheduled{time: 0, elapsed_time: elapsed_time, score: score} =
         RoundServer.get_round(pid)
 
       assert elapsed_time == 0
       assert score == {0, 0}
     end
 
-    test "get_round/1 returns a round that is in progress", %{pid: pid, round_time: round_time} do
+    test "get_round/1 returns a round that is in progress", %{pid: pid} do
       :ok = RoundServer.start_round(pid)
 
-      %Round.InProgress{time: ^round_time, elapsed_time: elapsed_time, score: score, log: log} =
+      %Round.InProgress{time: 0, elapsed_time: elapsed_time, score: score, log: log} =
         RoundServer.get_round(pid)
 
       assert elapsed_time == 0
@@ -93,14 +97,34 @@ defmodule DjRumble.Round.RoundServerTest do
       %Round.InProgress{score: {0, 1}} = round
     end
 
-    test "handle_info/2 :tick updates a round that is in progress", %{
-      pid: pid,
-      round_time: round_time
-    } do
+    test "handle_info/2 :tick updates a round that is in progress", %{pid: pid} do
       :ok = RoundServer.start_round(pid)
-      :ok = Process.send(pid, :tick, [])
-      %Round.InProgress{time: ^round_time, elapsed_time: 1, log: log} = RoundServer.get_round(pid)
-      assert log == Log.new()
+      ticks = length(tick(pid, 1))
+      log = Log.new()
+      %Round.InProgress{time: 0, elapsed_time: ^ticks, log: ^log} = RoundServer.get_round(pid)
+    end
+
+    test "handle_info/2 :tick updates many times a round that is in progress", %{pid: pid} do
+      :ok = RoundServer.start_round(pid)
+      ticks = length(tick(pid, 10))
+      log = Log.new()
+      %Round.InProgress{time: 0, elapsed_time: ^ticks, log: ^log} = RoundServer.get_round(pid)
+    end
+
+    test "handle_info/2 :tick updates many times a round that is in progress until it finishes",
+         %{pid: pid} do
+      # Setup
+      :ok = RoundServer.set_round_time(pid, 10)
+      :ok = RoundServer.start_round(pid)
+
+      # Exercise
+      _ticks = tick(pid, 10)
+
+      # Verify
+      # We sleep for a few miliseconds to wait for the server to shutdown the
+      # round properly
+      :ok = Process.sleep(30)
+      refute Process.alive?(pid)
     end
   end
 
@@ -108,7 +132,7 @@ defmodule DjRumble.Round.RoundServerTest do
     setup do
       room = room_fixture(%{}, %{preload: true})
 
-      state = {room.slug, Round.schedule(0)}
+      state = RoundServer.initial_state(%{room_slug: room.slug, round: Round.schedule(0)})
 
       %{room: room, state: state}
     end
@@ -116,7 +140,7 @@ defmodule DjRumble.Round.RoundServerTest do
     defp handle_start_round(state) do
       response = RoundServer.handle_call(:start_round, nil, state)
 
-      {:reply, :ok, {_slug, %Round.InProgress{}} = state} = response
+      {:reply, :ok, %{round: %Round.InProgress{}} = state} = response
 
       state
     end
@@ -158,7 +182,7 @@ defmodule DjRumble.Round.RoundServerTest do
     defp handle_score(state, type) do
       response = RoundServer.handle_call({:score, type}, nil, state)
 
-      {:reply, new_round, {_slug, round} = state} = response
+      {:reply, new_round, %{round: round} = state} = response
 
       assert new_round == round
 
@@ -189,8 +213,8 @@ defmodule DjRumble.Round.RoundServerTest do
       end)
     end
 
-    defp get_round(state) do
-      elem(state, 1)
+    defp get_round(%{round: round}) do
+      round
     end
 
     test "handle_call/3 :: :start_round is called and replies :ok", %{state: state} do
@@ -244,7 +268,7 @@ defmodule DjRumble.Round.RoundServerTest do
         |> handle_set_round_time(2)
         |> handle_start_round()
         |> handle_tick(fn response ->
-          {:noreply, {^slug, %Round.InProgress{}} = state} = response
+          {:noreply, %{room_slug: ^slug, round: %Round.InProgress{}} = state} = response
           state
         end)
 
@@ -269,11 +293,13 @@ defmodule DjRumble.Round.RoundServerTest do
         |> handle_set_round_time(2)
         |> handle_start_round()
         |> handle_tick(fn response ->
-          {:noreply, {^slug, %Round.InProgress{}} = state} = response
+          {:noreply, %{room_slug: ^slug, round: %Round.InProgress{}} = state} = response
           state
         end)
         |> handle_tick(fn response ->
-          {:stop, {:shutdown, %Round.Finished{}}, {^slug, %Round.Finished{}} = state} = response
+          {:stop, {:shutdown, %Round.Finished{}},
+           %{room_slug: ^slug, round: %Round.Finished{}} = state} = response
+
           state
         end)
 
@@ -296,7 +322,8 @@ defmodule DjRumble.Round.RoundServerTest do
       %{slug: slug} = room
       time = 140
 
-      {^slug, %Round.Scheduled{time: ^time}} = handle_set_round_time(state, time)
+      %{room_slug: ^slug, round: %Round.Scheduled{time: ^time}} =
+        handle_set_round_time(state, time)
     end
 
     test "handle_call/3 :: {:score, :positive} is called once and replies with a round with a positive score",
@@ -309,14 +336,14 @@ defmodule DjRumble.Round.RoundServerTest do
         |> handle_set_round_time(2)
         |> handle_start_round()
 
-      {^slug, %Round.InProgress{score: initial_score}} = state
+      %{room_slug: ^slug, round: %Round.InProgress{score: initial_score}} = state
       scores = generate_score(:positive, 1)
       evaluated_score = get_evaluated_score(scores, initial_score)
       # Exercise
       {^scores, state} = handle_scores(state, scores)
 
       # Verify
-      {^slug, %Round.InProgress{score: ^evaluated_score}} = state
+      %{room_slug: ^slug, round: %Round.InProgress{score: ^evaluated_score}} = state
     end
 
     test "handle_call/3 :: {:score, :positive} is called many times and replies with a round with a positive score",
@@ -329,14 +356,14 @@ defmodule DjRumble.Round.RoundServerTest do
         |> handle_set_round_time(2)
         |> handle_start_round()
 
-      {^slug, %Round.InProgress{score: initial_score}} = state
+      %{room_slug: ^slug, round: %Round.InProgress{score: initial_score}} = state
       scores = generate_score(:positive, 3)
       evaluated_score = get_evaluated_score(scores, initial_score)
       # Exercise
       {^scores, state} = handle_scores(state, scores)
 
       # Verify
-      {^slug, %Round.InProgress{score: ^evaluated_score}} = state
+      %{room_slug: ^slug, round: %Round.InProgress{score: ^evaluated_score}} = state
     end
 
     test "handle_call/3 :: {:score, :negative} is called once and replies with a round with a negative score",
@@ -349,14 +376,14 @@ defmodule DjRumble.Round.RoundServerTest do
         |> handle_set_round_time(2)
         |> handle_start_round()
 
-      {^slug, %Round.InProgress{score: initial_score}} = state
+      %{room_slug: ^slug, round: %Round.InProgress{score: initial_score}} = state
       scores = generate_score(:negative, 1)
       evaluated_score = get_evaluated_score(scores, initial_score)
       # Exercise
       {^scores, state} = handle_scores(state, scores)
 
       # Verify
-      {^slug, %Round.InProgress{score: ^evaluated_score}} = state
+      %{room_slug: ^slug, round: %Round.InProgress{score: ^evaluated_score}} = state
     end
 
     test "handle_call/3 :: {:score, :negative} is called many times and replies with a round with a negative score",
@@ -369,14 +396,14 @@ defmodule DjRumble.Round.RoundServerTest do
         |> handle_set_round_time(2)
         |> handle_start_round()
 
-      {^slug, %Round.InProgress{score: initial_score}} = state
+      %{room_slug: ^slug, round: %Round.InProgress{score: initial_score}} = state
       scores = generate_score(:negative, 3)
       evaluated_score = get_evaluated_score(scores, initial_score)
       # Exercise
       {^scores, state} = handle_scores(state, scores)
 
       # Verify
-      {^slug, %Round.InProgress{score: ^evaluated_score}} = state
+      %{room_slug: ^slug, round: %Round.InProgress{score: ^evaluated_score}} = state
     end
 
     test "handle_call/3 :: {:score, type} is called many times with mixed scores replies with a round with a score",
@@ -389,27 +416,27 @@ defmodule DjRumble.Round.RoundServerTest do
         |> handle_set_round_time(2)
         |> handle_start_round()
 
-      {^slug, %Round.InProgress{score: initial_score}} = state
+      %{room_slug: ^slug, round: %Round.InProgress{score: initial_score}} = state
       scores = generate_score(:mixed, 10)
       evaluated_score = get_evaluated_score(scores, initial_score)
       # Exercise
       {^scores, state} = handle_scores(state, scores)
 
       # Verify
-      {^slug, %Round.InProgress{score: ^evaluated_score}} = state
+      %{room_slug: ^slug, round: %Round.InProgress{score: ^evaluated_score}} = state
     end
 
     test "handle_info/2 :: :tick is called with a round that is in progress and does not reply",
          %{room: room, state: state} do
       %{slug: slug} = room
 
-      _state =
+      :ok =
         state
         |> handle_set_round_time(2)
         |> handle_start_round()
         |> handle_tick(fn response ->
-          {:noreply, {^slug, %Round.InProgress{}} = state} = response
-          state
+          {:noreply, %{room_slug: ^slug, round: %Round.InProgress{}}} = response
+          :ok
         end)
     end
 
@@ -419,14 +446,14 @@ defmodule DjRumble.Round.RoundServerTest do
 
       :ok = Channels.subscribe(:room, slug)
 
-      _state =
+      :ok =
         state
         |> handle_set_round_time(2)
         |> handle_start_round()
         |> handle_score(:negative)
         |> handle_tick(fn response ->
-          {:noreply, {^slug, %Round.InProgress{}} = state} = response
-          state
+          {:noreply, %{room_slug: ^slug, round: %Round.InProgress{}}} = response
+          :ok
         end)
 
       assert_receive {:outcome_changed, %{round: %Round.InProgress{outcome: :thrown}}}
@@ -438,13 +465,15 @@ defmodule DjRumble.Round.RoundServerTest do
     } do
       %{slug: slug} = room
 
-      _state =
+      :ok =
         state
         |> handle_set_round_time(1)
         |> handle_start_round()
         |> handle_tick(fn response ->
-          {:stop, {:shutdown, %Round.Finished{}}, {^slug, %Round.Finished{}} = state} = response
-          state
+          {:stop, {:shutdown, %Round.Finished{}}, %{room_slug: ^slug, round: %Round.Finished{}}} =
+            response
+
+          :ok
         end)
     end
   end
