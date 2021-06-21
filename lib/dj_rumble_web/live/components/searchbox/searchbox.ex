@@ -14,11 +14,94 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
   def update(assigns, socket) do
     search_result = []
 
+    search_result = [
+      {%DjRumble.Rooms.Video{
+         #  __meta__: #Ecto.Schema.Metadata<:built, "videos">,
+         channel_title: "Vulf",
+         description:
+           "0:00 The Sweet Science 2:18 Tee Time 4:19 Animal Spirits 7:55 Cory Wong 12:38 My First Car 15:42 Daddy, He Got a Tesla 20:18 Arena Meditation 24:22 ...",
+         id: nil,
+         img_height: "90",
+         img_url: "https://i.ytimg.com/vi/rv4wf7bzfFE/default.jpg",
+         img_width: "120",
+         inserted_at: nil,
+         #  rooms: #Ecto.Association.NotLoaded<association :rooms is not loaded>,
+         title: "VULFPECK /// Live at Madison Square Garden",
+         updated_at: nil,
+         #  users: #Ecto.Association.NotLoaded<association :users is not loaded>,
+         video_id: "rv4wf7bzfFE"
+       }, 0},
+      {%DjRumble.Rooms.Video{
+         #  __meta__: #Ecto.Schema.Metadata<:built, "videos">,
+         channel_title: "Vulf",
+         description:
+           "VULFPECK /// Back Pocket (Live at Madison Square Garden) buy on vinyl → https://vuuulf.com/msg.",
+         id: nil,
+         img_height: "90",
+         img_url: "https://i.ytimg.com/vi/UZPX9KQbwsg/default.jpg",
+         img_width: "120",
+         inserted_at: nil,
+         #  rooms: #Ecto.Association.NotLoaded<association :rooms is not loaded>,
+         title: "VULFPECK /// Back Pocket (Live at Madison Square Garden)",
+         updated_at: nil,
+         #  users: #Ecto.Association.NotLoaded<association :users is not loaded>,
+         video_id: "UZPX9KQbwsg"
+       }, 1},
+      {%DjRumble.Rooms.Video{
+         #  __meta__: #Ecto.Schema.Metadata<:built, "videos">,
+         channel_title: "Larry Rulz FORE!",
+         description:
+           "Recorded on September 28, 2019 at MSG in New York, NY. Setlist: 0:00 intro 0:45 Mike Winograd clarinet solo - The Sweet Science 3:00 Tee Time - Jack ...",
+         id: nil,
+         img_height: "90",
+         img_url: "https://i.ytimg.com/vi/1Ovz3Zc5fEY/default.jpg",
+         img_width: "120",
+         inserted_at: nil,
+         #  rooms: #Ecto.Association.NotLoaded<association :rooms is not loaded>,
+         title: "Vulfpeck - Madison Square Garden - September 28, 2019",
+         updated_at: nil,
+         #  users: #Ecto.Association.NotLoaded<association :users is not loaded>,
+         video_id: "1Ovz3Zc5fEY"
+       }, 2},
+      {%DjRumble.Rooms.Video{
+         #  __meta__: #Ecto.Schema.Metadata<:built, "videos">,
+         channel_title: "Vulf",
+         description:
+           "VULFPECK /// Dean Town (Live at Madison Square Garden) buy vinyl first pressing at https://vulfpeck.bandcamp.com/",
+         id: nil,
+         img_height: "90",
+         img_url: "https://i.ytimg.com/vi/rhxQoDlt2AU/default.jpg",
+         img_width: "120",
+         inserted_at: nil,
+         #  rooms: #Ecto.Association.NotLoaded<association :rooms is not loaded>,
+         title: "VULFPECK /// Dean Town (Live at Madison Square Garden)",
+         updated_at: nil,
+         #  users: #Ecto.Association.NotLoaded<association :users is not loaded>,
+         video_id: "rhxQoDlt2AU"
+       }, 3},
+      {%DjRumble.Rooms.Video{
+         #  __meta__: #Ecto.Schema.Metadata<:built, "videos">,
+         channel_title: "ra punkabest",
+         description: "Superfunk.",
+         id: nil,
+         img_height: "90",
+         img_url: "https://i.ytimg.com/vi/y8GbpZN071M/default.jpg",
+         img_width: "120",
+         inserted_at: nil,
+         #  rooms: #Ecto.Association.NotLoaded<association :rooms is not loaded>,
+         title: "Vulfpeck - Cory Wong - Live at Madison Square Garden",
+         updated_at: nil,
+         #  users: #Ecto.Association.NotLoaded<association :users is not loaded>,
+         video_id: "y8GbpZN071M"
+       }, 4}
+    ]
+
     {:ok,
      socket
-     |> assign(:search_results, search_result)
+     |> assign(:search_results, [])
      |> assign(:search_query, "")
      |> assign(:opened, true)
+     |> assign(:initial_position, "right-0")
      |> assign(assigns)}
   end
 
@@ -81,9 +164,12 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
     id = "search-element-button-#{video_index + 1}"
 
     props = %{
-      classes:
-        "search-control-enabled clickeable add-button transition duration-500 ease-in-out transform hover:scale-110",
+      classes: "
+        search-control-enabled clickeable
+        transition duration-500 ease-in-out
+      ",
       click_event: "add_to_queue",
+      icon_classes: "show-add-button",
       id: id,
       value: video_index
     }
@@ -95,6 +181,7 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
          %{
            classes: classes,
            id: id,
+           icon_classes: icon_classes,
            value: value,
            click_event: click_event
          },
@@ -108,9 +195,13 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
         phx-target="<%= assigns %>"
         phx-value-video_id="<%= value %>"
       >
-        +
+        <%= render_svg("add", "h-8 w-8 #{icon_classes}") %>
       </a>
     """
+  end
+
+  defp render_svg(icon, classes) do
+    PhoenixInlineSvg.Helpers.svg_image(DjRumbleWeb.Endpoint, "buttons/#{icon}", class: classes)
   end
 
   defp parse_int(str) do

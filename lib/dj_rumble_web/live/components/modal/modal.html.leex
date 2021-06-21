@@ -37,9 +37,10 @@
       x-transition:leave="ease-in duration-200"
       x-transition:leave-start="opacity-100 mb-8 sm:mt-0 sm:scale-100"
       x-transition:leave-end="opacity-0 mb-2 sm:mb-8 sm:mt-0 sm:scale-95"
-      class="modal-dialog <%= @extra_classes %>">
+      class="modal-dialog <%= @extra_classes %> <%= @modal_container_grid_classes %>"
+    >
 
-      <div class="shadow-card bg-gray-800 rounded-lg">
+      <div class="shadow-card bg-gray-800 rounded-lg <%= @modal_subcontainer_grid_classes %>">
         <!-- MODAL HEADER -->
         <div class="modal-header pl-4 pr-4">
           <h5 class="modal-title"><%= assigns[:title] %></h5>

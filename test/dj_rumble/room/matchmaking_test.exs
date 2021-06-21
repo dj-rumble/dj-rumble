@@ -967,7 +967,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert_receive({:round_finished, %{round: ^round, user: ^user}})
     end
 
-    @tag :wip
     test "handle_info/2 :: {:DOWN, ref, :process, pid, {:shutdown, %Round.Finished{}} is called with a :continue outcome and the next rounds that change belong to the winner user" do
       # Setup
       room = room_fixture()
@@ -1037,7 +1036,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert_receive({:round_finished, %{round: ^round, user: ^winner_user}})
     end
 
-    @tag :wip
     test "handle_info/2 :: {:DOWN, ref, :process, pid, {:shutdown, %Round.Finished{}} is called with a :thrown outcome and the next rounds that change belong to the user that was waiting" do
       # Setup
       room = room_fixture()
