@@ -40,7 +40,7 @@ defmodule DjRumble.Rounds.RoundServer do
     GenServer.call(pid, {:set_round_time, time})
   end
 
-  def score(pid, type) do
+  def score(pid, _user, type) do
     GenServer.call(pid, {:score, type})
   end
 
