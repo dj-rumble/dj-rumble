@@ -12,12 +12,8 @@ defmodule DjRumble.Rounds.RoundServer do
 
   @seconds_per_tick 1
 
-  @doc """
-  Round Server client interface
-  """
-
-  def start_link({room_slug, round_time}) do
-    GenServer.start_link(__MODULE__, {room_slug, round_time})
+  def start_link({room_slug}) do
+    GenServer.start_link(__MODULE__, {room_slug})
   end
 
   def start_round(pid) do
@@ -44,39 +40,42 @@ defmodule DjRumble.Rounds.RoundServer do
     GenServer.call(pid, {:score, type})
   end
 
-  @doc """
-  Round Server implementation
-  """
-
-  @impl GenServer
-  def init({room_slug, round_time}) do
-    {:ok, {room_slug, Round.schedule(round_time)}}
+  def initial_state(args) do
+    %{
+      room_slug: args.room_slug,
+      round: args.round
+    }
   end
 
   @impl GenServer
-  def handle_call(:start_round, _from, {room_slug, %Round.Scheduled{} = round}) do
+  def init({room_slug}) do
+    {:ok, initial_state(%{room_slug: room_slug, round: Round.schedule(0)})}
+  end
+
+  @impl GenServer
+  def handle_call(:start_round, _from, %{round: round} = state) do
     schedule_next_tick()
 
-    {:reply, :ok, {room_slug, Round.start(round)}}
+    {:reply, :ok, %{state | round: Round.start(round)}}
   end
 
   @impl GenServer
-  def handle_call(:get_room_slug, _from, {room_slug, _round} = state) do
+  def handle_call(:get_room_slug, _from, %{room_slug: room_slug} = state) do
     {:reply, room_slug, state}
   end
 
   @impl GenServer
-  def handle_call(:get_round, _from, {_room_slug, round} = state) do
+  def handle_call(:get_round, _from, %{round: round} = state) do
     {:reply, round, state}
   end
 
   @impl GenServer
-  def handle_call(:get_narration, _from, {_room_slug, %Round.InProgress{} = round} = state) do
+  def handle_call(:get_narration, _from, %{round: %Round.InProgress{} = round} = state) do
     {:reply, Round.narrate(round), state}
   end
 
   @impl GenServer
-  def handle_call(:get_narration, _from, {_room_slug, %Round.Finished{} = round} = state) do
+  def handle_call(:get_narration, _from, %{round: %Round.Finished{} = round} = state) do
     {:reply, Round.narrate(round), state}
   end
 
@@ -84,31 +83,33 @@ defmodule DjRumble.Rounds.RoundServer do
   def handle_call(
         {:set_round_time, time},
         _from,
-        {room_slug, %Round.Scheduled{} = round} = _state
+        %{round: %Round.Scheduled{} = round} = state
       ) do
-    {:reply, :ok, {room_slug, Round.set_time(round, time)}}
+    {:reply, :ok, %{state | round: Round.set_time(round, time)}}
   end
 
   @impl GenServer
-  def handle_call({:score, type}, _from, {room_slug, %Round.InProgress{} = round} = _state) do
+  def handle_call({:score, type}, _from, %{round: %Round.InProgress{} = round} = state) do
     round = Round.set_score(round, type)
-    {:reply, round, {room_slug, round}}
+    {:reply, round, %{state | round: round}}
   end
 
   @impl GenServer
-  def handle_info(:tick, {room_slug, %Round.InProgress{outcome: outcome} = round} = _state) do
+  def handle_info(:tick, state) do
+    %{room_slug: room_slug, round: %Round.InProgress{outcome: outcome} = round} = state
+
     case Round.simulate_tick(round) do
       %Round.InProgress{outcome: ^outcome} = round ->
         schedule_next_tick()
-        {:noreply, {room_slug, round}}
+        {:noreply, %{state | round: round}}
 
       %Round.InProgress{} = round ->
         :ok = Channels.broadcast(:room, room_slug, {:outcome_changed, %{round: round}})
         schedule_next_tick()
-        {:noreply, {room_slug, round}}
+        {:noreply, %{state | round: round}}
 
       %Round.Finished{} = round ->
-        {:stop, {:shutdown, round}, {room_slug, round}}
+        {:stop, {:shutdown, round}, %{state | round: round}}
     end
   end
 

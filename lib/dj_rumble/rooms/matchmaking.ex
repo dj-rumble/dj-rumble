@@ -309,7 +309,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
   defp schedule_round(video, room, user) do
     %{slug: slug} = room
-    {:ok, pid} = RoundSupervisor.start_round_server(RoundSupervisor, {slug, 0})
+    {:ok, pid} = RoundSupervisor.start_round_server(RoundSupervisor, {slug})
     ref = Process.monitor(pid)
 
     :ok = Channels.broadcast(:room, slug, {:round_scheduled, RoundServer.get_round(pid)})
