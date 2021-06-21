@@ -563,7 +563,6 @@ defmodule DjRumble.Room.RoomServerTest do
       end)
     end
 
-    @tag :wip
     test "handle_call/3 :: {:joined, pid} is called some times, no rounds are started and some players receive playback details",
          %{
            state: state
@@ -649,7 +648,7 @@ defmodule DjRumble.Room.RoomServerTest do
       end)
     end
 
-    test "handle_cast/2 :: {:score, PID, :positive} is called once time and returns :ok", %{
+    test "handle_call/3 :: {:score, %User{}, :positive} is called once time and returns :ok", %{
       state: state
     } do
       # Setup
@@ -697,7 +696,7 @@ defmodule DjRumble.Room.RoomServerTest do
       _state = handle_scores(state, users_scores)
     end
 
-    test "handle_cast/2 :: {:score, PID, :negative} is called once time and returns :ok", %{
+    test "handle_call/3 :: {:score, %User{}, :negative} is called once time and returns :ok", %{
       state: state
     } do
       # Setup
@@ -721,7 +720,7 @@ defmodule DjRumble.Room.RoomServerTest do
       _state = handle_scores(state, users_scores)
     end
 
-    test "handle_cast/2 :: {:score, PID, :negative} is called many times and returns :ok every time",
+    test "handle_call/3 :: {:score, %User{}, :negative} is called many times and returns :ok every time",
          %{state: state} do
       # Setup
       %{matchmaking_server: matchmaking_server} = state
@@ -744,7 +743,7 @@ defmodule DjRumble.Room.RoomServerTest do
       _state = handle_scores(state, users_scores)
     end
 
-    test "handle_cast/2 :: {:score, PID, type} is called many times with mixed scores and returns :ok every time",
+    test "handle_call/3 :: {:score, %User{}, type} is called many times with mixed scores and returns :ok every time",
          %{state: state} do
       # Setup
       %{matchmaking_server: matchmaking_server} = state
