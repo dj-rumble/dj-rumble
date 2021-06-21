@@ -89,12 +89,12 @@ defmodule DjRumble.Rooms.RoomServer do
   end
 
   @impl GenServer
-  def handle_call({:score, _user, type}, _from, state) do
+  def handle_call({:score, user, type}, _from, state) do
     %{matchmaking_server: matchmaking_server} = state
 
-    case Matchmaking.score(matchmaking_server, type) do
+    case Matchmaking.score(matchmaking_server, user, type) do
       :error ->
-        {:noreply, state}
+        {:reply, :ok, state}
 
       round ->
         :ok =
