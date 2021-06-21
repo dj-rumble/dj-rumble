@@ -14,13 +14,16 @@ defmodule DjRumble.Room.MatchmakingTest do
 
   # Helper functions
 
-  defp generate_score(:mixed, n) do
+  defp generate_score(:mixed, users) do
     types = [:positive, :negative]
-    Enum.map(1..n, fn _ -> Enum.at(types, Enum.random(0..(length(types) - 1))) end)
+
+    Enum.map(users, fn user ->
+      {user, Enum.at(types, Enum.random(0..(length(types) - 1)))}
+    end)
   end
 
-  defp generate_score(type, n) do
-    Enum.map(1..n, fn _ -> type end)
+  defp generate_score(type, users) do
+    Enum.map(users, fn user -> {user, type} end)
   end
 
   defp get_evaluated_score(scores, initial_score) do
@@ -34,6 +37,10 @@ defmodule DjRumble.Room.MatchmakingTest do
 
   defp start_next_round(server) do
     Process.send(server, :start_next_round, [])
+  end
+
+  defp user_fixtures(n) do
+    for _n <- 1..n, do: user_fixture()
   end
 
   describe "matchmaking client interface" do
@@ -88,13 +95,13 @@ defmodule DjRumble.Room.MatchmakingTest do
       :ok = start_next_round(pid)
     end
 
-    defp do_score(server, score) do
-      Matchmaking.score(server, score)
+    defp do_score(server, user, score) do
+      Matchmaking.score(server, user, score)
     end
 
-    defp do_scores(server, scores) do
-      for score <- scores do
-        do_score(server, score)
+    defp do_scores(server, users_scores) do
+      for {user, score} <- users_scores do
+        do_score(server, user, score)
       end
       |> List.last()
     end
@@ -281,11 +288,13 @@ defmodule DjRumble.Room.MatchmakingTest do
       :ok = schedule_and_start_round(pid, videos_users, time)
       %{round: %Round.InProgress{score: initial_score}} = get_current_round(pid)
 
-      score = generate_score(:positive, 1)
-      {1, 0} = evaluated_score = get_evaluated_score(score, initial_score)
+      users_scores = generate_score(:positive, [user])
+      scores = Enum.map(users_scores, fn {_user, score} -> score end)
+
+      {1, 0} = evaluated_score = get_evaluated_score(scores, initial_score)
 
       # Exercise
-      round = do_scores(pid, score)
+      round = do_scores(pid, users_scores)
 
       # Verify
       %Round.InProgress{score: ^evaluated_score} = round
@@ -303,11 +312,14 @@ defmodule DjRumble.Room.MatchmakingTest do
       :ok = schedule_and_start_round(pid, videos_users, time)
       %{round: %Round.InProgress{score: initial_score}} = get_current_round(pid)
 
-      score = generate_score(:positive, 3)
-      {3, 0} = evaluated_score = get_evaluated_score(score, initial_score)
+      users = user_fixtures(3)
+      users_scores = generate_score(:positive, users)
+      scores = Enum.map(users_scores, fn {_user, score} -> score end)
+
+      {3, 0} = evaluated_score = get_evaluated_score(scores, initial_score)
 
       # Exercise
-      round = do_scores(pid, score)
+      round = do_scores(pid, users_scores)
 
       # Verify
       %Round.InProgress{score: ^evaluated_score} = round
@@ -325,11 +337,14 @@ defmodule DjRumble.Room.MatchmakingTest do
       :ok = schedule_and_start_round(pid, videos_users, time)
       %{round: %Round.InProgress{score: initial_score}} = get_current_round(pid)
 
-      score = generate_score(:mixed, 3)
-      evaluated_score = get_evaluated_score(score, initial_score)
+      users = user_fixtures(3)
+      users_scores = generate_score(:mixed, users)
+      scores = Enum.map(users_scores, fn {_user, score} -> score end)
+
+      evaluated_score = get_evaluated_score(scores, initial_score)
 
       # Exercise
-      round = do_scores(pid, score)
+      round = do_scores(pid, users_scores)
 
       # Verify
       %Round.InProgress{score: ^evaluated_score} = round
@@ -412,8 +427,8 @@ defmodule DjRumble.Room.MatchmakingTest do
       state
     end
 
-    defp handle_score(state, type) do
-      response = Matchmaking.handle_call({:score, type}, nil, state)
+    defp handle_score(state, user, type) do
+      response = Matchmaking.handle_call({:score, user, type}, nil, state)
 
       {:reply, %Round.InProgress{} = round, new_state} = response
 
@@ -422,10 +437,11 @@ defmodule DjRumble.Room.MatchmakingTest do
       {round, state}
     end
 
-    defp handle_scores(state, scores) do
-      Enum.reduce(scores, {[], nil, state}, fn score, {scores, _round, state} ->
-        {round, state} = handle_score(state, score)
-        {scores ++ [score], round, state}
+    defp handle_scores(state, users_scores) do
+      Enum.reduce(users_scores, {[], nil, state}, fn {user, score},
+                                                     {users_scores, _round, state} ->
+        {round, state} = handle_score(state, user, score)
+        {users_scores ++ [{user, score}], round, state}
       end)
     end
 
@@ -695,10 +711,11 @@ defmodule DjRumble.Room.MatchmakingTest do
       )
     end
 
-    test "handle_call/3 :: {:score, :positive} is called once with no alive round process", %{
-      state: state,
-      user: user
-    } do
+    test "handle_call/3 :: {:score, %User{}, :positive} is called once with no alive round process",
+         %{
+           state: state,
+           user: user
+         } do
       # Setup
       video = video_fixture()
 
@@ -722,10 +739,10 @@ defmodule DjRumble.Room.MatchmakingTest do
 
       true = Process.exit(round_pid, :kill)
 
-      {:reply, :error, _state} = Matchmaking.handle_call({:score, :positive}, nil, state)
+      {:reply, :error, _state} = Matchmaking.handle_call({:score, user, :positive}, nil, state)
     end
 
-    test "handle_call/3 :: {:score, :positive} is called once", %{
+    test "handle_call/3 :: {:score, %User{}, :positive} is called once", %{
       state: state,
       user: user
     } do
@@ -748,16 +765,19 @@ defmodule DjRumble.Room.MatchmakingTest do
         |> handle_receive_video_time(video_time)
         |> handle_start_next_round()
 
-      scores = generate_score(:positive, 10)
+      users = user_fixtures(10)
+
+      users_scores = generate_score(:positive, users)
+      scores = Enum.map(users_scores, fn {_user, score} -> score end)
 
       # Exercise
-      {_scores, round, _state} = handle_scores(state, scores)
+      {_users__scores, round, _state} = handle_scores(state, users_scores)
 
       # Verify
       assert round.score == get_evaluated_score(scores, {0, 0})
     end
 
-    test "handle_call/3 :: {:score, :positive} is called many times", %{
+    test "handle_call/3 :: {:score, %User{}, :positive} is called many times", %{
       state: state,
       user: user
     } do
@@ -780,10 +800,13 @@ defmodule DjRumble.Room.MatchmakingTest do
         |> handle_receive_video_time(video_time)
         |> handle_start_next_round()
 
-      scores = generate_score(:mixed, 10)
+      users = user_fixtures(10)
+
+      users_scores = generate_score(:mixed, users)
+      scores = Enum.map(users_scores, fn {_user, score} -> score end)
 
       # Exercise
-      {_scores, round, _state} = handle_scores(state, scores)
+      {_users_scores, round, _state} = handle_scores(state, users_scores)
 
       # Verify
       assert round.score == get_evaluated_score(scores, {0, 0})
