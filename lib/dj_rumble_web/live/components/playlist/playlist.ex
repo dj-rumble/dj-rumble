@@ -21,4 +21,19 @@ defmodule DjRumbleWeb.Live.Components.Playlist do
      |> assign(:room_server, room_server)
      |> assign(:videos_users, videos_users)}
   end
+
+  defp get_card_class(0), do: "bg-gray-700"
+  defp get_card_class(_), do: "bg-gray-800"
+
+  defp get_notice_by_video_position(video_user, 0, assigns) do
+    ~L"""
+    <span class="animate-pulse">Next coming!</span>
+    """
+  end
+
+  defp get_notice_by_video_position(video_user, _, assigns) do
+    ~L"""
+    <span></span>
+    """
+  end
 end

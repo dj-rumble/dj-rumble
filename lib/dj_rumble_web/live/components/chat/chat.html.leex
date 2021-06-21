@@ -1,28 +1,33 @@
 
-  <div class="grid grid-rows-6 h-full">
+  <div class="grid grid-rows-6 h-full transparent mt-1">
+
     <div
       id="chat-data"
       phx-hook="ChatSyncing"
-      class="row-span-5 my-2 mb-3 py-1 pr-1 rounded-md bg-gray-400 shadow-inner"
+      class="
+        row-span-5 my-3 py-3 pl-3 pr-1
+        rounded-md bg-gray-800
+        shadow-inner-input
+      "
     >
 
       <div id="chat" class="rounded-md h-full overflow-y-scroll">
         <%= if @messages == [] do %>
           <div class="flex items-center justify-center flex-grow">
-            <p class="chat-message">
-              <span class="chat-username">The chat is empty!</span>
-              <span class="timestamp timestamp-message text-indigo-800">Write something...</span>
+            <p class="px-2 mb-0.5">
+              <span class="italic text-gray-300">This is quiet... type something and break the ice.</span>
             </p>
           </div>
         <% else %>
-        <div class="items-start justify-start chat-messages px-2">
-          <p class="chat-message">
-            <span class="chat-username">Chat started...</span>
+        <div class="items-start justify-start px-2">
+          <p class="mb-0.5">
+            <span class="font-bold">
+              <span class="text-center font-normal text-blue-500">Welcome to <%= @room.name %></span>
+            </span>
           </p>
           <%= for message <- @messages do %>
 
-
-            <p class="chat-message text-lg">
+            <p class="mb-0.5 text-lg text-left">
               <%= render_message(message) %>
             </p>
 
@@ -31,15 +36,14 @@
         <% end  %>
 
       </div>
-
     </div>
 
-    <div class="row-span-1 bg-gray-800 py-1 self-end">
+    <div class="row-span-1 bg-transparent py-1 self-center auto-rows-max">
       <form
         id="new-message"
         phx-submit="new_message"
         phx-target="<%= @myself %>"
-        class="chat-form m-0 bg-transparent"
+        class="m-0 bg-transparent"
       >
         <%=
           text_input :submit,

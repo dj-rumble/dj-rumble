@@ -55,7 +55,7 @@ defmodule DjRumbleWeb.Live.Components.Navbar do
     ~L"""
       <div class="m-2">
         <%= link to: to, method: method,
-          class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
+          class: "text-gray-300 hover:text-red-400 hover:underline transition duration-500 ease-in-out"
         do %>
           <%= text %>
         <% end %>

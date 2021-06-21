@@ -1,16 +1,22 @@
 
 const ModalInteracting = () => ({
   mounted() {
-    const handleOpenCloseEvent = event => {
-      if (event.detail.open === false) {
-        this.el.removeEventListener("modal-change", handleOpenCloseEvent)
+    const handleOpenCloseEvent = ({ id: id, opened: opened }) => {
+      if (opened) {
+        const modalDialog = document.getElementById(id)
+        modalDialog.classList.add('bg-black')
+        modalDialog.classList.add('bg-opacity-50')
+
+        const modal = document.getElementById(`${id}-dialog`)
+        modal.classList.add('animated-bounce')
 
         setTimeout(() => {
-          this.pushEventTo(event.detail.id, "close", {})
-        }, 300);
+          modal.classList.remove('animated-bounce')
+        }, 1000);
       }
     }
-    this.el.addEventListener("modal-change", handleOpenCloseEvent)
+
+    this.handleEvent('modal-changed', handleOpenCloseEvent)
   }
 })
 

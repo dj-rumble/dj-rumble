@@ -22,10 +22,6 @@
   }
 }
 
-.hover-card:hover {
-  border-radius: 5px;
-  background-color: $neutral-darker;
-}
 
 /* LiveView specific classes for your customizations */
 .phx-no-feedback.invalid-feedback,
@@ -222,21 +218,56 @@
   background: #cccccc;
 }
 
-.add-button-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.search-result {
+  &.unqueued a svg.show-add-button {
+    display: none;
+  }
+  &.unqueued a svg.show-check-button {
+    display: none;
+  }
+  &.queued a svg.show-add-button {
+    display: none;
+  }
+  &.queued a svg.show-check-button {
+    display: block;
+  }
 }
 
-.add-button {
-  color: #766fc5;
-  font-size: xx-large;
+.search-control-add-asset-add-layer {
+  fill: $text;
+  stroke: $text;
 }
 
-.add-button:hover {
-  color: #a7a1f2;
-  font-size: xxx-large;
+.search-control-enabled:hover .search-control-add-asset-add-layer {
+  -webkit-animation: slight-zoom-in 0.5s forwards;
+  -webkit-animation-delay: 0.1s;
+  animation: slight-zoom-in 0.5s forwards;
+  animation-delay: 0.1s;
 }
+
+.search-control-enabled:hover .search-control-add-asset-add-layer {
+  stroke: $success;
+  fill: $success;
+}
+
+.search-control-add-asset-check-layer {
+  stroke: $success;
+  fill: $success;
+}
+
+svg.search-control-add-asset.show-add-button .search-control-add-asset-add-layer {
+  opacity: 1;
+}
+svg.search-control-add-asset.show-add-button .search-control-add-asset-check-layer {
+  opacity: 0;
+}
+svg.search-control-add-asset.show-check-button .search-control-add-asset-add-layer {
+  opacity: 0;
+}
+svg.search-control-add-asset.show-check-button .search-control-add-asset-check-layer {
+  opacity: 1;
+}
+
 /*       End Search       */
 
 /*       Playlist       */
@@ -268,97 +299,8 @@
 /*       End Playlist       */
 
 /*       Chat       */
-.chat-form {
-  margin-top: 8px;
-}
 
-.text-input {
-  border: 0.1rem;
-  border-style: groove !important;
-  border-color: $primary !important;
-}
 
-input.text-input:focus {
-  border-style: solid !important;
-  border-color: $secondary !important;
-  -webkit-animation: input-highlight 0.1s forwards;
-  animation: input-highlight 0.1s forwards;
-  -webkit-transition: border-color 1500ms ease-in;
-  transition: border-color 1500ms ease-in;
-}
-
-@-webkit-keyframes input-highlight {
-  0% { border: 0.1rem; }
-  100% { border: 0.15rem; }
-}
-
-@keyframes input-highlight {
-  0% { border: 0.1rem; }
-  100% { border: 0.15rem }
-}
-
-.chat-text-input, .search-text-input, .text-input-effect, .select-input {
-  border: 0px !important;
-  box-shadow: inset 3px 3px 5px #323637 !important;
-}
-
-input.chat-text-input:focus {
-  content: none;
-  -webkit-animation: input-highlight 0.1s forwards;
-  animation: input-highlight 0.1s forwards;
-  -webkit-transition: border-color 1500ms ease-in;
-  transition: border-color 1500ms ease-in;
-}
-
-@-webkit-keyframes input-highlight {
-  0% { border: 0.1rem; }
-  100% { border: 0.15rem; }
-}
-
-@keyframes input-highlight {
-  0% { border: 0.1rem; }
-  100% { border: 0.15rem }
-}
-
-.chat-panel, .peers-panel, .room-settings, .live-inside-box {
-  padding: 1em;
-  background-color: #ccc;
-}
-
-.chat-messages {
-  text-align: left;
-}
-
-.chat-message {
-  margin-bottom: 0.5rem;
-}
-
-.timestamp-message {
-  color: $secondary;
-}
-
-.highlight-timestamp {
-  color: #58af6e
-}
-
-.timestamp {
-  font-family: monospace;
-  font-weight: bold;
-}
-
-.chat-username {
-  font-weight: bold;
-  font-family: monospace;
-}
-
-.chat-text {
-  font-style: italic;
-  font-weight: bolder;
-}
-
-.highlight-username {
-  color: $primary;
-}
 /*       End Chat       */
 
 /* Score buttons Start */
@@ -389,3 +331,78 @@ input.chat-text-input:focus {
 }
 
 /* Score buttons End */
+
+/* Animations Start */
+
+.animated {
+  -webkit-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+
+.animated.faster {
+  -webkit-animation-duration: 500ms;
+  animation-duration: 500ms;
+}
+
+.fadeIn {
+  -webkit-animation-name: fadeIn;
+  animation-name: fadeIn;
+}
+
+.fadeOut {
+  -webkit-animation-name: fadeOut;
+  animation-name: fadeOut;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.animated-bounce {
+  position: absolute;
+  -webkit-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-name: custom-bounce;
+  animation-name: custom-bounce;
+}
+
+@keyframes custom-bounce {
+  0% {
+    transform: translateY(0);
+  }
+
+  20% {
+    transform: translateY(-30px);
+  }
+
+  40% {
+    transform: translateY(10px);
+  }
+
+  50% {
+    transform: translateY(0);
+  }
+
+  100% {
+  }
+}
+
+/* Animations End */

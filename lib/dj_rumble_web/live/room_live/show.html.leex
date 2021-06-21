@@ -1,110 +1,118 @@
-<div id="ui-feedback-data" phx-hook="UiFeedback">
+<div id="ui-feedback-data" phx-hook="UiFeedback" style="">
   <%= if connected?(@socket) do %>
 
-    <%= live_component DjRumbleWeb.Live.Components.Navbar,
-      visitor: @visitor,
-      username: @user.username,
-      homepage: true
-    %>
+    <div class="grid grid-flow-row h-screen max-h-screen min-h-screen">
 
-    <div class="grid grid-rows-9 grid-cols-12 grid-flow-col gap-6" style="max-height: 85vh;">
-      <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-2 row-end-5 text-center p-4 shadow-card">
-        <div class="grid grid-rows-6 h-full w-full">
-          <div class="row-span-6 relative overflow-hidden">
-            <%= live_component DjRumbleWeb.Live.Components.RoundInfo,
-              id: "djrumble-round-info",
-              round_info: @round_info
-            %>
-            <%= live_component DjRumbleWeb.Live.Components.VideoPlayer,
-              id: "djrumble-video-player"
-            %>
-          </div>
-        </div>
-      </div>
-      <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 row-start-5 row-end-7 text-center overflow-y-scroll shadow-card">
-        <%= live_component DjRumbleWeb.Live.Components.Playlist,
-          id: "djrumble-playlist",
-          next_rounds: @next_rounds,
-          room_server: @room_server
+      <div class="max-h-full py-1 auto-rows-max">
+        <%= live_component DjRumbleWeb.Live.Components.Navbar,
+          visitor: @visitor,
+          username: @user.username,
+          homepage: true
         %>
       </div>
-      <div class="rounded-lg bg-gray-800 col-start-9 col-end-13 row-start-2 row-end-7 text-center align-middle shadow-card px-3 h-full">
-        <div class="grid grid-rows-6 h-full">
-          <div class="row-span-2 mb-5 h-full">
-            <%= live_component DjRumbleWeb.Live.Components.ConnectedUsers,
-              id: "djrumble-connected-users",
-              connected_users: @connected_users,
-              user: @user
-            %>
-          </div>
 
-          <div class="row-span-4 mb-3">
-            <%= live_component DjRumbleWeb.Live.Components.Chat,
-              id: "djrumble-chat",
-              visitor: @visitor,
-              username: @user.username,
-              messages: @messages,
-              room: @room
-            %>
+      <div
+        class="grid grid-rows-6 grid-cols-12 grid-flow-col gap-6"
+        style="min-height: 98%; max-height: 98%"
+      >
+        <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-1 row-end-4 text-center p-4 shadow-card">
+          <div class="grid grid-rows-6 h-full w-full">
+            <div class="row-span-6 relative overflow-hidden">
+              <%= live_component DjRumbleWeb.Live.Components.RoundInfo,
+                id: "djrumble-round-info",
+                round_info: @round_info
+              %>
+              <%= live_component DjRumbleWeb.Live.Components.VideoPlayer,
+                id: "djrumble-video-player"
+              %>
+            </div>
+          </div>
+        </div>
+        <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 row-start-4 row-end-6 text-center overflow-y-scroll shadow-card">
+          <%= live_component DjRumbleWeb.Live.Components.Playlist,
+            id: "djrumble-playlist",
+            next_rounds: @next_rounds,
+            room_server: @room_server
+          %>
+        </div>
+        <div class="rounded-lg col-start-9 col-end-13 row-start-1 row-end-6 text-center align-middle px-3 h-full">
+          <div class="grid grid-rows-6 h-full">
+            <div class="row-span-2 mb-5 h-full">
+              <%= live_component DjRumbleWeb.Live.Components.ConnectedUsers,
+                id: "djrumble-connected-users",
+                connected_users: @connected_users,
+                user: @user
+              %>
+            </div>
+
+            <div class="row-span-4 mb-3">
+              <%= live_component DjRumbleWeb.Live.Components.Chat,
+                id: "djrumble-chat",
+                visitor: @visitor,
+                username: @user.username,
+                messages: @messages,
+                room: @room
+              %>
+            </div>
+          </div>
+        </div>
+        <div class="col-start-1 col-end-13 row-start-6 row-end-7">
+          <div class="rounded-lg bg-gray-800 grid grid-cols-12 shadow-card">
+
+            <div class="col-start-1 col-end-4 self-center">
+              <%= live_component DjRumbleWeb.Live.Components.CurrentRound,
+                id: "djrumble-current-round",
+                current_round: @current_round
+              %>
+            </div>
+
+            <div class="col-start-4 col-end-10 text-center">
+              <%= live_component DjRumbleWeb.Live.Components.PlayerControls,
+                id: "djrumble-player-controls",
+                room_server: @room_server,
+                scoring_enabled: @scoring_enabled,
+                live_score: @live_score,
+                visitor: @visitor
+              %>
+            </div>
+
+            <div class="col-start-10 col-end-11 flex flex-grow self-center justify-self-end p-4">
+              <%= live_component DjRumbleWeb.Live.Components.ConfettiFab,
+                id: "djrumble-confetti-button"
+              %>
+            </div>
+
+            <div class="col-start-11 col-end-12 flex self-center justify-self-start p-4">
+              <%= live_component DjRumbleWeb.Live.Components.SearchFab,
+                id: "djrumble-searchbox-modal-button-1",
+                is_search_enabled: !@visitor
+              %>
+            </div>
           </div>
         </div>
       </div>
-      <div class="col-start-1 col-end-13 row-start-7 row-end-7">
-        <div class="rounded-lg bg-gray-800 grid grid-cols-12 shadow-card">
 
-          <div class="col-start-1 col-end-4 self-center h-full">
-            <%= live_component DjRumbleWeb.Live.Components.CurrentRound,
-              id: "djrumble-current-round",
-              current_round: @current_round
-            %>
-          </div>
+      <div class="absolute top-0 left-0 right-0 pr-4 h-0">
 
-          <div class="col-start-4 col-end-10 text-center">
-            <%= live_component DjRumbleWeb.Live.Components.PlayerControls,
-              id: "djrumble-player-controls",
-              room_server: @room_server,
-              scoring_enabled: @scoring_enabled,
-              live_score: @live_score,
-              visitor: @visitor
-            %>
-          </div>
+        <%= live_component DjRumbleWeb.Live.Components.Searchbox,
+          id: "djrumble-searchbox-modal",
+          matchmaking_server: @matchmaking_server,
+          room: @room,
+          state: @searchbox_state,
+          user: @user
+        do %>
 
-          <div class="col-start-10 col-end-11 flex flex-grow self-center justify-self-end p-4">
-            <%= live_component DjRumbleWeb.Live.Components.ConfettiFab,
-              id: "djrumble-confetti-button"
-            %>
-          </div>
+        <% end %>
 
-          <div class="col-start-11 col-end-12 flex self-center justify-self-start p-4">
-            <%= live_component DjRumbleWeb.Live.Components.SearchFab,
-              id: "djrumble-searchbox-modal-button-1",
-              is_search_enabled: !@visitor
-            %>
-          </div>
-        </div>
+        <%= live_component DjRumbleWeb.Live.Components.RegisterModal,
+          id: "djrumble-register-modal",
+          state: @register_modal_state,
+          user: @user
+        %>
+
+        <canvas class="w-0" id="confetti-canvas"></canvas>
+
       </div>
-    </div>
-
-    <div class="absolute top-0 left-0 right-0 pr-4 h-0">
-
-      <%= live_component DjRumbleWeb.Live.Components.Searchbox,
-        id: "djrumble-searchbox-modal",
-        matchmaking_server: @matchmaking_server,
-        room: @room,
-        state: @searchbox_state,
-        user: @user
-      do %>
-
-      <% end %>
-
-      <%= live_component DjRumbleWeb.Live.Components.RegisterModal,
-        id: "djrumble-register-modal",
-        state: @register_modal_state,
-        user: @user
-      %>
-
-      <canvas id="confetti-canvas"></canvas>
-
     </div>
   <% end %>
 </div>

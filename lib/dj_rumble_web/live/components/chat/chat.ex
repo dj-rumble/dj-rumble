@@ -29,7 +29,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
       _ ->
         %{assigns: assigns} = socket
-        %{messages: messages, room: room, username: username} = assigns
+        %{messages: _messages, room: room, username: username} = assigns
         new_message = %{message: message, username: username}
         message = Chat.create_message(:chat_message, new_message)
 
@@ -45,13 +45,13 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
   @impl true
   def handle_event("typing", _value, %{assigns: assigns} = socket) do
-    %{room: room} = assigns
+    %{room: _room} = assigns
     # Chat.start_typing(slug, uuid)
     {:noreply, socket}
   end
 
   def handle_event("stop_typing", %{"value" => message}, socket) do
-    %{assigns: %{room: room}} = socket
+    %{assigns: %{room: _room}} = socket
     # Chat.stop_typing(slug, uuid)
     {:noreply, assign(socket, new_message: message)}
   end
@@ -64,7 +64,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
   defp render_timestamp(timestamp) do
     ~E"""
-      <span class="text-sm timestamp <%= timestamp.class %>">
+      <span class="text-sm monospace font-bold <%= timestamp.class %>">
         [<%= timestamp.value %>]
       </span>
     """
@@ -72,13 +72,13 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
   defp render_username(username, class \\ "") do
     ~E"""
-      <span class="chat-username <%= class %>"><%= username %>:</span>
+      <span class="text-xl font-bold text-gray-300 <%= class %>"><%= username %>:</span>
     """
   end
 
   defp render_text(message, class \\ "") do
     ~E"""
-      <span class="chat-text <%= class %>"><%= message %></span>
+      <span class="italic text-xl text-gray-300 <%= class %>"><%= message %></span>
     """
   end
 

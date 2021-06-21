@@ -11,21 +11,36 @@
   </head>
   <body class="bg-gray-900 cursor-default select-none">
     <header class="absolute top-0 border-0 py-4 pl-2">
-    <div class="flex flex-row">
-      <div>
-        <%= PhoenixInlineSvg.Helpers.svg_image(
-              DjRumbleWeb.Endpoint,
-              "logo/dj-rumble",
-              class: "h-20 w-20"
-            )
-        %>
+    <%= link to: Routes.room_index_path(@conn, :index) do %>
+      <div class="
+        flex flex-row
+        group
+      ">
+        <div>
+          <%= PhoenixInlineSvg.Helpers.svg_image(
+                DjRumbleWeb.Endpoint,
+                "logo/dj-rumble",
+                class: "
+                  h-20 w-20 opacity-70
+                  transition duration-500 ease-in-out
+                  transform group-hover:opacity-100
+                  hover:-skew-x-3 hover:scale-110
+                "
+              )
+          %>
+        </div>
+        <div
+          class="
+            text-gray-300 text-4xl font-bold text-center px-4 self-center
+            font-street-ruler
+            transition duration-500 ease-in-out
+            group-hover:scale-110 group-hover:text-red-800
+          "
+        >
+          DJ Rumble
+        </div>
       </div>
-      <div
-        class="text-gray-100 text-4xl font-bold text-center px-4 self-center font-street-ruler"
-      >
-        DJ Rumble
-      </div>
-    </div>
+    <% end %>
     </header>
     <%= @inner_content %>
   </body>
