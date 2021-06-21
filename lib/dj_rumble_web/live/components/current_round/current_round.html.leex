@@ -1,13 +1,17 @@
 <div class="grid grid-cols-6 grid-row-flow">
-  <div class="col-span-3 row-start-1 row-end-3 align-center self-end rounded-xl pl-4">
-    <%= img_tag(@current_round.video.img_url, class: "rounded")
-    %>
+  <div class="
+    col-span-3 row-start-1 row-end-3
+    relative align-center self-end
+    rounded-xl pl-4 animated fadeIn
+  ">
+    <%= img_tag(@current_round.video.img_url, class: "rounded", width: "80px", height: "80px") %>
+    <%= render_equalizer(@is_playing) %>
   </div>
   <div class="col-span-6 row-start-3 row-end-4 self-end">
     <div class="grid grid-rows-2 text-left text-xl text-gray-400 p-3">
       <div class="row-span-1 overflow-hidden w-full">
         <p class="overflow-hidden whitespace-nowrap overflow-ellipsis w-full max-w-full m-0">
-          <%= @current_round.video.title %>
+          <%= render_title(@current_round.video.title, @is_playing, @socket) %>
         </p>
       </div>
       <div class="row-span-1 row-span-1">
