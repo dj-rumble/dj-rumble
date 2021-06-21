@@ -137,6 +137,10 @@ defmodule DjRumble.Round.RoundServerTest do
       %{room: room, state: state}
     end
 
+    defp user_fixtures(n) do
+      for _n <- 1..n, do: user_fixture()
+    end
+
     defp handle_start_round(state) do
       response = RoundServer.handle_call(:start_round, nil, state)
 
@@ -179,8 +183,8 @@ defmodule DjRumble.Round.RoundServerTest do
       state
     end
 
-    defp handle_score(state, type) do
-      response = RoundServer.handle_call({:score, type}, nil, state)
+    defp handle_score(state, user, type) do
+      response = RoundServer.handle_call({:score, user, type}, nil, state)
 
       {:reply, new_round, %{round: round} = state} = response
 
@@ -189,19 +193,22 @@ defmodule DjRumble.Round.RoundServerTest do
       state
     end
 
-    defp handle_scores(state, scores) do
-      Enum.reduce(scores, {[], state}, fn score, {scores, state} ->
-        {scores ++ [score], handle_score(state, score)}
+    defp handle_scores(state, users_scores) do
+      Enum.reduce(users_scores, {[], state}, fn {user, score}, {scores, state} ->
+        {scores ++ [score], handle_score(state, user, score)}
       end)
     end
 
-    defp generate_score(:mixed, n) do
+    defp generate_score(:mixed, users) do
       types = [:positive, :negative]
-      Enum.map(1..n, fn _ -> Enum.at(types, Enum.random(0..(length(types) - 1))) end)
+
+      Enum.map(users, fn user ->
+        {user, Enum.at(types, Enum.random(0..(length(types) - 1)))}
+      end)
     end
 
-    defp generate_score(type, n) do
-      Enum.map(1..n, fn _ -> type end)
+    defp generate_score(type, users) do
+      Enum.map(users, fn user -> {user, type} end)
     end
 
     defp get_evaluated_score(scores, initial_score) do
@@ -326,7 +333,7 @@ defmodule DjRumble.Round.RoundServerTest do
         handle_set_round_time(state, time)
     end
 
-    test "handle_call/3 :: {:score, :positive} is called once and replies with a round with a positive score",
+    test "handle_call/3 :: {:score, %User{}, :positive} is called once and replies with a round with a positive score",
          %{room: room, state: state} do
       # Setup
       %{slug: slug} = room
@@ -337,16 +344,19 @@ defmodule DjRumble.Round.RoundServerTest do
         |> handle_start_round()
 
       %{room_slug: ^slug, round: %Round.InProgress{score: initial_score}} = state
-      scores = generate_score(:positive, 1)
+      users = user_fixtures(1)
+      users_scores = generate_score(:positive, users)
+      scores = Enum.map(users_scores, fn {_user, score} -> score end)
       evaluated_score = get_evaluated_score(scores, initial_score)
+
       # Exercise
-      {^scores, state} = handle_scores(state, scores)
+      {^scores, state} = handle_scores(state, users_scores)
 
       # Verify
       %{room_slug: ^slug, round: %Round.InProgress{score: ^evaluated_score}} = state
     end
 
-    test "handle_call/3 :: {:score, :positive} is called many times and replies with a round with a positive score",
+    test "handle_call/3 :: {:score, %User{}, :positive} is called many times and replies with a round with a positive score",
          %{room: room, state: state} do
       # Setup
       %{slug: slug} = room
@@ -357,16 +367,19 @@ defmodule DjRumble.Round.RoundServerTest do
         |> handle_start_round()
 
       %{room_slug: ^slug, round: %Round.InProgress{score: initial_score}} = state
-      scores = generate_score(:positive, 3)
+      users = user_fixtures(3)
+      users_scores = generate_score(:positive, users)
+      scores = Enum.map(users_scores, fn {_user, score} -> score end)
       evaluated_score = get_evaluated_score(scores, initial_score)
+
       # Exercise
-      {^scores, state} = handle_scores(state, scores)
+      {^scores, state} = handle_scores(state, users_scores)
 
       # Verify
       %{room_slug: ^slug, round: %Round.InProgress{score: ^evaluated_score}} = state
     end
 
-    test "handle_call/3 :: {:score, :negative} is called once and replies with a round with a negative score",
+    test "handle_call/3 :: {:score, %User{}, :negative} is called once and replies with a round with a negative score",
          %{room: room, state: state} do
       # Setup
       %{slug: slug} = room
@@ -377,16 +390,19 @@ defmodule DjRumble.Round.RoundServerTest do
         |> handle_start_round()
 
       %{room_slug: ^slug, round: %Round.InProgress{score: initial_score}} = state
-      scores = generate_score(:negative, 1)
+      users = user_fixtures(1)
+      users_scores = generate_score(:negative, users)
+      scores = Enum.map(users_scores, fn {_user, score} -> score end)
       evaluated_score = get_evaluated_score(scores, initial_score)
+
       # Exercise
-      {^scores, state} = handle_scores(state, scores)
+      {^scores, state} = handle_scores(state, users_scores)
 
       # Verify
       %{room_slug: ^slug, round: %Round.InProgress{score: ^evaluated_score}} = state
     end
 
-    test "handle_call/3 :: {:score, :negative} is called many times and replies with a round with a negative score",
+    test "handle_call/3 :: {:score, %User{}, :negative} is called many times and replies with a round with a negative score",
          %{room: room, state: state} do
       # Setup
       %{slug: slug} = room
@@ -397,16 +413,19 @@ defmodule DjRumble.Round.RoundServerTest do
         |> handle_start_round()
 
       %{room_slug: ^slug, round: %Round.InProgress{score: initial_score}} = state
-      scores = generate_score(:negative, 3)
+      users = user_fixtures(3)
+      users_scores = generate_score(:negative, users)
+      scores = Enum.map(users_scores, fn {_user, score} -> score end)
       evaluated_score = get_evaluated_score(scores, initial_score)
+
       # Exercise
-      {^scores, state} = handle_scores(state, scores)
+      {^scores, state} = handle_scores(state, users_scores)
 
       # Verify
       %{room_slug: ^slug, round: %Round.InProgress{score: ^evaluated_score}} = state
     end
 
-    test "handle_call/3 :: {:score, type} is called many times with mixed scores replies with a round with a score",
+    test "handle_call/3 :: {:score, %User{}, type} is called many times with mixed scores replies with a round with a score",
          %{room: room, state: state} do
       # Setup
       %{slug: slug} = room
@@ -417,10 +436,13 @@ defmodule DjRumble.Round.RoundServerTest do
         |> handle_start_round()
 
       %{room_slug: ^slug, round: %Round.InProgress{score: initial_score}} = state
-      scores = generate_score(:mixed, 10)
+      users = user_fixtures(10)
+      users_scores = generate_score(:mixed, users)
+      scores = Enum.map(users_scores, fn {_user, score} -> score end)
       evaluated_score = get_evaluated_score(scores, initial_score)
+
       # Exercise
-      {^scores, state} = handle_scores(state, scores)
+      {^scores, state} = handle_scores(state, users_scores)
 
       # Verify
       %{room_slug: ^slug, round: %Round.InProgress{score: ^evaluated_score}} = state
@@ -446,11 +468,13 @@ defmodule DjRumble.Round.RoundServerTest do
 
       :ok = Channels.subscribe(:room, slug)
 
+      [user] = user_fixtures(1)
+
       :ok =
         state
         |> handle_set_round_time(2)
         |> handle_start_round()
-        |> handle_score(:negative)
+        |> handle_score(user, :negative)
         |> handle_tick(fn response ->
           {:noreply, %{room_slug: ^slug, round: %Round.InProgress{}}} = response
           :ok

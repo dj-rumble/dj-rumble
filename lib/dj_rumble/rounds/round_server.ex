@@ -36,8 +36,8 @@ defmodule DjRumble.Rounds.RoundServer do
     GenServer.call(pid, {:set_round_time, time})
   end
 
-  def score(pid, _user, type) do
-    GenServer.call(pid, {:score, type})
+  def score(pid, user, type) do
+    GenServer.call(pid, {:score, user, type})
   end
 
   def initial_state(args) do
@@ -89,7 +89,7 @@ defmodule DjRumble.Rounds.RoundServer do
   end
 
   @impl GenServer
-  def handle_call({:score, type}, _from, %{round: %Round.InProgress{} = round} = state) do
+  def handle_call({:score, _user, type}, _from, %{round: %Round.InProgress{} = round} = state) do
     round = Round.set_score(round, type)
     {:reply, round, %{state | round: round}}
   end
