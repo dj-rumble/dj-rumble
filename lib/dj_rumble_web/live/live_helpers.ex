@@ -26,7 +26,10 @@ defmodule DjRumbleWeb.LiveHelpers do
 
   @spec render_tooltip(keyword) :: any
   @doc """
-  Given some options renders a tooltip component
+  Given some options renders a tooltip component.
+
+  > The parent component must use the tailwind class `group` to bind events to
+  > the child tooltip.
 
   ## Examples
 
