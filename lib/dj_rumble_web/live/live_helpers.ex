@@ -23,4 +23,23 @@ defmodule DjRumbleWeb.LiveHelpers do
     modal_opts = [id: :modal, return_to: path, component: component, opts: opts]
     live_component(DjRumbleWeb.ModalComponent, modal_opts)
   end
+
+  @spec render_tooltip(keyword) :: any
+  @doc """
+  Given some options renders a tooltip component
+
+  ## Examples
+
+      <%= render_tooltip(text: "Some awesome message") %>
+
+      <%= render_tooltip(
+        text: "Another awesome message"),
+        extra_classes: "text-lg text-red-800"
+      %>
+
+  """
+  def render_tooltip(opts) do
+    opts = Keyword.merge([extra_classes: "", text: ""], opts)
+    Phoenix.View.render(DjRumbleWeb.TooltipView, "tooltip.html", opts)
+  end
 end
