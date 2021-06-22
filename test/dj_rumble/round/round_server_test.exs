@@ -12,6 +12,18 @@ defmodule DjRumble.Round.RoundServerTest do
 
   alias DjRumbleWeb.Channels
 
+  defp assert_received_scoring_permissions_message(payload) do
+    assert_receive({:check_scoring_permission, ^payload}, 500)
+  end
+
+  defp assert_received_scoring_permissions_messages(users_scores) do
+    Enum.reduce(users_scores, %{voters: Map.new()}, fn {user, score}, payload ->
+      payload = %{payload | voters: Map.put(payload.voters, user.id, score)}
+      _ = assert_received_scoring_permissions_message(payload)
+      payload
+    end)
+  end
+
   describe "round_server client interface" do
     setup do
       room = room_fixture()
@@ -26,50 +38,69 @@ defmodule DjRumble.Round.RoundServerTest do
     end
 
     test "start_link/1 starts a round server", %{pid: pid} do
+      # Exercise & Verrify
       assert is_pid(pid)
       assert Process.alive?(pid)
     end
 
     test "get_room_slug/1 returns a room slug", %{pid: pid, room: room} do
+      # Exercise & Verify
       assert RoundServer.get_room_slug(pid) == room.slug
     end
 
     test "start_round/1 returns :ok", %{pid: pid} do
+      # Exercise & Verify
       assert RoundServer.start_round(pid) == :ok
     end
 
-    test "start_round/1 ticks until the round pid terminates", %{pid: pid} do
+    test "start_round/1 starts a round process", %{pid: pid} do
+      # Exercise
       :ok = RoundServer.start_round(pid)
+
+      # Verify
       assert Process.alive?(pid)
     end
 
     test "get_round/1 returns a scheduled round", %{pid: pid} do
+      # Exercise
       %Round.Scheduled{time: 0, elapsed_time: elapsed_time, score: score} =
         RoundServer.get_round(pid)
 
+      # Verify
       assert elapsed_time == 0
       assert score == {0, 0}
     end
 
     test "get_round/1 returns a round that is in progress", %{pid: pid} do
+      # Setup
       :ok = RoundServer.start_round(pid)
 
+      # Exercise
       %Round.InProgress{time: 0, elapsed_time: elapsed_time, score: score, log: log} =
         RoundServer.get_round(pid)
 
+      # Verify
       assert elapsed_time == 0
       assert score == {0, 0}
       assert log == Log.new()
     end
 
     test "get_narration/1 returns a log from a round that is in progress", %{pid: pid} do
+      # Exercise
       :ok = RoundServer.start_round(pid)
+
+      # Verify
       assert RoundServer.get_narration(pid) == Round.narrate(Round.InProgress.new())
     end
 
     test "set_round_time/2 returns :ok", %{pid: pid} do
+      # Setup
       time = 10
+
+      # Exercise
       :ok = RoundServer.set_round_time(pid, time)
+
+      # Verify
       %Round.Scheduled{time: ^time} = RoundServer.get_round(pid)
     end
 
@@ -98,15 +129,25 @@ defmodule DjRumble.Round.RoundServerTest do
     end
 
     test "handle_info/2 :tick updates a round that is in progress", %{pid: pid} do
+      # Setup
       :ok = RoundServer.start_round(pid)
+
+      # Exercise
       ticks = length(tick(pid, 1))
+
+      # Verify
       log = Log.new()
       %Round.InProgress{time: 0, elapsed_time: ^ticks, log: ^log} = RoundServer.get_round(pid)
     end
 
     test "handle_info/2 :tick updates many times a round that is in progress", %{pid: pid} do
+      # Setup
       :ok = RoundServer.start_round(pid)
+
+      # Exercise
       ticks = length(tick(pid, 10))
+
+      # Verify
       log = Log.new()
       %Round.InProgress{time: 0, elapsed_time: ^ticks, log: ^log} = RoundServer.get_round(pid)
     end
@@ -125,6 +166,64 @@ defmodule DjRumble.Round.RoundServerTest do
       # round properly
       :ok = Process.sleep(30)
       refute Process.alive?(pid)
+    end
+
+    test "on_player_join/1 sends a check_scoring_permission message and returns :ok", %{
+      pid: pid,
+      room: room
+    } do
+      # Setup
+      :ok = Channels.subscribe(:score, room.slug)
+      :ok = RoundServer.set_round_time(pid, 10)
+      :ok = RoundServer.start_round(pid)
+
+      # Exercise
+      :ok = RoundServer.on_player_join(pid)
+
+      # Verify
+      _ = assert_received_scoring_permissions_messages([])
+    end
+
+    test "on_player_join/1 sends a check_scoring_permission message with a voter and returns :ok",
+         %{pid: pid, room: room} do
+      # Setup
+      :ok = Channels.subscribe(:score, room.slug)
+      :ok = RoundServer.set_round_time(pid, 10)
+      :ok = RoundServer.start_round(pid)
+      users = user_fixtures(1)
+
+      users_scores =
+        for user <- users do
+          _round = RoundServer.score(pid, user, :positive)
+          {user, :positive}
+        end
+
+      # Exercise
+      :ok = RoundServer.on_player_join(pid)
+
+      # Verify
+      _ = assert_received_scoring_permissions_messages(users_scores)
+    end
+
+    test "on_player_join/1 sends a check_scoring_permission message with some voters and returns :ok",
+         %{pid: pid, room: room} do
+      # Setup
+      :ok = Channels.subscribe(:score, room.slug)
+      :ok = RoundServer.set_round_time(pid, 10)
+      :ok = RoundServer.start_round(pid)
+      users = user_fixtures(3)
+
+      users_scores =
+        for user <- users do
+          _round = RoundServer.score(pid, user, :positive)
+          {user, :positive}
+        end
+
+      # Exercise
+      :ok = RoundServer.on_player_join(pid)
+
+      # Verify
+      _ = assert_received_scoring_permissions_messages(users_scores)
     end
   end
 
@@ -197,6 +296,14 @@ defmodule DjRumble.Round.RoundServerTest do
       Enum.reduce(users_scores, {[], state}, fn {user, score}, {scores, state} ->
         {scores ++ [score], handle_score(state, user, score)}
       end)
+    end
+
+    defp handle_on_player_join(state) do
+      response = RoundServer.handle_cast(:on_player_join, state)
+
+      {:noreply, state} = response
+
+      state
     end
 
     defp generate_score(:mixed, users) do
@@ -490,6 +597,17 @@ defmodule DjRumble.Round.RoundServerTest do
 
       # Verify
       %{room_slug: ^slug, round: %Round.InProgress{score: {0, 1}}} = state
+    end
+
+    test "handle_cast/2 :: :on_player_join is called once, a message is broadcasted and does not reply",
+         %{room: room, state: state} do
+      %{slug: slug} = room
+
+      :ok = Channels.subscribe(:score, slug)
+
+      _state = handle_on_player_join(state)
+
+      _ = assert_received_scoring_permissions_messages([])
     end
 
     test "handle_info/2 :: :tick is called with a round that is in progress and does not reply",

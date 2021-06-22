@@ -40,6 +40,10 @@ defmodule DjRumble.Rounds.RoundServer do
     GenServer.call(pid, {:score, user, type})
   end
 
+  def on_player_join(pid) do
+    GenServer.cast(pid, :on_player_join)
+  end
+
   def initial_state(args) do
     %{
       room_slug: args.room_slug,
@@ -105,7 +109,16 @@ defmodule DjRumble.Rounds.RoundServer do
           state
       end
 
+    :ok = send_check_scoring_permission(state.room_slug, %{voters: state.voters})
+
     {:reply, state.round, state}
+  end
+
+  @impl GenServer
+  def handle_cast(:on_player_join, state) do
+    :ok = send_check_scoring_permission(state.room_slug, %{voters: state.voters})
+
+    {:noreply, state}
   end
 
   @impl GenServer
@@ -129,5 +142,14 @@ defmodule DjRumble.Rounds.RoundServer do
 
   defp schedule_next_tick do
     Process.send_after(self(), :tick, @seconds_per_tick * 1000)
+  end
+
+  defp send_check_scoring_permission(room_slug, payload) do
+    :ok =
+      Channels.broadcast(
+        :score,
+        room_slug,
+        {:check_scoring_permission, payload}
+      )
   end
 end

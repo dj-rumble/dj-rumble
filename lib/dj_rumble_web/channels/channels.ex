@@ -7,6 +7,7 @@ defmodule DjRumbleWeb.Channels do
   @player_is_ready_topic "room:<slug>:ready"
   @matchmaking_details_request_topic "matchmaking:<slug>:waiting_for_details"
   @initial_chat_request_topic "room:<slug>:request_initial_chat"
+  @score_topic "room:<slug>:score"
 
   def get_topic(:room), do: @room_topic
 
@@ -15,6 +16,8 @@ defmodule DjRumbleWeb.Channels do
   def get_topic(:matchmaking_details_request), do: @matchmaking_details_request_topic
 
   def get_topic(:initial_chat_request), do: @initial_chat_request_topic
+
+  def get_topic(:score), do: @score_topic
 
   def get_topic(type, slug), do: String.replace(get_topic(type), "<slug>", slug)
 

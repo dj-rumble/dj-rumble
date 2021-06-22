@@ -136,6 +136,8 @@ defmodule DjRumble.Rooms.Matchmaking do
         {_ref, {round_pid, video, _time, user}} = state.current_round
         Logger.info(fn -> "Sending current round details." end)
 
+        :ok = RoundServer.on_player_join(round_pid)
+
         round = RoundServer.get_round(round_pid)
 
         :ok = send_playback_details(pid, round, video, user)

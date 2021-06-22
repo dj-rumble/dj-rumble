@@ -58,8 +58,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
               %{username: user.username}
             )
 
-            Channels.subscribe(:initial_chat_request, slug)
-            Channels.broadcast(:room, slug, :request_initial_chat)
+            :ok = Channels.subscribe(:initial_chat_request, slug)
+            :ok = Channels.subscribe(:score, slug)
+            :ok = Channels.broadcast(:room, slug, :request_initial_chat)
 
             {:ok,
              socket
@@ -211,8 +212,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   def handle_info({:outcome_changed, params}, socket), do: handle_outcome_changed(params, socket)
 
-  def handle_info({:update_scoring_enabled, params}, socket),
-    do: handle_update_scoring_enabled(params, socket)
+  def handle_info({:check_scoring_permission, params}, socket),
+    do: handle_check_scoring_permission(params, socket)
 
   def handle_info({:throw_confetti_interaction, params}, socket),
     do: handle_throw_confetti_interaction(params, socket)
@@ -314,7 +315,6 @@ defmodule DjRumbleWeb.RoomLive.Show do
      socket
      |> assign_page_title(video.title)
      |> assign(:current_round, params)
-     |> assign_scoring(:check_user)
      |> assign_live_score(round)
      |> push_event("receive_player_state", video_details)}
   end
@@ -477,7 +477,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   * **From:** `RoundServer` (broadcast)
   * **Topic:** `"room:<slug>"`
-  * **Args:** %{round: %Round.InProgress{}}
+  * **Args:** `%{round: %Round.InProgress{}}`
   """
   def handle_outcome_changed(%{round: round}, socket) do
     Logger.info(fn -> "Outcome for current round changed: [#{round.outcome}]" end)
@@ -485,10 +485,26 @@ defmodule DjRumbleWeb.RoomLive.Show do
     {:noreply, socket}
   end
 
-  def handle_update_scoring_enabled(scoring_enabled, socket) do
-    {:noreply,
-     socket
-     |> assign(:scoring_enabled, scoring_enabled)}
+  @doc """
+  Receives `%{}` representing voters whenever someone sbmits a scores
+
+  * **From:** `RoundServer` (broadcast)
+  * **Topic:** `"room:<slug>:score"`
+  * **Args:** %{}
+  """
+  def handle_check_scoring_permission(%{voters: voters}, socket) do
+    %{user: %{id: user_id}} = socket.assigns
+
+    socket =
+      case Map.has_key?(voters, user_id) do
+        true ->
+          assign_scoring(socket, :disable)
+
+        false ->
+          assign_scoring(socket, :check_user)
+      end
+
+    {:noreply, socket}
   end
 
   def handle_throw_confetti_interaction(%{user: username}, socket) do
