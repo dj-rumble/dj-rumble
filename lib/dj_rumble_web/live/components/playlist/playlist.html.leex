@@ -1,10 +1,10 @@
 <div class="pr-1 m-2 rounded-lg">
-  <%= for { {video, username} = video_user, index } <- @videos_users do %>
+  <%= for {{video, username, classes} = video_user, index} <- Enum.with_index(@videos_users) do %>
     <div class="
       grid grid-cols-8 gap-2 separator
       rounded-lg my-2 p-1
       <%= get_card_class(index) %>
-      shadow-card queued
+      shadow-card queued <%= classes %>
     ">
       <div class="col-span-1 align-center w-3/4 self-center">
         <%= img_tag(video.img_url, class: "rounded-l-md") %>
