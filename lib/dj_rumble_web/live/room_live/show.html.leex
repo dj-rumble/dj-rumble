@@ -69,6 +69,7 @@
             <div class="col-start-4 col-end-10 text-center">
               <%= live_component DjRumbleWeb.Live.Components.PlayerControls,
                 id: "djrumble-player-controls",
+                current_round: @current_round,
                 room_server: @room_server,
                 scoring_enabled: @scoring_enabled,
                 live_score: @live_score,

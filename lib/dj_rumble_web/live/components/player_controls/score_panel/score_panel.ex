@@ -10,6 +10,7 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls.ScorePanel do
   def update(assigns, socket) do
     %{
       id: id,
+      current_round: current_round,
       live_score: live_score,
       room_server: room_server,
       scoring_enabled: scoring_enabled,
@@ -20,6 +21,7 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls.ScorePanel do
     {:ok,
      socket
      |> assign(:id, id)
+     |> assign(:current_round, current_round)
      |> assign(:live_score, live_score)
      |> assign(:room_server, room_server)
      |> assign(:scoring_enabled, scoring_enabled)
@@ -39,11 +41,17 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls.ScorePanel do
     {:noreply, socket}
   end
 
-  defp render_score_button(type, is_scoring_enabled, visitor, assigns) do
-    icon =
+  defp render_score_button(type, is_scoring_enabled, visitor, current_round, assigns) do
+    {icon, tooltip_text} =
       case type do
-        :positive -> "like"
-        :negative -> "dislike"
+        :positive ->
+          case Map.get(current_round, :added_by) do
+            nil -> {"like", ""}
+            user -> {"like", "Watch more videos from #{user.username} by supporting this Dj"}
+          end
+
+        :negative ->
+          {"dislike", "Definitely not today"}
       end
 
     id = "djrumble-score-#{Atom.to_string(type)}"
@@ -56,14 +64,18 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls.ScorePanel do
         classes = "#{shared_classes} enabled"
 
         ~L"""
-          <a
-            id="<%= id %>"
-            phx-click="score"
-            phx-value-score=<%= type %>
-            phx-target="<%= assigns %>"
-          >
-            <%= render_svg_button(icon, classes) %>
-          </a>
+          <div id="<%= id %>">
+            <div class="group relative w-full flex justify-center">
+              <a
+                phx-click="score"
+                phx-value-score=<%= type %>
+                phx-target="<%= assigns %>"
+              >
+                <%= render_svg_button(icon, classes) %>
+              </a>
+              <%= render_tooltip(text: tooltip_text, extra_classes: "text-xl") %>
+            </div>
+          </div>
         """
 
       false ->
@@ -76,13 +88,17 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls.ScorePanel do
           end
 
         ~L"""
-          <a
-            id="<%= id %>"
-            phx-click="<%= click %>"
-            phx-target="<%= event %>"
-          >
-            <%= render_svg_button(icon, classes) %>
-          </a>
+          <div id="<%= id %>">
+            <div class="group relative w-full flex justify-center">
+              <a
+                phx-click="<%= click %>"
+                phx-target="<%= event %>"
+              >
+                <%= render_svg_button(icon, classes) %>
+              </a>
+              <%= render_tooltip(text: "Voting is disabled", extra_classes: "text-xl") %>
+            </div>
+          </div>
         """
     end
   end

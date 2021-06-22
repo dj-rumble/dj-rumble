@@ -32,12 +32,16 @@ defmodule DjRumbleWeb.Live.Components.CurrentRound do
     """
   end
 
-  defp render_dj(current_round, assigns) do
+  defp render_dj(_current_round, false, assigns) do
+    ~L"""
+    <span />
+    """
+  end
+
+  defp render_dj(current_round, true, assigns) do
     case Map.get(current_round, :added_by) do
       nil ->
-        ~L"""
-        <span />
-        """
+        render_dj(current_round, false, assigns)
 
       user ->
         ~L"""
