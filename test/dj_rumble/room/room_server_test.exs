@@ -13,13 +13,16 @@ defmodule DjRumble.Room.RoomServerTest do
   alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor, RoomServer, Video}
   alias DjRumble.Rounds.Round
 
-  defp generate_score(:mixed, n) do
+  defp generate_score(:mixed, users) do
     types = [:positive, :negative]
-    Enum.map(1..n, fn _ -> Enum.at(types, Enum.random(0..(length(types) - 1))) end)
+
+    Enum.map(users, fn user ->
+      {user, Enum.at(types, Enum.random(0..(length(types) - 1)))}
+    end)
   end
 
-  defp generate_score(type, n) do
-    Enum.map(1..n, fn _ -> type end)
+  defp generate_score(type, users) do
+    Enum.map(users, fn user -> {user, type} end)
   end
 
   defp prepare_next_round(matchmaking_server) do
@@ -110,12 +113,12 @@ defmodule DjRumble.Room.RoomServerTest do
       end)
     end
 
-    defp do_score(server, {pid, score}) do
-      :ok = RoomServer.score(server, pid, score)
+    defp do_score(server, {user, score}) do
+      :ok = RoomServer.score(server, user, score)
     end
 
-    defp do_scores(server, pids_scores) do
-      Enum.each(pids_scores, &do_score(server, &1))
+    defp do_scores(server, users_scores) do
+      Enum.each(users_scores, &do_score(server, &1))
     end
 
     defp schedule_and_start_round(matchmaking_server, videos_users, time) do
@@ -333,13 +336,11 @@ defmodule DjRumble.Room.RoomServerTest do
       videos_users = get_videos_users(state.room)
       time = 30
       :ok = schedule_and_start_round(matchmaking_server, videos_users, time)
-      players = spawn_players(1)
-      scores = generate_score(:positive, 1)
-
-      players_scores = Enum.zip(players, scores)
+      [{_pid, user}] = spawn_players(1)
+      users_scores = generate_score(:positive, [user])
 
       # Exercise
-      :ok = do_scores(pid, players_scores)
+      :ok = do_scores(pid, users_scores)
     end
 
     test "score/2 is called many times and returns :ok", %{
@@ -352,12 +353,11 @@ defmodule DjRumble.Room.RoomServerTest do
       time = 30
       :ok = schedule_and_start_round(matchmaking_server, videos_users, time)
       players = spawn_players(5)
-      scores = generate_score(:positive, 5)
-
-      players_scores = Enum.zip(players, scores)
+      users = Enum.map(players, fn {_pid, user} -> user end)
+      users_scores = generate_score(:positive, users)
 
       # Exercise
-      :ok = do_scores(pid, players_scores)
+      :ok = do_scores(pid, users_scores)
     end
   end
 
@@ -437,7 +437,8 @@ defmodule DjRumble.Room.RoomServerTest do
         # Enables messages tracing going through pid
         :erlang.trace(pid, true, [:receive])
         assert is_pid_alive(pid)
-        pid
+        user = user_fixture()
+        {pid, user}
       end)
     end
 
@@ -454,17 +455,17 @@ defmodule DjRumble.Room.RoomServerTest do
       end)
     end
 
-    defp handle_score(state, {pid, score}) do
-      response = RoomServer.handle_cast({:score, pid, score}, state)
+    defp handle_score(state, {user, score}) do
+      response = RoomServer.handle_call({:score, user, score}, nil, state)
 
-      {:noreply, ^state} = response
+      {:reply, :ok, ^state} = response
 
       state
     end
 
-    defp handle_scores(state, pids_scores) do
-      Enum.reduce(pids_scores, {[], state}, fn {pid, score}, {pids, acc_state} ->
-        {pids ++ [pid], handle_score(acc_state, {pid, score})}
+    defp handle_scores(state, users_scores) do
+      Enum.reduce(users_scores, {[], state}, fn {user, score}, {users, acc_state} ->
+        {users ++ [user], handle_score(acc_state, {user, score})}
       end)
     end
 
@@ -487,7 +488,7 @@ defmodule DjRumble.Room.RoomServerTest do
         end)
     end
 
-    defp assert_players_received_a_welcome_message(pids) do
+    defp assert_players_receive_a_welcome_message(pids) do
       :ok = Enum.each(pids, &assert_receive({:trace, ^&1, :receive, {:welcome, "Hello!"}}))
     end
 
@@ -502,7 +503,7 @@ defmodule DjRumble.Room.RoomServerTest do
     test "handle_call/3 :: :join is called with no players and replies with a state with a player",
          %{state: state} do
       # Setup
-      pid = spawn(fn -> player_process_mock() end)
+      [{pid, _user}] = _players = spawn_players(1)
       assert is_pid_alive(pid)
 
       # Exercise
@@ -521,10 +522,11 @@ defmodule DjRumble.Room.RoomServerTest do
       state: state
     } do
       # Setup
-      {pids, state} =
-        spawn_players(3)
-        # Exercise
-        |> do_join_players(state)
+      players = spawn_players(3)
+      pids = Enum.map(players, fn {pid, _user} -> pid end)
+
+      # Exercise
+      {pids, state} = do_join_players(pids, state)
 
       # Verify
       :ok = assert_players_joined(pids, state)
@@ -542,7 +544,7 @@ defmodule DjRumble.Room.RoomServerTest do
       %{matchmaking_server: matchmaking_server} = state
       :erlang.trace(matchmaking_server, true, [:receive])
 
-      pid = spawn(fn -> player_process_mock() end)
+      [{pid, _user}] = _players = spawn_players(1)
       :erlang.trace(pid, true, [:receive])
       assert is_pid_alive(pid)
       state = handle_join(state, pid)
@@ -552,7 +554,7 @@ defmodule DjRumble.Room.RoomServerTest do
       _state = handle_joined(state, pid)
 
       # Verify
-      assert_receive({:trace, ^pid, :receive, {:welcome, "Hello!"}})
+      :ok = assert_players_receive_a_welcome_message([pid])
 
       assert_receive({:trace, ^matchmaking_server, :receive, :prepare_next_round})
 
@@ -573,14 +575,15 @@ defmodule DjRumble.Room.RoomServerTest do
 
       :erlang.trace(matchmaking_server, true, [:receive])
 
-      {pids, state} =
-        spawn_players(3)
-        # Exercise
-        |> do_joined_players(state)
+      players = spawn_players(3)
+      pids = Enum.map(players, fn {pid, _user} -> pid end)
+
+      # Exercise
+      {pids, state} = do_joined_players(pids, state)
 
       # Verify
       :ok = assert_players_joined(pids, state)
-      :ok = assert_players_received_a_welcome_message(pids)
+      :ok = assert_players_receive_a_welcome_message(pids)
 
       assert_receive({:trace, ^matchmaking_server, :receive, :prepare_next_round})
 
@@ -617,14 +620,15 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok = Matchmaking.create_round(matchmaking_server, video, user)
       :erlang.trace(matchmaking_server, true, [:receive])
 
-      {pids, state} =
-        spawn_players(3)
-        # Exercise
-        |> do_joined_players(state)
+      players = spawn_players(3)
+      pids = Enum.map(players, fn {pid, _user} -> pid end)
+
+      # Exercise
+      {pids, state} = do_joined_players(pids, state)
 
       # Verify
       :ok = assert_players_joined(pids, state)
-      :ok = assert_players_received_a_welcome_message(pids)
+      :ok = assert_players_receive_a_welcome_message(pids)
       assert_receive({:request_playback_details, %{time: 0, videoId: ^video_id}})
 
       {^matchmaking_server, %{current_round: current_round}} =
@@ -645,7 +649,7 @@ defmodule DjRumble.Room.RoomServerTest do
       end)
     end
 
-    test "handle_cast/2 :: {:score, PID, :positive} is called once time and returns :ok", %{
+    test "handle_call/3 :: {:score, %User{}, :positive} is called once time and returns :ok", %{
       state: state
     } do
       # Setup
@@ -657,19 +661,19 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok = receive_video_time(matchmaking_server, 30)
       :ok = start_next_round(matchmaking_server)
 
-      {players, state} =
-        spawn_players(1)
-        |> do_join_players(state)
+      players = spawn_players(1)
+      pids = Enum.map(players, fn {pid, _user} -> pid end)
+      users = Enum.map(players, fn {_pid, user} -> user end)
 
-      scores = generate_score(:positive, 1)
+      {_pids, state} = do_join_players(pids, state)
 
-      players_scores = Enum.zip(players, scores)
+      users_scores = generate_score(:positive, users)
 
       # Exercise
-      _state = handle_scores(state, players_scores)
+      _state = handle_scores(state, users_scores)
     end
 
-    test "handle_cast/2 :: {:score, PID, :positive} is called many times and returns :ok every time",
+    test "handle_call/3 :: {:score, %User{}, :positive} is called many times and returns :ok every time",
          %{state: state} do
       # Setup
       %{matchmaking_server: matchmaking_server} = state
@@ -680,19 +684,20 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok = receive_video_time(matchmaking_server, 30)
       :ok = start_next_round(matchmaking_server)
 
-      {players, state} =
-        spawn_players(10)
-        |> do_join_players(state)
+      players = spawn_players(10)
 
-      scores = generate_score(:positive, 10)
+      pids = Enum.map(players, fn {pid, _user} -> pid end)
+      users = Enum.map(players, fn {_pid, user} -> user end)
 
-      players_scores = Enum.zip(players, scores)
+      {_pids, state} = do_join_players(pids, state)
+
+      users_scores = generate_score(:positive, users)
 
       # Exercise
-      _state = handle_scores(state, players_scores)
+      _state = handle_scores(state, users_scores)
     end
 
-    test "handle_cast/2 :: {:score, PID, :negative} is called once time and returns :ok", %{
+    test "handle_call/3 :: {:score, %User{}, :negative} is called once time and returns :ok", %{
       state: state
     } do
       # Setup
@@ -704,19 +709,19 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok = receive_video_time(matchmaking_server, 30)
       :ok = start_next_round(matchmaking_server)
 
-      {players, state} =
-        spawn_players(1)
-        |> do_join_players(state)
+      players = spawn_players(1)
+      pids = Enum.map(players, fn {pid, _user} -> pid end)
+      users = Enum.map(players, fn {_pid, user} -> user end)
 
-      scores = generate_score(:negative, 1)
+      {_pids, state} = do_join_players(pids, state)
 
-      players_scores = Enum.zip(players, scores)
+      users_scores = generate_score(:negative, users)
 
       # Exercise
-      _state = handle_scores(state, players_scores)
+      _state = handle_scores(state, users_scores)
     end
 
-    test "handle_cast/2 :: {:score, PID, :negative} is called many times and returns :ok every time",
+    test "handle_call/3 :: {:score, %User{}, :negative} is called many times and returns :ok every time",
          %{state: state} do
       # Setup
       %{matchmaking_server: matchmaking_server} = state
@@ -727,19 +732,19 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok = receive_video_time(matchmaking_server, 30)
       :ok = start_next_round(matchmaking_server)
 
-      {players, state} =
-        spawn_players(10)
-        |> do_join_players(state)
+      players = spawn_players(10)
+      pids = Enum.map(players, fn {pid, _user} -> pid end)
+      users = Enum.map(players, fn {_pid, user} -> user end)
 
-      scores = generate_score(:negative, 10)
+      {_pids, state} = do_join_players(pids, state)
 
-      players_scores = Enum.zip(players, scores)
+      users_scores = generate_score(:negative, users)
 
       # Exercise
-      _state = handle_scores(state, players_scores)
+      _state = handle_scores(state, users_scores)
     end
 
-    test "handle_cast/2 :: {:score, PID, type} is called many times with mixed scores and returns :ok every time",
+    test "handle_call/3 :: {:score, %User{}, type} is called many times with mixed scores and returns :ok every time",
          %{state: state} do
       # Setup
       %{matchmaking_server: matchmaking_server} = state
@@ -750,16 +755,16 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok = receive_video_time(matchmaking_server, 30)
       :ok = start_next_round(matchmaking_server)
 
-      {players, state} =
-        spawn_players(10)
-        |> do_join_players(state)
+      players = spawn_players(10)
+      pids = Enum.map(players, fn {pid, _user} -> pid end)
+      users = Enum.map(players, fn {_pid, user} -> user end)
 
-      scores = generate_score(:mixed, 10)
+      {_pids, state} = do_join_players(pids, state)
 
-      players_scores = Enum.zip(players, scores)
+      users_scores = generate_score(:mixed, users)
 
       # Exercise
-      _state = handle_scores(state, players_scores)
+      _state = handle_scores(state, users_scores)
     end
 
     test "handle_info/2 :: {:DOWN, ref, :process, pid, reason} is called one time and returns a state without players",
@@ -768,9 +773,10 @@ defmodule DjRumble.Room.RoomServerTest do
       state = handle_get_state(state)
       assert state.players == Map.new()
 
-      {pids, state} =
-        spawn_players(1)
-        |> do_join_players(state)
+      players = spawn_players(1)
+      pids = Enum.map(players, fn {pid, _user} -> pid end)
+
+      {pids, state} = do_join_players(pids, state)
 
       :ok = assert_players_joined(pids, state)
 
@@ -790,9 +796,10 @@ defmodule DjRumble.Room.RoomServerTest do
       state = handle_get_state(state)
       assert state.players == Map.new()
 
-      {pids, state} =
-        spawn_players(10)
-        |> do_join_players(state)
+      players = spawn_players(10)
+      pids = Enum.map(players, fn {pid, _user} -> pid end)
+
+      {pids, state} = do_join_players(pids, state)
 
       :ok = assert_players_joined(pids, state)
 

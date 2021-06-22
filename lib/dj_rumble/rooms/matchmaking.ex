@@ -43,8 +43,8 @@ defmodule DjRumble.Rooms.Matchmaking do
     GenServer.call(server, :get_current_round)
   end
 
-  def score(server, type) do
-    GenServer.call(server, {:score, type})
+  def score(server, user, type) do
+    GenServer.call(server, {:score, user, type})
   end
 
   def initial_state(args) do
@@ -136,6 +136,8 @@ defmodule DjRumble.Rooms.Matchmaking do
         {_ref, {round_pid, video, _time, user}} = state.current_round
         Logger.info(fn -> "Sending current round details." end)
 
+        :ok = RoundServer.on_player_join(round_pid)
+
         round = RoundServer.get_round(round_pid)
 
         :ok = send_playback_details(pid, round, video, user)
@@ -145,13 +147,13 @@ defmodule DjRumble.Rooms.Matchmaking do
   end
 
   @impl GenServer
-  def handle_call({:score, type}, _from, state) do
+  def handle_call({:score, user, type}, _from, state) do
     {_ref, {round_pid, _video, _time, _user}} = state.current_round
 
     response =
       case Process.alive?(round_pid) do
         true ->
-          %Round.InProgress{} = RoundServer.score(round_pid, type)
+          %Round.InProgress{} = RoundServer.score(round_pid, user, type)
 
         false ->
           :error
@@ -309,7 +311,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
   defp schedule_round(video, room, user) do
     %{slug: slug} = room
-    {:ok, pid} = RoundSupervisor.start_round_server(RoundSupervisor, {slug, 0})
+    {:ok, pid} = RoundSupervisor.start_round_server(RoundSupervisor, {slug})
     ref = Process.monitor(pid)
 
     :ok = Channels.broadcast(:room, slug, {:round_scheduled, RoundServer.get_round(pid)})

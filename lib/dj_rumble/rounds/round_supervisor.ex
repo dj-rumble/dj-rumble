@@ -10,8 +10,8 @@ defmodule DjRumble.Rounds.RoundSupervisor do
     DynamicSupervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
-  def start_round_server(supervisor, {room_slug, round_time}) do
-    DynamicSupervisor.start_child(supervisor, {RoundServer, {room_slug, round_time}})
+  def start_round_server(supervisor, {room_slug}) do
+    DynamicSupervisor.start_child(supervisor, {RoundServer, {room_slug}})
   end
 
   def list_round_servers(supervisor \\ __MODULE__) do

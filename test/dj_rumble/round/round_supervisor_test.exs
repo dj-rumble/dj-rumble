@@ -14,8 +14,7 @@ defmodule DjRumble.Round.RoundSupervisorTest do
 
     setup do
       room = room_fixture(%{}, %{preload: true})
-      round_time = 5
-      {:ok, pid} = RoundSupervisor.start_round_server(RoundSupervisor, {room.slug, round_time})
+      {:ok, pid} = RoundSupervisor.start_round_server(RoundSupervisor, {room.slug})
 
       on_exit(fn ->
         RoundSupervisor.terminate_round_server(RoundSupervisor, pid)
