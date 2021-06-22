@@ -11,6 +11,7 @@ defmodule DjRumbleWeb.Live.Components.ConnectedUsers do
       |> Enum.map(fn connected_user ->
         hd(connected_user.metas).username
       end)
+      |> Enum.uniq()
 
     {:ok,
      socket

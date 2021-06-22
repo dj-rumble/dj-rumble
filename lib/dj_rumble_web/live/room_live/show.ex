@@ -55,7 +55,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
               self(),
               topic,
               socket.id,
-              %{username: user.username}
+              %{username: user.username, user_id: user.id}
             )
 
             :ok = Channels.subscribe(:initial_chat_request, slug)
