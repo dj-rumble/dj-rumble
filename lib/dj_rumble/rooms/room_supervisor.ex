@@ -18,9 +18,7 @@ defmodule DjRumble.Rooms.RoomSupervisor do
     :ok =
       Rooms.list_rooms()
       |> Enum.each(fn room ->
-        room = Rooms.preload_room(room, users_rooms_videos: [:video, :user])
-
-        {:ok, _pid} = DynamicSupervisor.start_child(__MODULE__, {RoomServer, {room}})
+        {:ok, _pid} = start_room_server(__MODULE__, room)
       end)
 
     {:ok, pid}
