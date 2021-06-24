@@ -50,7 +50,12 @@ function initLiveview() {
 
   let liveSocket = new LiveSocket("/live", Socket, {
     hooks,
-    params: {_csrf_token: csrfToken}
+    params: {
+      _csrf_token: csrfToken,
+      locale: Intl.NumberFormat().resolvedOptions().locale,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timezone_offset: -(new Date().getTimezoneOffset() / 60)
+    }
   })
   // connect if there are any LiveViews on the page
   liveSocket.connect()
