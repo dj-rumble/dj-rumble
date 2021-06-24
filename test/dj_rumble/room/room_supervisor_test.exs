@@ -19,6 +19,8 @@ defmodule DjRumble.Room.RoomSupervisorTest do
           %{preload: true}
         )
 
+      # chat_supervisor_pid = start_supervised!({ChatSupervisor, {room}})
+
       {:ok, pid} = RoomSupervisor.start_room_server(RoomSupervisor, room)
 
       on_exit(fn -> RoomSupervisor.terminate_room_server(RoomSupervisor, pid) end)

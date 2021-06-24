@@ -9,6 +9,7 @@ defmodule DjRumble.Room.RoomServerTest do
   import DjRumble.CollectionsFixtures
   import DjRumble.RoomsFixtures
 
+  alias DjRumble.Chats.ChatServer
   alias DjRumble.Rooms
   alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor, RoomServer, Video}
   alias DjRumble.Rounds.Round
@@ -53,13 +54,15 @@ defmodule DjRumble.Room.RoomServerTest do
 
       %{slug: slug} = room
 
-      room_genserver_pid = start_supervised!({RoomServer, {room}})
+      chat_server_pid = start_supervised!({ChatServer, {slug}})
 
-      {matchmaking_server_pid, state} =
+      room_genserver_pid = start_supervised!({RoomServer, {room, chat_server_pid}})
+
+      {matchmaking_server_pid, matchmaking_state} =
         MatchmakingSupervisor.get_matchmaking_server(MatchmakingSupervisor, slug)
 
       :ok =
-        Enum.map(state.next_rounds, &get_video(&1))
+        Enum.map(matchmaking_state.next_rounds, &get_video(&1))
         |> Enum.each(&Enum.member?(videos, &1))
 
       on_exit(fn ->
@@ -73,10 +76,12 @@ defmodule DjRumble.Room.RoomServerTest do
       initial_state =
         RoomServer.initial_state(%{
           matchmaking_server: matchmaking_server_pid,
+          chat_server: chat_server_pid,
           room: room
         })
 
       %{
+        chat_server: chat_server_pid,
         matchmaking_server: matchmaking_server_pid,
         pid: room_genserver_pid,
         room: room,
@@ -136,6 +141,12 @@ defmodule DjRumble.Room.RoomServerTest do
       matchmaking_server: matchmaking_server
     } do
       assert is_pid_alive(matchmaking_server)
+    end
+
+    test "start_link/1 starts a dedicated chat server", %{
+      chat_server: chat_server
+    } do
+      assert is_pid_alive(chat_server)
     end
 
     test "get_state/1 returns a state", %{pid: pid, state: state} do

@@ -10,7 +10,7 @@ defmodule DjRumble.Rooms.RoomServer do
 
   alias DjRumbleWeb.Channels
 
-  def start_link({_room} = init_arg) do
+  def start_link({_room, _chat_server} = init_arg) do
     GenServer.start_link(__MODULE__, init_arg)
   end
 
@@ -41,13 +41,14 @@ defmodule DjRumble.Rooms.RoomServer do
   def initial_state(args) do
     %{
       matchmaking_server: args.matchmaking_server,
+      chat_server: nil,
       players: %{},
       room: args.room
     }
   end
 
   @impl GenServer
-  def init({room} = _init_arg) do
+  def init({room, chat_server} = _init_arg) do
     # coveralls-ignore-start
     Logger.info(fn ->
       "RoomServer started with pid: #{inspect(self())} for room: #{room.slug}"
@@ -64,7 +65,12 @@ defmodule DjRumble.Rooms.RoomServer do
         :ok = Matchmaking.create_round(matchmaking_server, video, user)
       end)
 
-    state = initial_state(%{matchmaking_server: matchmaking_server, room: room})
+    state =
+      initial_state(%{
+        chat_server: chat_server,
+        matchmaking_server: matchmaking_server,
+        room: room
+      })
 
     {:ok, state}
   end

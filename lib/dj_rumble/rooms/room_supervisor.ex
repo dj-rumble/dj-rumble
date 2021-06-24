@@ -6,6 +6,7 @@ defmodule DjRumble.Rooms.RoomSupervisor do
 
   require Logger
 
+  alias DjRumble.Chats.{ChatServer, ChatSupervisor}
   alias DjRumble.Rooms
   alias DjRumble.Rooms.RoomServer
 
@@ -28,7 +29,9 @@ defmodule DjRumble.Rooms.RoomSupervisor do
   def start_room_server(supervisor, room) do
     room = Rooms.preload_room(room, users_rooms_videos: [:video, :user])
 
-    DynamicSupervisor.start_child(supervisor, {RoomServer, {room}})
+    {:ok, chat_server} = ChatSupervisor.start_server(ChatSupervisor, {room.slug})
+
+    DynamicSupervisor.start_child(supervisor, {RoomServer, {room, chat_server}})
   end
 
   def list_room_servers(supervisor \\ __MODULE__) do
