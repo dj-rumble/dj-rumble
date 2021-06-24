@@ -24,18 +24,15 @@ defmodule DjRumble.Chat.ChatSupervisorTest do
       %{pid: pid, room: room, state: state}
     end
 
-    @tag :wip
     test "start_room_server/2 starts a chat server", %{pid: pid} do
       assert is_pid(pid)
       assert Process.alive?(pid)
     end
 
-    @tag :wip
     test "list_servers/1 returns a list of chat server pids", %{pid: pid} do
       assert Enum.member?(ChatSupervisor.list_servers(), pid)
     end
 
-    @tag :wip
     test "get_server/2 returns a chat server pid and state", %{
       pid: pid,
       room: room,
@@ -45,7 +42,6 @@ defmodule DjRumble.Chat.ChatSupervisorTest do
       assert Process.alive?(pid)
     end
 
-    @tag :wip
     test "terminate_server/2 shuts down a chat server process", %{pid: pid} do
       assert Process.alive?(pid)
       :ok = ChatSupervisor.terminate_server(ChatSupervisor, pid)

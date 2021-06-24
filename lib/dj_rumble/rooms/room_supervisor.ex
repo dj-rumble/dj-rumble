@@ -6,7 +6,7 @@ defmodule DjRumble.Rooms.RoomSupervisor do
 
   require Logger
 
-  alias DjRumble.Chats.{ChatServer, ChatSupervisor}
+  alias DjRumble.Chats.ChatSupervisor
   alias DjRumble.Rooms
   alias DjRumble.Rooms.RoomServer
 
