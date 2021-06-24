@@ -14,8 +14,13 @@ defmodule DjRumble.Chats.ChatServer do
     GenServer.call(pid, :get_state)
   end
 
+  def new_message(pid, user, message) do
+    GenServer.cast(pid, {:new_message, user, message})
+  end
+
   def initial_state(args) do
     %{
+      messages: [],
       room_slug: args.room_slug
     }
   end
@@ -28,5 +33,12 @@ defmodule DjRumble.Chats.ChatServer do
   @impl GenServer
   def handle_call(:get_state, _from, state) do
     {:reply, state, state}
+  end
+
+  @impl GenServer
+  def handle_cast({:new_message, user, message}, state) do
+    state = %{state | messages: [state.messages ++ %{user: user, message: message}]}
+
+    {:noreply, state}
   end
 end

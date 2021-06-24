@@ -6,6 +6,7 @@ defmodule DjRumble.Rooms.RoomServer do
 
   require Logger
 
+  alias DjRumble.Chats.ChatServer
   alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor}
 
   alias DjRumbleWeb.Channels
@@ -38,10 +39,14 @@ defmodule DjRumble.Rooms.RoomServer do
     GenServer.call(pid, {:score, user, type})
   end
 
+  def new_message(pid, user, message) do
+    GenServer.cast(pid, {:new_message, user, message})
+  end
+
   def initial_state(args) do
     %{
       matchmaking_server: args.matchmaking_server,
-      chat_server: nil,
+      chat_server: args.chat_server,
       players: %{},
       room: args.room
     }
@@ -114,6 +119,13 @@ defmodule DjRumble.Rooms.RoomServer do
 
         {:reply, :ok, state}
     end
+  end
+
+  @impl GenServer
+  def handle_cast({:new_message, user, message}, state) do
+    :ok = ChatServer.new_message(state.chat_server, user, message)
+
+    {:noreply, state}
   end
 
   @impl GenServer

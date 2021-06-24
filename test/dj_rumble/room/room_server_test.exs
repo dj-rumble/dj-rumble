@@ -9,7 +9,7 @@ defmodule DjRumble.Room.RoomServerTest do
   import DjRumble.CollectionsFixtures
   import DjRumble.RoomsFixtures
 
-  alias DjRumble.Chats.ChatServer
+  alias DjRumble.Chats.{ChatServer, ChatSupervisor}
   alias DjRumble.Rooms
   alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor, RoomServer, Video}
   alias DjRumble.Rounds.Round
@@ -24,6 +24,14 @@ defmodule DjRumble.Room.RoomServerTest do
 
   defp generate_score(type, users) do
     Enum.map(users, fn user -> {user, type} end)
+  end
+
+  defp generate_message(user, message) do
+    {user, message}
+  end
+
+  defp generate_messages(user, message, n) do
+    for _n <- 1..n, do: generate_message(user, message)
   end
 
   defp prepare_next_round(matchmaking_server) do
@@ -131,6 +139,16 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok = prepare_next_round(matchmaking_server)
       :ok = receive_video_time(matchmaking_server, time)
       :ok = start_next_round(matchmaking_server)
+    end
+
+    defp do_new_message(pid, user, message) do
+      :ok = RoomServer.new_message(pid, user, message)
+    end
+
+    defp do_new_messages(pid, users_messages) do
+      for {user, message} <- users_messages do
+        :ok = do_new_message(pid, user, message)
+      end
     end
 
     test "start_link/1 starts a room server", %{pid: pid} do
@@ -370,6 +388,27 @@ defmodule DjRumble.Room.RoomServerTest do
       # Exercise
       :ok = do_scores(pid, users_scores)
     end
+
+    test "new_message/2 is called once and returns :ok", %{pid: pid} do
+      # Setup
+      user = user_fixture()
+      message = "Hello!"
+
+      # Exercise & Verify
+      :ok = do_new_message(pid, user, message)
+    end
+
+    test "new_message/2 is called many times and returns :ok", %{pid: pid} do
+      # Setup
+      user = user_fixture()
+      message = "Hello!"
+      messages_amount = 10
+      users_messages = generate_messages(user, message, messages_amount)
+
+      # Exercise & Verify
+      responses = do_new_messages(pid, users_messages)
+      ^messages_amount = length(responses)
+    end
   end
 
   describe "room_server server implementation" do
@@ -382,8 +421,11 @@ defmodule DjRumble.Room.RoomServerTest do
       {:ok, matchmaking_server} =
         MatchmakingSupervisor.start_matchmaking_server(MatchmakingSupervisor, room)
 
+      {:ok, chat_server} = ChatSupervisor.start_server(ChatSupervisor, {room.slug})
+
       initial_state =
         RoomServer.initial_state(%{
+          chat_server: chat_server,
           matchmaking_server: matchmaking_server,
           room: room
         })
@@ -478,6 +520,14 @@ defmodule DjRumble.Room.RoomServerTest do
       Enum.reduce(users_scores, {[], state}, fn {user, score}, {users, acc_state} ->
         {users ++ [user], handle_score(acc_state, {user, score})}
       end)
+    end
+
+    defp handle_new_message(state, {user, message}) do
+      response = RoomServer.handle_cast({:new_message, user, message}, state)
+
+      {:noreply, ^state} = response
+
+      state
     end
 
     defp do_players_exit(refs, state) do
@@ -776,6 +826,15 @@ defmodule DjRumble.Room.RoomServerTest do
 
       # Exercise
       _state = handle_scores(state, users_scores)
+    end
+
+    test "handle_cast/2 :: {:new_message, %User{}, message} is called once and returns an unmodified state",
+         %{state: state} do
+      user = user_fixture()
+      message = "Hello!"
+
+      # Exercise & Verify
+      ^state = handle_new_message(state, {user, message})
     end
 
     test "handle_info/2 :: {:DOWN, ref, :process, pid, reason} is called one time and returns a state without players",
