@@ -6,6 +6,8 @@ defmodule DjRumbleWeb.MountHelpers do
 
   alias DjRumble.Accounts
   alias DjRumble.Accounts.User
+  alias DjRumble.Chats.ChatSupervisor
+  alias DjRumbleWeb.Channels
 
   @default_locale "en"
   @default_timezone "UTC"
@@ -32,16 +34,20 @@ defmodule DjRumbleWeb.MountHelpers do
   @doc """
   Assigns a reference to a `chat_server` pid and it's `state` to the `socket`
   """
-  def assign_chat(socket, chat_server_pid, state, create_message) do
+  def assign_chat(socket, chat_topic, create_message) do
+    :ok = Channels.subscribe(chat_topic)
+
+    {chat_service, chat_service_state} = ChatSupervisor.get_server(ChatSupervisor, chat_topic)
+
     chat_messages =
-      for message <- state.messages do
+      for message <- chat_service_state.messages do
         create_message.(message)
       end
 
     socket
     |> assign(:chat_messages, chat_messages)
-    |> assign(:chat_service, chat_server_pid)
-    |> assign(:chat_service_state, state)
+    |> assign(:chat_service, chat_service)
+    |> assign(:chat_service_state, chat_service_state)
   end
 
   defp assign_user(socket, session) do
