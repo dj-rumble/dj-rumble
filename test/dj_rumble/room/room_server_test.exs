@@ -14,6 +14,8 @@ defmodule DjRumble.Room.RoomServerTest do
   alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor, RoomServer, Video}
   alias DjRumble.Rounds.Round
 
+  alias DjRumbleWeb.Channels
+
   defp generate_score(:mixed, users) do
     types = [:positive, :negative]
 
@@ -62,7 +64,8 @@ defmodule DjRumble.Room.RoomServerTest do
 
       %{slug: slug} = room
 
-      chat_server_pid = start_supervised!({ChatServer, {slug}})
+      chat_topic = Channels.get_topic(:room_chat, slug)
+      chat_server_pid = start_supervised!({ChatServer, {chat_topic}})
 
       room_genserver_pid = start_supervised!({RoomServer, {room, chat_server_pid}})
 

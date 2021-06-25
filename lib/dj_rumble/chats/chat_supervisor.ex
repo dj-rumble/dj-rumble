@@ -10,8 +10,8 @@ defmodule DjRumble.Chats.ChatSupervisor do
     DynamicSupervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
-  def start_server(supervisor, {room_slug}) do
-    DynamicSupervisor.start_child(supervisor, {ChatServer, {room_slug}})
+  def start_server(supervisor, {chat_topic}) do
+    DynamicSupervisor.start_child(supervisor, {ChatServer, {chat_topic}})
   end
 
   def list_servers(supervisor \\ __MODULE__) do
@@ -23,10 +23,10 @@ defmodule DjRumble.Chats.ChatSupervisor do
     |> Enum.map(fn {_, pid, :worker, _} -> pid end)
   end
 
-  def get_server(supervisor, slug) do
+  def get_server(supervisor, chat_topic) do
     list_servers(supervisor)
     |> Enum.map(&{&1, ChatServer.get_state(&1)})
-    |> Enum.find(fn {_, state} -> state.room_slug == slug end)
+    |> Enum.find(fn {_, state} -> state.chat_topic == chat_topic end)
   end
 
   def terminate_server(supervisor, pid) do

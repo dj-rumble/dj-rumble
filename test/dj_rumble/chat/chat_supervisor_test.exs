@@ -11,17 +11,19 @@ defmodule DjRumble.Chat.ChatSupervisorTest do
   # of the djrumble main application process.
   describe "chat_supervisor" do
     alias DjRumble.Chats.ChatSupervisor
+    alias DjRumbleWeb.Channels
 
     setup do
-      %{slug: slug} = room = room_fixture()
+      %{slug: slug} = _room = room_fixture()
 
-      {:ok, pid} = ChatSupervisor.start_server(ChatSupervisor, {slug})
+      chat_topic = Channels.get_topic(:room_chat, slug)
+      {:ok, pid} = ChatSupervisor.start_server(ChatSupervisor, {chat_topic})
 
       on_exit(fn -> ChatSupervisor.terminate_server(ChatSupervisor, pid) end)
 
-      {^pid, state} = ChatSupervisor.get_server(ChatSupervisor, slug)
+      {^pid, state} = ChatSupervisor.get_server(ChatSupervisor, chat_topic)
 
-      %{pid: pid, room: room, state: state}
+      %{pid: pid, chat_topic: chat_topic, state: state}
     end
 
     test "start_room_server/2 starts a chat server", %{pid: pid} do
@@ -34,11 +36,11 @@ defmodule DjRumble.Chat.ChatSupervisorTest do
     end
 
     test "get_server/2 returns a chat server pid and state", %{
+      chat_topic: chat_topic,
       pid: pid,
-      room: room,
       state: state
     } do
-      {^pid, ^state} = ChatSupervisor.get_server(ChatSupervisor, room.slug)
+      {^pid, ^state} = ChatSupervisor.get_server(ChatSupervisor, chat_topic)
       assert Process.alive?(pid)
     end
 

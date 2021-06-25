@@ -9,6 +9,7 @@ defmodule DjRumble.Rooms.RoomSupervisor do
   alias DjRumble.Chats.ChatSupervisor
   alias DjRumble.Rooms
   alias DjRumble.Rooms.RoomServer
+  alias DjRumbleWeb.Channels
 
   def start_link(init_arg) do
     {:ok, pid} = DynamicSupervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
@@ -27,7 +28,8 @@ defmodule DjRumble.Rooms.RoomSupervisor do
   def start_room_server(supervisor, room) do
     room = Rooms.preload_room(room, users_rooms_videos: [:video, :user])
 
-    {:ok, chat_server} = ChatSupervisor.start_server(ChatSupervisor, {room.slug})
+    chat_topic = Channels.get_topic(:room_chat, room.slug)
+    {:ok, chat_server} = ChatSupervisor.start_server(ChatSupervisor, {chat_topic})
 
     DynamicSupervisor.start_child(supervisor, {RoomServer, {room, chat_server}})
   end

@@ -6,8 +6,10 @@ defmodule DjRumble.Chats.ChatServer do
 
   require Logger
 
-  def start_link({room_slug}) do
-    GenServer.start_link(__MODULE__, {room_slug})
+  alias DjRumbleWeb.Channels
+
+  def start_link({chat_topic}) do
+    GenServer.start_link(__MODULE__, {chat_topic})
   end
 
   def get_state(pid) do
@@ -21,13 +23,13 @@ defmodule DjRumble.Chats.ChatServer do
   def initial_state(args) do
     %{
       messages: [],
-      room_slug: args.room_slug
+      chat_topic: args.chat_topic
     }
   end
 
   @impl GenServer
-  def init({room_slug}) do
-    {:ok, initial_state(%{room_slug: room_slug})}
+  def init({chat_topic}) do
+    {:ok, initial_state(%{chat_topic: chat_topic})}
   end
 
   @impl GenServer
@@ -37,7 +39,10 @@ defmodule DjRumble.Chats.ChatServer do
 
   @impl GenServer
   def handle_cast({:new_message, user, message}, state) do
-    state = %{state | messages: [state.messages ++ %{user: user, message: message}]}
+    user_message = %{user: user, message: message}
+    state = %{state | messages: state.messages ++ [user_message]}
+
+    :ok = Channels.broadcast(state.chat_topic, {:receive_chat_message, user_message})
 
     {:noreply, state}
   end

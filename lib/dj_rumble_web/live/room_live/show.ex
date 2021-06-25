@@ -100,6 +100,9 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
         :ok = RoomServer.join(socket.assigns.room_server)
 
+        chat_topic = Channels.get_topic(:room_chat, room.slug)
+        :ok = Channels.subscribe(chat_topic)
+
         {:noreply,
          socket
          |> assign(:joined, true)}
