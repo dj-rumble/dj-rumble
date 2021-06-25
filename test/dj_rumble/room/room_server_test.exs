@@ -1,17 +1,21 @@
 defmodule DjRumble.Room.RoomServerTest do
   @moduledoc """
-  Rooms context tests
+  Room Server tests
   """
   use DjRumble.DataCase
+  use DjRumble.TestCase
   use ExUnit.Case
 
   import DjRumble.AccountsFixtures
   import DjRumble.CollectionsFixtures
   import DjRumble.RoomsFixtures
 
+  alias DjRumble.Chats.{ChatServer, ChatSupervisor}
   alias DjRumble.Rooms
   alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor, RoomServer, Video}
   alias DjRumble.Rounds.Round
+
+  alias DjRumbleWeb.Channels
 
   defp generate_score(:mixed, users) do
     types = [:positive, :negative]
@@ -23,6 +27,14 @@ defmodule DjRumble.Room.RoomServerTest do
 
   defp generate_score(type, users) do
     Enum.map(users, fn user -> {user, type} end)
+  end
+
+  defp generate_message(user, message) do
+    {user, message}
+  end
+
+  defp generate_messages(user, message, n) do
+    for _n <- 1..n, do: generate_message(user, message)
   end
 
   defp prepare_next_round(matchmaking_server) do
@@ -53,13 +65,16 @@ defmodule DjRumble.Room.RoomServerTest do
 
       %{slug: slug} = room
 
-      room_genserver_pid = start_supervised!({RoomServer, {room}})
+      chat_topic = Channels.get_topic(:room_chat, slug)
+      chat_server_pid = start_supervised!({ChatServer, {chat_topic}})
 
-      {matchmaking_server_pid, state} =
+      room_genserver_pid = start_supervised!({RoomServer, {room, chat_server_pid}})
+
+      {matchmaking_server_pid, matchmaking_state} =
         MatchmakingSupervisor.get_matchmaking_server(MatchmakingSupervisor, slug)
 
       :ok =
-        Enum.map(state.next_rounds, &get_video(&1))
+        Enum.map(matchmaking_state.next_rounds, &get_video(&1))
         |> Enum.each(&Enum.member?(videos, &1))
 
       on_exit(fn ->
@@ -73,10 +88,12 @@ defmodule DjRumble.Room.RoomServerTest do
       initial_state =
         RoomServer.initial_state(%{
           matchmaking_server: matchmaking_server_pid,
+          chat_server: chat_server_pid,
           room: room
         })
 
       %{
+        chat_server: chat_server_pid,
         matchmaking_server: matchmaking_server_pid,
         pid: room_genserver_pid,
         room: room,
@@ -91,10 +108,6 @@ defmodule DjRumble.Room.RoomServerTest do
 
     defp get_video(round) do
       elem(elem(round, 1), 1)
-    end
-
-    defp is_pid_alive(pid) do
-      is_pid(pid) and Process.alive?(pid)
     end
 
     def get_videos_users(room) do
@@ -128,6 +141,16 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok = start_next_round(matchmaking_server)
     end
 
+    defp do_new_message(pid, user, message) do
+      :ok = RoomServer.new_message(pid, user, message)
+    end
+
+    defp do_new_messages(pid, users_messages) do
+      for {user, message} <- users_messages do
+        :ok = do_new_message(pid, user, message)
+      end
+    end
+
     test "start_link/1 starts a room server", %{pid: pid} do
       assert is_pid_alive(pid)
     end
@@ -136,6 +159,12 @@ defmodule DjRumble.Room.RoomServerTest do
       matchmaking_server: matchmaking_server
     } do
       assert is_pid_alive(matchmaking_server)
+    end
+
+    test "start_link/1 starts a dedicated chat server", %{
+      chat_server: chat_server
+    } do
+      assert is_pid_alive(chat_server)
     end
 
     test "get_state/1 returns a state", %{pid: pid, state: state} do
@@ -359,6 +388,27 @@ defmodule DjRumble.Room.RoomServerTest do
       # Exercise
       :ok = do_scores(pid, users_scores)
     end
+
+    test "new_message/2 is called once and returns :ok", %{pid: pid} do
+      # Setup
+      user = user_fixture()
+      message = "Hello!"
+
+      # Exercise & Verify
+      :ok = do_new_message(pid, user, message)
+    end
+
+    test "new_message/2 is called many times and returns :ok", %{pid: pid} do
+      # Setup
+      user = user_fixture()
+      message = "Hello!"
+      messages_amount = 10
+      users_messages = generate_messages(user, message, messages_amount)
+
+      # Exercise & Verify
+      responses = do_new_messages(pid, users_messages)
+      ^messages_amount = length(responses)
+    end
   end
 
   describe "room_server server implementation" do
@@ -371,8 +421,11 @@ defmodule DjRumble.Room.RoomServerTest do
       {:ok, matchmaking_server} =
         MatchmakingSupervisor.start_matchmaking_server(MatchmakingSupervisor, room)
 
+      {:ok, chat_server} = ChatSupervisor.start_server(ChatSupervisor, {room.slug})
+
       initial_state =
         RoomServer.initial_state(%{
+          chat_server: chat_server,
           matchmaking_server: matchmaking_server,
           room: room
         })
@@ -421,27 +474,6 @@ defmodule DjRumble.Room.RoomServerTest do
       state
     end
 
-    defp player_process_mock do
-      receive do
-        _ -> nil
-      after
-        5000 -> :timeout
-      end
-
-      player_process_mock()
-    end
-
-    defp spawn_players(n) do
-      Enum.map(1..n, fn _ ->
-        pid = spawn(fn -> player_process_mock() end)
-        # Enables messages tracing going through pid
-        :erlang.trace(pid, true, [:receive])
-        assert is_pid_alive(pid)
-        user = user_fixture()
-        {pid, user}
-      end)
-    end
-
     defp do_join_players(pids, state) do
       Enum.reduce(pids, {[], state}, fn pid, {pids, state} ->
         {[pid | pids], handle_join(state, pid)}
@@ -467,6 +499,14 @@ defmodule DjRumble.Room.RoomServerTest do
       Enum.reduce(users_scores, {[], state}, fn {user, score}, {users, acc_state} ->
         {users ++ [user], handle_score(acc_state, {user, score})}
       end)
+    end
+
+    defp handle_new_message(state, {user, message}) do
+      response = RoomServer.handle_cast({:new_message, user, message}, state)
+
+      {:noreply, ^state} = response
+
+      state
     end
 
     defp do_players_exit(refs, state) do
@@ -765,6 +805,15 @@ defmodule DjRumble.Room.RoomServerTest do
 
       # Exercise
       _state = handle_scores(state, users_scores)
+    end
+
+    test "handle_cast/2 :: {:new_message, %User{}, message} is called once and returns an unmodified state",
+         %{state: state} do
+      user = user_fixture()
+      message = "Hello!"
+
+      # Exercise & Verify
+      ^state = handle_new_message(state, {user, message})
     end
 
     test "handle_info/2 :: {:DOWN, ref, :process, pid, reason} is called one time and returns a state without players",

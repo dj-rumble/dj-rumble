@@ -10,7 +10,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
   alias DjRumble.Collections
   alias DjRumble.Repo
   alias DjRumble.Rooms
-  alias DjRumble.Rooms.{MatchmakingSupervisor, RoomServer, RoomSupervisor}
+  alias DjRumble.Rooms.{Chat, MatchmakingSupervisor, RoomServer, RoomSupervisor}
   alias DjRumble.Rounds.Round
   alias DjRumbleWeb.Channels
   alias DjRumbleWeb.Presence
@@ -30,7 +30,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> push_redirect(to: Routes.room_index_path(socket, :index))}
 
           room ->
-            %{assigns: %{user: user}} = socket = assign_defaults(socket, params, session)
+            %{assigns: %{user: user, timezone: timezone}} =
+              socket = assign_defaults(socket, params, session)
 
             {room_server, _room} = RoomSupervisor.get_room_server(RoomSupervisor, room.slug)
 
@@ -58,9 +59,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
               %{username: user.username, user_id: user.id}
             )
 
-            :ok = Channels.subscribe(:initial_chat_request, slug)
             :ok = Channels.subscribe(:score, slug)
-            :ok = Channels.broadcast(:room, slug, :request_initial_chat)
 
             {:ok,
              socket
@@ -77,7 +76,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign_scoring(:disable)
              |> assign(:searchbox_state, "CLOSED")
              |> assign(:register_modal_state, "CLOSED")
-             |> assign(:show_search_modal, false)}
+             |> assign(:show_search_modal, false)
+             # TODO: Message type `:chat_message` should be managed by the Chat Server
+             |> assign_chat(
+               Channels.get_topic(:room_chat, room.slug),
+               &Chat.create_message(:chat_message, Map.merge(&1, %{timezone: timezone}))
+             )}
         end
 
       false ->
@@ -169,27 +173,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
   def handle_info({:receive_playback_details, params}, socket),
     do: handle_playback_details(params, socket)
 
-  def handle_info({:receive_initial_chat, %{messages: messages}}, socket) do
-    Channels.unsubscribe(:initial_chat_request, socket.assigns.room.slug)
-
-    {:noreply,
-     socket
-     |> assign(:messages, messages)}
-  end
-
-  def handle_info(:request_initial_chat, socket) do
-    %{messages: messages} = socket.assigns
-
-    :ok =
-      Channels.broadcast_from(
-        self(),
-        :initial_chat_request,
-        socket.assigns.room.slug,
-        {:receive_initial_chat, %{messages: messages}}
-      )
-
-    {:noreply, socket}
-  end
+  def handle_info({:receive_new_message, params}, socket),
+    do: handle_receive_new_message(params, socket)
 
   def handle_info({:request_playback_details, params}, socket),
     do: handle_playback_details_request(params, socket)
@@ -317,6 +302,27 @@ defmodule DjRumbleWeb.RoomLive.Show do
      |> assign(:current_round, params)
      |> assign_live_score(round)
      |> push_event("receive_player_state", video_details)}
+  end
+
+  @doc """
+  Receives a new chat message
+
+  * **From:** `ChatServer`
+  * **Topic:** `"room:<slug>:chat"`
+  * **Params:** `%{user: %User{}, message: String.t()}`
+  """
+  def handle_receive_new_message(params, socket) do
+    %{assigns: %{chat_messages: chat_messages, timezone: timezone}} = socket
+
+    params = Map.merge(params, %{timezone: timezone})
+    chat_message = Chat.create_message(:chat_message, params)
+
+    chat_messages = chat_messages ++ [chat_message]
+
+    {:noreply,
+     socket
+     |> assign(:chat_messages, chat_messages)
+     |> push_event("receive_new_message", %{})}
   end
 
   @doc """

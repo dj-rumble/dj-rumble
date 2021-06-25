@@ -6,10 +6,48 @@ defmodule DjRumbleWeb.MountHelpers do
 
   alias DjRumble.Accounts
   alias DjRumble.Accounts.User
+  alias DjRumble.Chats.ChatSupervisor
+  alias DjRumbleWeb.Channels
 
+  @default_locale "en"
+  @default_timezone "UTC"
+  @default_timezone_offset 0
+
+  @doc """
+  Mount helper to assign defaults values to the socket. Includes: `%User{}` and
+  browser locale, timezone and timezone offset.
+  """
   def assign_defaults(socket, _params, session) do
+    case connected?(socket) do
+      true ->
+        socket
+        |> assign_user(session)
+        |> assign_locale()
+        |> assign_timezone()
+        |> assign_timezone_offset()
+
+      false ->
+        socket
+    end
+  end
+
+  @doc """
+  Assigns a reference to a `chat_server` pid and it's `state` to the `socket`
+  """
+  def assign_chat(socket, chat_topic, create_message) do
+    :ok = Channels.subscribe(chat_topic)
+
+    {chat_service, chat_service_state} = ChatSupervisor.get_server(ChatSupervisor, chat_topic)
+
+    chat_messages =
+      for message <- chat_service_state.messages do
+        create_message.(message)
+      end
+
     socket
-    |> assign_user(session)
+    |> assign(:chat_messages, chat_messages)
+    |> assign(:chat_service, chat_service)
+    |> assign(:chat_service_state, chat_service_state)
   end
 
   defp assign_user(socket, session) do
@@ -27,5 +65,20 @@ defmodule DjRumbleWeb.MountHelpers do
     socket
     |> assign_new(:user, fn -> user end)
     |> assign_new(:visitor, fn -> visitor end)
+  end
+
+  defp assign_locale(socket) do
+    locale = get_connect_params(socket)["locale"] || @default_locale
+    assign(socket, locale: locale)
+  end
+
+  defp assign_timezone(socket) do
+    timezone = get_connect_params(socket)["timezone"] || @default_timezone
+    assign(socket, timezone: timezone)
+  end
+
+  defp assign_timezone_offset(socket) do
+    timezone_offset = get_connect_params(socket)["timezone_offset"] || @default_timezone_offset
+    assign(socket, timezone_offset: timezone_offset)
   end
 end

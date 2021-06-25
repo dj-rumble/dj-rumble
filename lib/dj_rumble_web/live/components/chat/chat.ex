@@ -5,7 +5,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
   use DjRumbleWeb, :live_component
 
-  alias DjRumble.Rooms.Chat
+  alias DjRumble.Chats.ChatServer
 
   @impl true
   def update(assigns, socket) do
@@ -29,31 +29,21 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
       _ ->
         %{assigns: assigns} = socket
-        %{messages: _messages, room: room, username: username} = assigns
-        new_message = %{message: message, username: username}
-        message = Chat.create_message(:chat_message, new_message)
+        %{chat_service: chat_service, user: user} = assigns
 
-        Phoenix.PubSub.broadcast(
-          DjRumble.PubSub,
-          "room:" <> room.slug,
-          {:receive_message, message}
-        )
+        :ok = ChatServer.new_message(chat_service, user, message)
 
         {:noreply, socket}
     end
   end
 
   @impl true
-  def handle_event("typing", _value, %{assigns: assigns} = socket) do
-    %{room: _room} = assigns
-    # Chat.start_typing(slug, uuid)
+  def handle_event("typing", _value, %{assigns: _assigns} = socket) do
     {:noreply, socket}
   end
 
-  def handle_event("stop_typing", %{"value" => message}, socket) do
-    %{assigns: %{room: _room}} = socket
-    # Chat.stop_typing(slug, uuid)
-    {:noreply, assign(socket, new_message: message)}
+  def handle_event("stop_typing", %{"value" => _message}, socket) do
+    {:noreply, socket}
   end
 
   defp render_prompt(message) do

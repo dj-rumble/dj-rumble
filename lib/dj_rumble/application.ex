@@ -17,6 +17,8 @@ defmodule DjRumble.Application do
       DjRumbleWeb.Endpoint,
       # Starts the Presence service
       DjRumbleWeb.Presence,
+      # Starts the Chat services
+      DjRumble.Chats,
       # Starts the Rounds services
       DjRumble.Rounds,
       # Starts the Rooms services

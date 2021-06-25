@@ -6,11 +6,12 @@ defmodule DjRumble.Rooms.RoomServer do
 
   require Logger
 
+  alias DjRumble.Chats.ChatServer
   alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor}
 
   alias DjRumbleWeb.Channels
 
-  def start_link({_room} = init_arg) do
+  def start_link({_room, _chat_server} = init_arg) do
     GenServer.start_link(__MODULE__, init_arg)
   end
 
@@ -38,16 +39,21 @@ defmodule DjRumble.Rooms.RoomServer do
     GenServer.call(pid, {:score, user, type})
   end
 
+  def new_message(pid, user, message) do
+    GenServer.cast(pid, {:new_message, user, message})
+  end
+
   def initial_state(args) do
     %{
       matchmaking_server: args.matchmaking_server,
+      chat_server: args.chat_server,
       players: %{},
       room: args.room
     }
   end
 
   @impl GenServer
-  def init({room} = _init_arg) do
+  def init({room, chat_server} = _init_arg) do
     # coveralls-ignore-start
     Logger.info(fn ->
       "RoomServer started with pid: #{inspect(self())} for room: #{room.slug}"
@@ -64,7 +70,12 @@ defmodule DjRumble.Rooms.RoomServer do
         :ok = Matchmaking.create_round(matchmaking_server, video, user)
       end)
 
-    state = initial_state(%{matchmaking_server: matchmaking_server, room: room})
+    state =
+      initial_state(%{
+        chat_server: chat_server,
+        matchmaking_server: matchmaking_server,
+        room: room
+      })
 
     {:ok, state}
   end
@@ -108,6 +119,13 @@ defmodule DjRumble.Rooms.RoomServer do
 
         {:reply, :ok, state}
     end
+  end
+
+  @impl GenServer
+  def handle_cast({:new_message, user, message}, state) do
+    :ok = ChatServer.new_message(state.chat_server, user, message)
+
+    {:noreply, state}
   end
 
   @impl GenServer

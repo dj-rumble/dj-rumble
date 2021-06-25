@@ -8,6 +8,8 @@ defmodule DjRumbleWeb.Channels do
   @matchmaking_details_request_topic "matchmaking:<slug>:waiting_for_details"
   @initial_chat_request_topic "room:<slug>:request_initial_chat"
   @score_topic "room:<slug>:score"
+  @room_chat_topic "room:<slug>:chat"
+  @global_chat_topic "global:chat"
 
   def get_topic(:room), do: @room_topic
 
@@ -19,7 +21,15 @@ defmodule DjRumbleWeb.Channels do
 
   def get_topic(:score), do: @score_topic
 
+  def get_topic(:room_chat), do: @room_chat_topic
+
+  def get_topic(:global_chat), do: @global_chat_topic
+
   def get_topic(type, slug), do: String.replace(get_topic(type), "<slug>", slug)
+
+  def subscribe(topic) do
+    Phoenix.PubSub.subscribe(DjRumble.PubSub, topic)
+  end
 
   def subscribe(type, slug) do
     Phoenix.PubSub.subscribe(DjRumble.PubSub, get_topic(type, slug))
@@ -27,6 +37,10 @@ defmodule DjRumbleWeb.Channels do
 
   def unsubscribe(type, slug) do
     Phoenix.PubSub.unsubscribe(DjRumble.PubSub, get_topic(type, slug))
+  end
+
+  def broadcast(topic, message) do
+    Phoenix.PubSub.broadcast(DjRumble.PubSub, topic, message)
   end
 
   def broadcast(type, slug, message) do

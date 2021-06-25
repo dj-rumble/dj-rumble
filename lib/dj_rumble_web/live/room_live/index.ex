@@ -12,18 +12,15 @@ defmodule DjRumbleWeb.RoomLive.Index do
   def mount(params, session, socket) do
     socket = assign_defaults(socket, params, session)
     rooms = list_rooms() |> Enum.map(fn room -> Repo.preload(room, [:videos]) end)
-    {:ok, assign(socket, :rooms, rooms)}
+
+    {:ok,
+     socket
+     |> assign(:rooms, rooms)}
   end
 
   @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}) do
-    socket
-    |> assign(:page_title, "Edit Room")
-    |> assign(:room, Rooms.get_room!(id))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -39,13 +36,6 @@ defmodule DjRumbleWeb.RoomLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    room = Rooms.get_room!(id)
-    {:ok, _} = Rooms.delete_room(room)
-
-    {:noreply, assign(socket, :rooms, list_rooms())}
-  end
-
   def handle_event("redirect_room", %{"slug" => slug}, socket) do
     {:noreply,
      socket
