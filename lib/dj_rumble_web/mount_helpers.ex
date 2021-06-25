@@ -29,6 +29,21 @@ defmodule DjRumbleWeb.MountHelpers do
     end
   end
 
+  @doc """
+  Assigns a reference to a `chat_server` pid and it's `state` to the `socket`
+  """
+  def assign_chat(socket, chat_server_pid, state, create_message) do
+    chat_messages =
+      for message <- state.messages do
+        create_message.(message)
+      end
+
+    socket
+    |> assign(:chat_messages, chat_messages)
+    |> assign(:chat_service, chat_server_pid)
+    |> assign(:chat_service_state, state)
+  end
+
   defp assign_user(socket, session) do
     user = Accounts.get_user_by_session_token(session["user_token"])
 
