@@ -48,9 +48,11 @@
             <div class="row-span-4 mb-3">
               <%= live_component DjRumbleWeb.Live.Components.Chat,
                 id: "djrumble-chat",
+                chat_messages: @chat_messages,
+                chat_service: @chat_service,
+                chat_service_state: @chat_service_state,
                 visitor: @visitor,
-                username: @user.username,
-                messages: @messages,
+                user: @user,
                 room: @room
               %>
             </div>

@@ -12,7 +12,7 @@
     >
 
       <div id="chat" class="rounded-md h-full overflow-y-scroll">
-        <%= if @messages == [] do %>
+        <%= if @chat_messages == [] do %>
           <div class="flex items-center justify-center flex-grow">
             <p class="px-2 mb-0.5">
               <span class="italic text-gray-300">This is quiet... type something and break the ice.</span>
@@ -25,10 +25,10 @@
               <span class="text-center font-normal text-blue-500">Welcome to <%= @room.name %></span>
             </span>
           </p>
-          <%= for message <- @messages do %>
+          <%= for chat_message <- @chat_messages do %>
 
             <p class="mb-0.5 text-lg text-left">
-              <%= render_message(message) %>
+              <%= render_message(chat_message) %>
             </p>
 
         <% end %>
