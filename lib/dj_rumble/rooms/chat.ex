@@ -4,18 +4,23 @@ defmodule DjRumble.Rooms.Chat do
   """
   use Phoenix.HTML
 
+  alias DjRumble.Accounts.User
   alias DjRumbleWeb.Presence
 
-  def create_message(:chat_message, %{message: message, username: username}) do
+  def create_message(:chat_message, %{
+        message: message,
+        user: %User{username: username},
+        timezone: timezone
+      }) do
     {:chat_message,
      %{
        text: message,
-       timestamp: create_timestamp(),
+       timestamp: create_timestamp(timezone),
        username: username
      }}
   end
 
-  def create_message(:track_notification, %{video: video}) do
+  def create_message(:track_notification, %{video: video, timezone: timezone}) do
     %{title: title, added_by: %{user_id: _user_id}} = video
 
     username = "Juancito"
@@ -28,7 +33,7 @@ defmodule DjRumble.Rooms.Chat do
      %{
        added_by: username,
        video_title: title,
-       timestamp: create_timestamp(),
+       timestamp: create_timestamp(timezone),
        username: "info"
      }}
   end
@@ -56,9 +61,9 @@ defmodule DjRumble.Rooms.Chat do
     Presence.update(self(), topic, key, metas)
   end
 
-  defp create_timestamp do
+  defp create_timestamp(timezone) do
     timestamp =
-      DateTime.now(System.get_env("TZ"), Tzdata.TimeZoneDatabase)
+      DateTime.now(timezone, Tzdata.TimeZoneDatabase)
       |> elem(1)
       |> Time.to_string()
       |> String.split(".")
