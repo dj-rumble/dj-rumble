@@ -3,6 +3,7 @@ defmodule DjRumble.Room.MatchmakingTest do
   Matchmaking tests
   """
   use DjRumble.DataCase
+  use DjRumble.TestCase
   use ExUnit.Case
 
   import DjRumble.AccountsFixtures
@@ -491,10 +492,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       Enum.map(room.users_rooms_videos, fn user_room_video ->
         {user_room_video.video, user_room_video.user}
       end)
-    end
-
-    defp is_pid_alive(pid) do
-      is_pid(pid) and Process.alive?(pid)
     end
 
     defp get_ref(round) do

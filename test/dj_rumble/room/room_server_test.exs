@@ -3,6 +3,7 @@ defmodule DjRumble.Room.RoomServerTest do
   Room Server tests
   """
   use DjRumble.DataCase
+  use DjRumble.TestCase
   use ExUnit.Case
 
   import DjRumble.AccountsFixtures
@@ -107,10 +108,6 @@ defmodule DjRumble.Room.RoomServerTest do
 
     defp get_video(round) do
       elem(elem(round, 1), 1)
-    end
-
-    defp is_pid_alive(pid) do
-      is_pid(pid) and Process.alive?(pid)
     end
 
     def get_videos_users(room) do
@@ -475,27 +472,6 @@ defmodule DjRumble.Room.RoomServerTest do
       {:noreply, state} = response
 
       state
-    end
-
-    defp player_process_mock do
-      receive do
-        _ -> nil
-      after
-        5000 -> :timeout
-      end
-
-      player_process_mock()
-    end
-
-    defp spawn_players(n) do
-      Enum.map(1..n, fn _ ->
-        pid = spawn(fn -> player_process_mock() end)
-        # Enables messages tracing going through pid
-        :erlang.trace(pid, true, [:receive])
-        assert is_pid_alive(pid)
-        user = user_fixture()
-        {pid, user}
-      end)
     end
 
     defp do_join_players(pids, state) do
