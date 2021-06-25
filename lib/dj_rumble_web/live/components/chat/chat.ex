@@ -21,7 +21,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
         %{"submit" => %{"message" => message}},
         socket
       ) do
-    socket = socket |> assign(:new_message, "")
+    socket = socket |> assign(:new_message, nil)
 
     case String.trim(message) do
       "" ->
