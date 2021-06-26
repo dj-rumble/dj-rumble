@@ -7,6 +7,9 @@ APP_NAME ?= `grep 'app:' mix.exs | sed -e 's/\[//g' -e 's/ //g' -e 's/app://' -e
 
 default: help
 
+#check: @ 🔍 Runs all the main CI targets
+check: security.check lint.ci test.cover dialyzer
+
 #clean: @ 🧹 Cleans all dependencies
 clean: clean.npm clean.deps
 
