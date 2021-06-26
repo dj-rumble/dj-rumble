@@ -412,6 +412,7 @@ defmodule DjRumble.Room.RoomServerTest do
   end
 
   describe "room_server server implementation" do
+    alias DjRumble.Chats.ChatSupervisor
     alias DjRumble.Rooms.Matchmaking
     alias DjRumbleWeb.Channels
 
@@ -420,10 +421,10 @@ defmodule DjRumble.Room.RoomServerTest do
     setup do
       room = room_fixture(%{}, %{preload: true})
 
-      {:ok, matchmaking_server} =
-        MatchmakingSupervisor.start_matchmaking_server(MatchmakingSupervisor, room)
-
       {:ok, chat_server} = ChatSupervisor.start_server(ChatSupervisor, {room.slug})
+
+      {:ok, matchmaking_server} =
+        MatchmakingSupervisor.start_matchmaking_server(MatchmakingSupervisor, {room, chat_server})
 
       initial_state =
         RoomServer.initial_state(%{

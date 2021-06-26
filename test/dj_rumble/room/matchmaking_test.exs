@@ -45,6 +45,7 @@ defmodule DjRumble.Room.MatchmakingTest do
   end
 
   describe "matchmaking client interface" do
+    alias DjRumble.Chats.ChatServer
     alias DjRumble.Rooms.Matchmaking
 
     setup do
@@ -56,9 +57,12 @@ defmodule DjRumble.Room.MatchmakingTest do
 
       user = user_fixture()
 
-      matchmaking_genserver_pid = start_supervised!({Matchmaking, {room}})
+      chat_topic = DjRumbleWeb.Channels.get_topic(:room_chat, room.slug)
+      chat_server = start_supervised!({ChatServer, {chat_topic}})
 
-      initial_state = Matchmaking.initial_state(%{room: room})
+      matchmaking_genserver_pid = start_supervised!({Matchmaking, {room, chat_server}})
+
+      initial_state = Matchmaking.initial_state(%{room: room, chat_server: chat_server})
 
       %{pid: matchmaking_genserver_pid, room: room, state: initial_state, user: user}
     end
@@ -353,6 +357,7 @@ defmodule DjRumble.Room.MatchmakingTest do
   end
 
   describe "matchmaking server implementation" do
+    alias DjRumble.Chats.ChatServer
     alias DjRumble.Rooms
     alias DjRumble.Rooms.Matchmaking
     alias DjRumble.Rounds.Round
@@ -373,7 +378,10 @@ defmodule DjRumble.Room.MatchmakingTest do
 
       room = Rooms.preload_room(room, users_rooms_videos: [:video, :user])
 
-      state = Matchmaking.initial_state(%{room: room})
+      chat_topic = Channels.get_topic(:room_chat, room.slug)
+      chat_server = start_supervised!({ChatServer, {chat_topic}})
+
+      state = Matchmaking.initial_state(%{room: room, chat_server: chat_server})
 
       %{room: room, state: state, user: user}
     end
@@ -987,7 +995,8 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert_receive({:round_finished, %{round: ^round, user: ^user}})
     end
 
-    test "handle_info/2 :: {:DOWN, ref, :process, pid, {:shutdown, %Round.Finished{}} is called with a :continue outcome and the next rounds that change belong to the winner user" do
+    test "handle_info/2 :: {:DOWN, ref, :process, pid, {:shutdown, %Round.Finished{}} is called with a :continue outcome and the next rounds that change belong to the winner user",
+         %{state: %{chat_server: chat_server}} do
       # Setup
       room = room_fixture()
       videos = videos_fixture(6)
@@ -1010,7 +1019,7 @@ defmodule DjRumble.Room.MatchmakingTest do
 
       room = Rooms.preload_room(room, users_rooms_videos: [:video, :user])
 
-      state = Matchmaking.initial_state(%{room: room})
+      state = Matchmaking.initial_state(%{room: room, chat_server: chat_server})
 
       :ok = Channels.subscribe(:room, state.room.slug)
       [{video, _user} | _videos_users_tail] = videos_users = get_videos_users(state.room)
@@ -1056,7 +1065,8 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert_receive({:round_finished, %{round: ^round, user: ^winner_user}})
     end
 
-    test "handle_info/2 :: {:DOWN, ref, :process, pid, {:shutdown, %Round.Finished{}} is called with a :thrown outcome and the next rounds that change belong to the user that was waiting" do
+    test "handle_info/2 :: {:DOWN, ref, :process, pid, {:shutdown, %Round.Finished{}} is called with a :thrown outcome and the next rounds that change belong to the user that was waiting",
+         %{state: %{chat_server: chat_server}} do
       # Setup
       room = room_fixture()
       videos = videos_fixture(6)
@@ -1079,7 +1089,7 @@ defmodule DjRumble.Room.MatchmakingTest do
 
       room = Rooms.preload_room(room, users_rooms_videos: [:video, :user])
 
-      state = Matchmaking.initial_state(%{room: room})
+      state = Matchmaking.initial_state(%{room: room, chat_server: chat_server})
 
       :ok = Channels.subscribe(:room, state.room.slug)
       [{video, user} | _videos_users_tail] = videos_users = get_videos_users(state.room)

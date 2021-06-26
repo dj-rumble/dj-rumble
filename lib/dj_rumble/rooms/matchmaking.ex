@@ -54,13 +54,14 @@ defmodule DjRumble.Rooms.Matchmaking do
       finished_rounds: [],
       next_rounds: [],
       crashed_rounds: [],
-      status: :idle
+      status: :idle,
+      chat_server: args.chat_server
     }
   end
 
   @impl GenServer
-  def init({room} = _init_arg) do
-    state = initial_state(%{room: room})
+  def init({room, chat_server} = _init_arg) do
+    state = initial_state(%{room: room, chat_server: chat_server})
 
     {:ok, state, :hibernate}
   end
@@ -397,6 +398,8 @@ defmodule DjRumble.Rooms.Matchmaking do
     # RoundSupervisor.terminate_round_server(RoundSupervisor, pid)
 
     :ok = RoundServer.start_round(pid)
+
+    # :ok = DjRumble.Chats.ChatServer.new_message()
 
     :ok =
       Channels.broadcast(

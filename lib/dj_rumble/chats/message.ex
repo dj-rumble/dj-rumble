@@ -1,6 +1,7 @@
 defmodule DjRumble.Chats.Message do
   @moduledoc """
-  Responsible for defining a Message model
+  Defines a Message model that can be used by a chat to create messages. Views
+  may check data structures using this model.
   """
   import Algae
 
@@ -48,7 +49,7 @@ defmodule DjRumble.Chats.Message do
       "13:18:46"
 
   """
-  def timestamp(timezone) do
+  defp timestamp(timezone) do
     DateTime.now(timezone, Tzdata.TimeZoneDatabase)
     |> elem(1)
     |> Time.to_string()

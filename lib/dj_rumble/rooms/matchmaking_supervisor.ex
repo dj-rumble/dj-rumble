@@ -10,8 +10,8 @@ defmodule DjRumble.Rooms.MatchmakingSupervisor do
     DynamicSupervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
-  def start_matchmaking_server(supervisor, room) do
-    DynamicSupervisor.start_child(supervisor, {Matchmaking, {room}})
+  def start_matchmaking_server(supervisor, {room, chat_server}) do
+    DynamicSupervisor.start_child(supervisor, {Matchmaking, {room, chat_server}})
   end
 
   def list_matchmaking_servers(supervisor \\ __MODULE__) do

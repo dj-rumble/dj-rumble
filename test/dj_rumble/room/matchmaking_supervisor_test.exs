@@ -13,14 +13,19 @@ defmodule DjRumble.Room.MatchmakingSupervisorTest do
     alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor}
 
     setup do
-      room = room_fixture()
-      {:ok, pid} = MatchmakingSupervisor.start_matchmaking_server(MatchmakingSupervisor, room)
+      %{slug: slug} = room = room_fixture()
+
+      chat_topic = DjRumbleWeb.Channels.get_topic(:room_chat, slug)
+      chat_server = start_supervised!({DjRumble.Chats.ChatServer, {chat_topic}})
+
+      {:ok, pid} =
+        MatchmakingSupervisor.start_matchmaking_server(MatchmakingSupervisor, {room, chat_server})
 
       on_exit(fn ->
         MatchmakingSupervisor.terminate_matchmaking_server(MatchmakingSupervisor, pid)
       end)
 
-      initial_state = Matchmaking.initial_state(%{room: room})
+      initial_state = Matchmaking.initial_state(%{room: room, chat_server: chat_server})
 
       %{pid: pid, room: room, state: initial_state}
     end

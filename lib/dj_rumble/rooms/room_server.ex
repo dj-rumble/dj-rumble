@@ -62,7 +62,7 @@ defmodule DjRumble.Rooms.RoomServer do
     # coveralls-ignore-stop
 
     {:ok, matchmaking_server} =
-      MatchmakingSupervisor.start_matchmaking_server(MatchmakingSupervisor, room)
+      MatchmakingSupervisor.start_matchmaking_server(MatchmakingSupervisor, {room, chat_server})
 
     :ok =
       Enum.map(room.users_rooms_videos, &{&1.video, &1.user})
