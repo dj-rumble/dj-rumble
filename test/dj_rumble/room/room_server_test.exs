@@ -141,13 +141,13 @@ defmodule DjRumble.Room.RoomServerTest do
       :ok = start_next_round(matchmaking_server)
     end
 
-    defp do_new_message(pid, user, message) do
-      :ok = RoomServer.new_message(pid, user, message)
+    defp do_new_user_message(pid, user, message) do
+      :ok = RoomServer.new_message(pid, :user_message, user, message)
     end
 
-    defp do_new_messages(pid, users_messages) do
+    defp do_new_user_messages(pid, users_messages) do
       for {user, message} <- users_messages do
-        :ok = do_new_message(pid, user, message)
+        :ok = do_new_user_message(pid, user, message)
       end
     end
 
@@ -395,7 +395,7 @@ defmodule DjRumble.Room.RoomServerTest do
       message = "Hello!"
 
       # Exercise & Verify
-      :ok = do_new_message(pid, user, message)
+      :ok = do_new_user_message(pid, user, message)
     end
 
     test "new_message/2 is called many times and returns :ok", %{pid: pid} do
@@ -406,7 +406,7 @@ defmodule DjRumble.Room.RoomServerTest do
       users_messages = generate_messages(user, message, messages_amount)
 
       # Exercise & Verify
-      responses = do_new_messages(pid, users_messages)
+      responses = do_new_user_messages(pid, users_messages)
       ^messages_amount = length(responses)
     end
   end

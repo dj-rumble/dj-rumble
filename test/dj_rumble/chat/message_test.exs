@@ -13,12 +13,12 @@ defmodule DjRumble.Chats.MessageTest do
 
     @default_timezone "America/Buenos_Aires"
 
-    test "create_message/2 returns a %Message{}" do
+    test "create_message/2 returns a %Message.User{}" do
       message = "Hello!"
       user = user_fixture()
 
-      %Message{user: ^user, message: ^message} =
-        create_message([message, user, @default_timezone])
+      %Message.User{from: ^user, message: ^message} =
+        create_message([:user_message, message, user, @default_timezone])
     end
   end
 end

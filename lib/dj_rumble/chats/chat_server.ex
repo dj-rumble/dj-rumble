@@ -21,8 +21,8 @@ defmodule DjRumble.Chats.ChatServer do
     GenServer.cast(pid, {:get_messages, from})
   end
 
-  def new_message(pid, user, message, timezone) do
-    GenServer.cast(pid, {:new_message, user, message, timezone})
+  def new_message(pid, type, user, message, timezone) do
+    GenServer.cast(pid, {:new_message, type, user, message, timezone})
   end
 
   def initial_state(args) do
@@ -49,8 +49,8 @@ defmodule DjRumble.Chats.ChatServer do
   end
 
   @impl GenServer
-  def handle_cast({:new_message, user, message, timezone}, state) do
-    message = Message.create_message(message, user, timezone)
+  def handle_cast({:new_message, :user_message = type, user, message, timezone}, state) do
+    message = Message.create_message(type, message, user, timezone)
     state = %{state | messages: state.messages ++ [message]}
 
     :ok = Channels.broadcast(state.chat_topic, {:receive_new_message, message})

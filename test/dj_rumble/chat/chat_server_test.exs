@@ -15,46 +15,46 @@ defmodule DjRumble.Chat.ChatServerTest do
 
   @default_timezone "America/Buenos_Aires"
 
-  defp generate_message(user, message) do
+  defp generate_user_message(user, message) do
     {user, message}
   end
 
-  defp generate_messages(_user, _message, 0) do
+  defp generate_user_messages(_user, _message, 0) do
     []
   end
 
-  defp generate_messages(user, message, n) do
-    for _n <- 1..n, do: generate_message(user, message)
+  defp generate_user_messages(user, message, n) do
+    for _n <- 1..n, do: generate_user_message(user, message)
   end
 
-  def assert_receive_new_message(user, message) do
-    %DjRumble.Chats.Message{
-      user: user,
+  def assert_receive_new_user_message(user, message) do
+    %DjRumble.Chats.Message.User{
+      from: user,
       message: message
-    } = create_message([message, user, @default_timezone])
+    } = create_message([:user_message, message, user, @default_timezone])
 
     assert_receive(
       {:receive_new_message,
-       %DjRumble.Chats.Message{
-         user: ^user,
+       %DjRumble.Chats.Message.User{
+         from: ^user,
          message: ^message
        }}
     )
   end
 
-  def assert_receive_new_messages(users_messages) do
+  def assert_receive_new_user_messages(users_messages) do
     for {user, message} <- users_messages do
-      assert_receive_new_message(user, message)
+      assert_receive_new_user_message(user, message)
     end
   end
 
-  def assert_pid_receive_messages(pid, users_messages) do
+  def assert_pid_receive_user_messages(pid, users_messages) do
     assert_receive({:trace, ^pid, :receive, {:receive_messages, received_messages}})
 
     received_messages =
       Enum.map(
         received_messages,
-        fn %DjRumble.Chats.Message{user: user, message: message} ->
+        fn %DjRumble.Chats.Message.User{from: user, message: message} ->
           {user, message}
         end
       )
@@ -62,9 +62,9 @@ defmodule DjRumble.Chat.ChatServerTest do
     ^users_messages = received_messages
   end
 
-  def assert_pids_receive_messages(pids, users_messages) do
+  def assert_pids_receive_user_messages(pids, users_messages) do
     for pid <- pids do
-      assert_pid_receive_messages(pid, users_messages)
+      assert_pid_receive_user_messages(pid, users_messages)
     end
   end
 
@@ -84,13 +84,13 @@ defmodule DjRumble.Chat.ChatServerTest do
       ChatServer.get_state(pid)
     end
 
-    defp do_new_message(pid, user, message) do
-      :ok = ChatServer.new_message(pid, user, message, @default_timezone)
+    defp do_new_user_message(pid, user, message) do
+      :ok = ChatServer.new_message(pid, :user_message, user, message, @default_timezone)
     end
 
-    defp do_new_messages(pid, users_messages) do
+    defp do_new_user_messages(pid, users_messages) do
       for {user, message} <- users_messages do
-        :ok = do_new_message(pid, user, message)
+        :ok = do_new_user_message(pid, user, message)
       end
     end
 
@@ -109,14 +109,14 @@ defmodule DjRumble.Chat.ChatServerTest do
       :ok = Channels.subscribe(chat_topic)
       user = user_fixture()
       message = "Hello!"
-      users_messages = generate_messages(user, message, messages_amount)
+      users_messages = generate_user_messages(user, message, messages_amount)
 
       # Exercise
-      responses = do_new_messages(pid, users_messages)
+      responses = do_new_user_messages(pid, users_messages)
 
       # Verify
       ^messages_amount = length(responses)
-      assert_receive_new_messages(users_messages)
+      assert_receive_new_user_messages(users_messages)
 
       :ok
     end
@@ -126,8 +126,8 @@ defmodule DjRumble.Chat.ChatServerTest do
       user = user_fixture()
       message = "Hello!"
       messages_amount = messages_amount
-      users_messages = generate_messages(user, message, messages_amount)
-      _responses = do_new_messages(pid, users_messages)
+      users_messages = generate_user_messages(user, message, messages_amount)
+      _responses = do_new_user_messages(pid, users_messages)
       players_amount = times
       pids_users = spawn_players(players_amount)
       pids = for {pid, _user} <- pids_users, do: pid
@@ -137,7 +137,7 @@ defmodule DjRumble.Chat.ChatServerTest do
 
       # Verify
       ^players_amount = length(responses)
-      assert_pids_receive_messages(pids, users_messages)
+      assert_pids_receive_user_messages(pids, users_messages)
 
       :ok
     end
@@ -214,17 +214,21 @@ defmodule DjRumble.Chat.ChatServerTest do
       state
     end
 
-    defp handle_new_message(state, {user, message}) do
-      response = ChatServer.handle_cast({:new_message, user, message, @default_timezone}, state)
+    defp handle_new_user_message(state, {user, message}) do
+      response =
+        ChatServer.handle_cast(
+          {:new_message, :user_message, user, message, @default_timezone},
+          state
+        )
 
       {:noreply, state} = response
 
       state
     end
 
-    defp handle_new_messages(state, users_messages) do
+    defp handle_new_user_messages(state, users_messages) do
       Enum.reduce(users_messages, {[], state}, fn {user, message}, {messages, state} ->
-        {messages ++ [message], handle_new_message(state, {user, message})}
+        {messages ++ [message], handle_new_user_message(state, {user, message})}
       end)
     end
 
@@ -248,7 +252,7 @@ defmodule DjRumble.Chat.ChatServerTest do
 
     defp assert_has_messages(state, users_messages) do
       expected_users_messages =
-        for %{user: user, message: message} <- state.messages do
+        for %{from: user, message: message} <- state.messages do
           {user, message}
         end
 
@@ -261,15 +265,15 @@ defmodule DjRumble.Chat.ChatServerTest do
       :ok = Channels.subscribe(chat_topic)
       user = user_fixture()
       message = "Hello!"
-      users_messages = generate_messages(user, message, messages_amount)
+      users_messages = generate_user_messages(user, message, messages_amount)
 
       # Exercise
-      {_users_messages, state} = handle_new_messages(state, users_messages)
+      {_users_messages, state} = handle_new_user_messages(state, users_messages)
 
       # Verify
       ^messages_amount = length(state.messages)
       assert_has_messages(state, users_messages)
-      assert_receive_new_messages(users_messages)
+      assert_receive_new_user_messages(users_messages)
 
       {:ok, state}
     end
@@ -289,11 +293,11 @@ defmodule DjRumble.Chat.ChatServerTest do
       assert state.messages == new_state.messages
 
       users_messages =
-        for %{user: user, message: message} <- state.messages do
+        for %{from: user, message: message} <- state.messages do
           {user, message}
         end
 
-      assert_pids_receive_messages(pids, users_messages)
+      assert_pids_receive_user_messages(pids, users_messages)
 
       {:ok, new_state}
     end

@@ -9,7 +9,7 @@ defmodule DjRumble.Rooms.Chat do
 
   def create_message(:chat_message, %{
         message: message,
-        user: %User{username: username},
+        from: %User{username: username},
         timestamp: timestamp
       }) do
     {:chat_message,

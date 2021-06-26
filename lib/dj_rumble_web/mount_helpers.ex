@@ -32,20 +32,19 @@ defmodule DjRumbleWeb.MountHelpers do
   end
 
   @doc """
-  Assigns a reference to a `chat_server` pid and it's `state` to the `socket`
+  Given a `socket` and a `room`, assigns a reference to a `chat_server` pid and
+  it's `state` to the `socket`
   """
-  def assign_chat(socket, chat_topic, create_message) do
+  @spec assign_chat(Phoenix.LiveView.Socket.t(), %DjRumble.Rooms.Room{}) ::
+          Phoenix.LiveView.Socket.t()
+  def assign_chat(socket, room) do
+    chat_topic = Channels.get_topic(:room_chat, room.slug)
     :ok = Channels.subscribe(chat_topic)
 
     {chat_service, chat_service_state} = ChatSupervisor.get_server(ChatSupervisor, chat_topic)
 
-    chat_messages =
-      for message <- chat_service_state.messages do
-        create_message.(message)
-      end
-
     socket
-    |> assign(:chat_messages, chat_messages)
+    |> assign(:chat_messages, chat_service_state.messages)
     |> assign(:chat_service, chat_service)
     |> assign(:chat_service_state, chat_service_state)
   end

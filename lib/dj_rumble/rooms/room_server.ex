@@ -39,8 +39,8 @@ defmodule DjRumble.Rooms.RoomServer do
     GenServer.call(pid, {:score, user, type})
   end
 
-  def new_message(pid, user, message) do
-    GenServer.cast(pid, {:new_message, user, message})
+  def new_message(pid, user, message, timezone) do
+    GenServer.cast(pid, {:new_message, user, message, timezone})
   end
 
   def initial_state(args) do
@@ -123,7 +123,7 @@ defmodule DjRumble.Rooms.RoomServer do
 
   @impl GenServer
   def handle_cast({:new_message, user, message, timezone}, state) do
-    :ok = ChatServer.new_message(state.chat_server, user, message, timezone)
+    :ok = ChatServer.new_message(state.chat_server, :user_message, user, message, timezone)
 
     {:noreply, state}
   end

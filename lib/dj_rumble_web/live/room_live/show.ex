@@ -10,7 +10,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
   alias DjRumble.Collections
   alias DjRumble.Repo
   alias DjRumble.Rooms
-  alias DjRumble.Rooms.{Chat, MatchmakingSupervisor, RoomServer, RoomSupervisor}
+  alias DjRumble.Rooms.{MatchmakingSupervisor, RoomServer, RoomSupervisor}
   alias DjRumble.Rounds.Round
   alias DjRumbleWeb.Channels
   alias DjRumbleWeb.Presence
@@ -30,8 +30,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> push_redirect(to: Routes.room_index_path(socket, :index))}
 
           room ->
-            %{assigns: %{user: user, timezone: timezone}} =
-              socket = assign_defaults(socket, params, session)
+            %{assigns: %{user: user}} = socket = assign_defaults(socket, params, session)
 
             {room_server, _room} = RoomSupervisor.get_room_server(RoomSupervisor, room.slug)
 
@@ -78,11 +77,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:searchbox_state, "CLOSED")
              |> assign(:register_modal_state, "CLOSED")
              |> assign(:show_search_modal, false)
-             # TODO: Message type `:chat_message` should be managed by the Chat Server
-             |> assign_chat(
-               Channels.get_topic(:room_chat, room.slug),
-               &Chat.create_message(:chat_message, Map.merge(&1, %{timezone: timezone}))
-             )}
+             |> assign_chat(room)}
         end
 
       false ->
@@ -314,15 +309,14 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Params:** `%{user: %User{}, message: String.t()}`
   """
   def handle_receive_new_message(
-        %DjRumble.Chats.Message{user: _user, message: _message} = params,
+        %DjRumble.Chats.Message.User{from: _user, message: _message} = message,
         socket
       ) do
-    %{assigns: %{chat_messages: chat_messages, timezone: timezone}} = socket
+    %{assigns: %{chat_messages: chat_messages}} = socket
 
-    params = Map.merge(params, %{timezone: timezone})
-    chat_message = Chat.create_message(:chat_message, params)
+    # chat_message = Chat.create_message(:chat_message, params)
 
-    chat_messages = chat_messages ++ [chat_message]
+    chat_messages = chat_messages ++ [message]
 
     {:noreply,
      socket

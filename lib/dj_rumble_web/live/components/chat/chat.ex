@@ -5,7 +5,8 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
   use DjRumbleWeb, :live_component
 
-  alias DjRumble.Chats.ChatServer
+  alias DjRumble.Chats.Message
+  alias DjRumble.Rooms.RoomServer
 
   @impl true
   def update(assigns, socket) do
@@ -29,9 +30,9 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
       _ ->
         %{assigns: assigns} = socket
-        %{chat_service: chat_service, timezone: timezone, user: user} = assigns
+        %{room_service: room_service, timezone: timezone, user: user} = assigns
 
-        :ok = ChatServer.new_message(chat_service, user, message, timezone)
+        :ok = RoomServer.new_message(room_service, user, message, timezone)
 
         {:noreply, socket}
     end
@@ -53,30 +54,36 @@ defmodule DjRumbleWeb.Live.Components.Chat do
   end
 
   defp render_timestamp(timestamp) do
+    highlight_style =
+      case timestamp =~ "04:20:" || timestamp =~ "16:20:" do
+        true -> "text-green-400"
+        false -> "text-blue-500"
+      end
+
     ~E"""
-      <span class="text-sm monospace font-bold <%= timestamp.class %>">
-        [<%= timestamp.value %>]
+      <span class="text-sm monospace font-bold <%= highlight_style %>">
+        [<%= timestamp %>]
       </span>
     """
   end
 
-  defp render_username(username, class \\ "") do
+  defp render_username(username) do
     ~E"""
-      <span class="text-xl font-bold text-gray-300 <%= class %>"><%= username %>:</span>
+      <span class="text-xl font-bold text-gray-300"><%= username %>:</span>
     """
   end
 
-  defp render_text(message, class \\ "") do
+  defp render_text(message) do
     ~E"""
-      <span class="italic text-xl text-gray-300 <%= class %>"><%= message %></span>
+      <span class="italic text-xl text-gray-300"><%= message %></span>
     """
   end
 
-  def render_message({:chat_message, message}) do
+  def render_message(%Message.User{from: user, message: message, timestamp: timestamp}) do
     ~E"""
-      <%= render_timestamp(message.timestamp) %>
-      <%= render_prompt(render_username(message.username)) %>
-      <%= render_text(message.text) %>
+      <%= render_timestamp(timestamp) %>
+      <%= render_prompt(render_username(user.username)) %>
+      <%= render_text(message) %>
     """
   end
 end
