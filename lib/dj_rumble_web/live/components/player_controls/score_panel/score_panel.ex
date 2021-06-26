@@ -7,6 +7,8 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls.ScorePanel do
 
   alias DjRumble.Rooms.RoomServer
 
+  @register_modal_menu_id "#djrumble-register-modal-menu"
+
   def update(assigns, socket) do
     %{
       id: id,
@@ -32,75 +34,73 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls.ScorePanel do
   def handle_event("score", _params, %{assigns: %{visitor: true}} = socket),
     do: {:noreply, socket}
 
-  def handle_event("score", %{"score" => type}, %{assigns: %{visitor: false}} = socket) do
+  def handle_event("score", params, %{assigns: %{visitor: false}} = socket) do
+    case params do
+      %{"score" => "positive"} ->
+        handle_score(:positive, socket)
+
+      %{"score" => "negative"} ->
+        handle_score(:negative, socket)
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
+  @doc """
+  Given a score `type` and a `socket`, tells the room server to score a vote
+  for a `user`.
+  """
+  def handle_score(type, socket) do
     %{room_server: room_server, user: user} = socket.assigns
-    type = String.to_atom(type)
 
     :ok = RoomServer.score(room_server, user, type)
 
     {:noreply, socket}
   end
 
-  defp render_score_button(type, is_scoring_enabled, visitor, current_round, assigns) do
-    {icon, tooltip_text} =
-      case type do
-        :positive ->
-          case Map.get(current_round, :added_by) do
-            nil -> {"like", ""}
-            user -> {"like", "Watch more videos from #{user.username} by supporting this Dj"}
-          end
-
-        :negative ->
-          {"dislike", "Definitely not today"}
-      end
-
+  defp render_score_button(type, is_scoring_enabled, is_visitor, current_round, assigns) do
     id = "djrumble-score-#{Atom.to_string(type)}"
 
-    shared_classes =
+    {event, event_value, event_target} =
+      get_event_data(is_visitor, is_scoring_enabled, type, assigns)
+
+    icon = get_icon_by_type(type)
+    icon_classes = get_icon_classes(is_scoring_enabled)
+    tooltip_text = get_tooltip_text(type, current_round)
+
+    render_button(id, event, event_value, event_target, icon, icon_classes, tooltip_text, assigns)
+  end
+
+  defp render_button(
+         id,
+         event,
+         event_value,
+         event_target,
+         icon,
+         icon_classes,
+         tooltip_text,
+         assigns
+       ) do
+    default_classes =
       "cursor-pointer shadow-2xl transition duration-500 ease-in-out transform hover:scale-110 hover:shadow-sm"
 
-    case is_scoring_enabled do
-      true ->
-        classes = "#{shared_classes} enabled"
+    icon_classes = "#{default_classes} #{icon_classes}"
 
-        ~L"""
-          <div id="<%= id %>">
-            <div class="group relative w-full flex justify-center">
-              <a
-                phx-click="score"
-                phx-value-score=<%= type %>
-                phx-target="<%= assigns %>"
-              >
-                <%= render_svg_button(icon, classes) %>
-              </a>
-              <%= render_tooltip(text: tooltip_text, extra_classes: "text-xl") %>
-            </div>
-          </div>
-        """
-
-      false ->
-        classes = "#{shared_classes} disabled"
-
-        {click, event} =
-          case visitor do
-            true -> {"open", "#djrumble-register-modal-menu"}
-            false -> {"", ""}
-          end
-
-        ~L"""
-          <div id="<%= id %>">
-            <div class="group relative w-full flex justify-center">
-              <a
-                phx-click="<%= click %>"
-                phx-target="<%= event %>"
-              >
-                <%= render_svg_button(icon, classes) %>
-              </a>
-              <%= render_tooltip(text: "Voting is disabled", extra_classes: "text-xl") %>
-            </div>
-          </div>
-        """
-    end
+    ~L"""
+      <div id="<%= id %>">
+        <div class="group relative w-full flex justify-center">
+          <a
+            phx-click="<%= event %>"
+            phx-value-score="<%= event_value %>"
+            phx-target="<%= event_target %>"
+          >
+            <%= render_svg_button(icon, icon_classes) %>
+          </a>
+          <%= render_tooltip(text: tooltip_text, extra_classes: "text-xl") %>
+        </div>
+      </div>
+    """
   end
 
   defp render_svg_button(icon, classes) do
@@ -109,5 +109,40 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls.ScorePanel do
       "buttons/#{icon}",
       class: "h-16 w-16 score-button #{classes}"
     )
+  end
+
+  defp get_event_data(false = _visitor, true = _is_scoring_enabled, vote_type, assigns) do
+    {"score", vote_type, assigns}
+  end
+
+  defp get_event_data(false = _visitor, false = _is_scoring_enabled, _vote_type, _assigns) do
+    {"", "", nil}
+  end
+
+  defp get_event_data(_visitor, false = _is_scoring_enabled, _vote_type, _assigns) do
+    {"open", nil, @register_modal_menu_id}
+  end
+
+  defp get_icon_by_type(:positive), do: "like"
+  defp get_icon_by_type(:negative), do: "dislike"
+
+  defp get_icon_classes(true), do: "enabled"
+  defp get_icon_classes(false), do: "disabled"
+
+  defp get_tooltip_text(:positive, current_round) do
+    case Map.get(current_round, :added_by) do
+      nil -> "Upvote"
+      user -> "Watch more videos from #{user.username} by supporting this Dj"
+    end
+  end
+
+  defp get_tooltip_text(:negative, _current_round) do
+    # Add a line here to mixup downvotes text. You may use `current_round` to
+    # add video and user information into the tooltip text.
+    texts = [
+      "Downvote to move this video from the queue"
+    ]
+
+    Enum.at(texts, Enum.random(0..(length(texts) - 1)))
   end
 end
