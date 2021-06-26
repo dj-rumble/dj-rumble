@@ -16,7 +16,7 @@ defmodule DjRumble.Rooms do
   ## Examples
 
       iex> list_rooms()
-      [%Room{}, ...]
+      [%DjRumble.Rooms.Room{}]
 
   """
   def list_rooms do
@@ -31,7 +31,7 @@ defmodule DjRumble.Rooms do
   ## Examples
 
       iex> get_room!(123)
-      %Room{}
+      %DjRumble.Rooms.Room{}
 
       iex> get_room!(456)
       ** (Ecto.NoResultsError)
@@ -46,10 +46,10 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> get_room_by_slug(slug)
-      %Room{}
+      iex> get_room_by_slug(1)
+      %DjRumble.Rooms.Room{slug: 1}
 
-      iex> get_room_by_slug(bad_value)
+      iex> get_room_by_slug("1")
       ** nil
 
   """
@@ -62,10 +62,10 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> create_room(%{field: value})
-      {:ok, %Room{}}
+      iex> create_room(%{name: "some name"})
+      {:ok, %DjRumble.Rooms.Room{name: "some name"}}
 
-      iex> create_room(%{field: bad_value})
+      iex> create_room(%{name: 123})
       {:error, %Ecto.Changeset{}}
 
   """
@@ -80,10 +80,10 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> update_room(room, %{field: new_value})
-      {:ok, %Room{}}
+      iex> update_room(%DjRumble.Rooms.Room{}, %{name: "some name"})
+      {:ok, %DjRumble.Rooms.Room{}}
 
-      iex> update_room(room, %{field: bad_value})
+      iex> update_room(%DjRumble.Rooms.Room{}, %{name: 123})
       {:error, %Ecto.Changeset{}}
 
   """
@@ -98,10 +98,10 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> delete_room(room)
-      {:ok, %Room{}}
+      iex> delete_room(%DjRumble.Rooms.Room{})
+      {:ok, %DjRumble.Rooms.Room{}}
 
-      iex> delete_room(room)
+      iex> delete_room(nil)
       {:error, %Ecto.Changeset{}}
 
   """
@@ -114,8 +114,8 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> change_room(room)
-      %Ecto.Changeset{data: %Room{}}
+      iex> change_room(%DjRumble.Rooms.Room{}, %{})
+      %Ecto.Changeset{data: %DjRumble.Rooms.Room{}}
 
   """
   def change_room(%Room{} = room, attrs \\ %{}) do
@@ -127,8 +127,8 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> Rooms.preload_room(room)
-      %Room{}
+      iex> preload_room(%DjRumble.Rooms.Room{}, [])
+      %DjRumble.Rooms.Room{}
 
   """
   def preload_room(%Room{} = room, attrs \\ []) do
@@ -143,7 +143,7 @@ defmodule DjRumble.Rooms do
   ## Examples
 
       iex> list_videos()
-      [%Video{}, ...]
+      [%DjRumble.Rooms.Video{}]
 
   """
   def list_videos do
@@ -158,7 +158,7 @@ defmodule DjRumble.Rooms do
   ## Examples
 
       iex> get_video!(123)
-      %Video{}
+      %DjRumble.Rooms.Video{}
 
       iex> get_video!(456)
       ** (Ecto.NoResultsError)
@@ -171,10 +171,10 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> create_video(%{field: value})
-      {:ok, %Video{}}
+      iex> create_video(%{video_id: "asd123"})
+      {:ok, %DjRumble.Rooms.Video{video_id: "asd123"}}
 
-      iex> create_video(%{field: bad_value})
+      iex> create_video(%{video_id: 123})
       {:error, %Ecto.Changeset{}}
 
   """
@@ -189,10 +189,10 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> update_video(video, %{field: new_value})
-      {:ok, %Video{}}
+      iex> update_video(%DjRumble.Rooms.Video{}, %{title: "some title"})
+      {:ok, %DjRumble.Rooms.Video{title: "some title"}}
 
-      iex> update_video(video, %{field: bad_value})
+      iex> update_video(%DjRumble.Rooms.Video{}, %{title: "some title"})
       {:error, %Ecto.Changeset{}}
 
   """
@@ -207,10 +207,10 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> delete_video(video)
-      {:ok, %Video{}}
+      iex> delete_video(%DjRumble.Rooms.Video{})
+      {:ok, %DjRumble.Rooms.Video{}}
 
-      iex> delete_video(video)
+      iex> delete_video(nil)
       {:error, %Ecto.Changeset{}}
 
   """
@@ -223,8 +223,8 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> change_video(video)
-      %Ecto.Changeset{data: %Video{}}
+      iex> change_video(%DjRumble.Rooms.Video{title: "some title"})
+      %Ecto.Changeset{data: %DjRumble.Rooms.Video{title: "some title"}}
 
   """
   def change_video(%Video{} = video, attrs \\ %{}) do
@@ -239,7 +239,7 @@ defmodule DjRumble.Rooms do
   ## Examples
 
       iex> list_rooms_videos()
-      [%RoomVideo{}, ...]
+      [%DjRumble.Rooms.RoomVideo{}]
 
   """
   def list_rooms_videos do
@@ -254,7 +254,7 @@ defmodule DjRumble.Rooms do
   ## Examples
 
       iex> get_room_video!(123)
-      %RoomVideo{}
+      %DjRumble.Rooms.RoomVideo{}
 
       iex> get_room_video!(456)
       ** (Ecto.NoResultsError)
@@ -267,10 +267,10 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> create_room_video(%{field: value})
-      {:ok, %RoomVideo{}}
+      iex> create_room_video(%{video_id: "asd123})
+      {:ok, %DjRumble.Rooms.RoomVideo{video_id: "asd123"}}
 
-      iex> create_room_video(%{field: bad_value})
+      iex> create_room_video(%{video_id: 123})
       {:error, %Ecto.Changeset{}}
 
   """
@@ -285,10 +285,10 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> update_room_video(room_video, %{field: new_value})
-      {:ok, %RoomVideo{}}
+      iex> update_room_video(%DjRumble.Rooms.RoomVideo{}, %{video_id: 1})
+      {:ok, %DjRumble.Rooms.RoomVideo{}}
 
-      iex> update_room_video(room_video, %{field: bad_value})
+      iex> update_room_video(%DjRumble.Rooms.RoomVideo{}, %{video_id: "1"})
       {:error, %Ecto.Changeset{}}
 
   """
@@ -303,10 +303,10 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> delete_room_video(room_video)
-      {:ok, %RoomVideo{}}
+      iex> delete_room_video(%DjRumble.Rooms.RoomVideo{})
+      {:ok, %DjRumble.Rooms.RoomVideo{}}
 
-      iex> delete_room_video(room_video)
+      iex> delete_room_video(nil)
       {:error, %Ecto.Changeset{}}
 
   """
@@ -319,8 +319,8 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> change_room_video(room_video)
-      %Ecto.Changeset{data: %RoomVideo{}}
+      iex> change_room_video(DjRumble.Rooms.RoomVideo{room_id: 1}, %{room_id: 2})
+      %Ecto.Changeset{data: %DjRumble.Rooms.RoomVideo{room_id: 2}}
 
   """
   def change_room_video(%RoomVideo{} = room_video, attrs \\ %{}) do
@@ -335,7 +335,7 @@ defmodule DjRumble.Rooms do
   ## Examples
 
       iex> list_users_rooms()
-      [%UserRoom{}, ...]
+      [%DjRumble.Rooms.UserRoom{}]
 
   """
   def list_users_rooms do
@@ -348,7 +348,7 @@ defmodule DjRumble.Rooms do
   ## Examples
 
       iex> list_users_rooms()
-      [%UserRoom{}, ...]
+      [%DjRumble.Rooms.UserRoom{}]
 
   """
   def list_users_rooms_by(user_id, is_owner) do
@@ -367,8 +367,8 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> get_user_room!(123)
-      %UserRoom{}
+      iex> get_user_room!(1)
+      %DjRumble.Rooms.UserRoom{}
 
       iex> get_user_room!(456)
       ** (Ecto.NoResultsError)
@@ -381,10 +381,10 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> create_user_room(%{is_owner: value, user_id: value, room_id: value, group_id: value})
-      {:ok, %UserRoom{}}
+      iex> create_user_room(%{user_id: 1})
+      {:ok, %DjRumble.Rooms.UserRoom{user_id: 1}
 
-      iex> create_user_room(%{is_owner: bad_value, user_id: bad_value, room_id: bad_value, group_id: bad_value})
+      iex> create_user_room(%{is_owner: "123"})
       {:error, %Ecto.Changeset{}}
 
   """
@@ -402,10 +402,10 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> update_user_room(user_room, %{is_owner: value, user_id: value, room_id: value, group_id: value})
-      {:ok, %UserRoom{}}
+      iex> update_user_room(%DjRumble.Rooms.UserRoom{}, %{user_id: 1})
+      {:ok, %DjRumble.Rooms.UserRoom{user_id: 1}}
 
-      iex> update_user_room(user_room, %{is_owner: bad_value, user_id: bad_value, room_id: bad_value, group_id: bad_value})
+      iex> update_user_room(DjRumble.Rooms.UserRoom{}, %{user_id: "1"})
       {:error, %Ecto.Changeset{}}
 
   """
@@ -420,10 +420,10 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> delete_user_room(user_room)
-      {:ok, %UserRoom{}}
+      iex> delete_user_room(%DjRumble.Rooms.UserRoom{})
+      {:ok, %DjRumble.Rooms.UserRoom{}}
 
-      iex> delete_user_room(user_room)
+      iex> delete_user_room(nil)
       {:error, %Ecto.Changeset{}}
 
   """
@@ -436,8 +436,8 @@ defmodule DjRumble.Rooms do
 
   ## Examples
 
-      iex> change_user_room(user_room)
-      %Ecto.Changeset{data: %UserRoom{}}
+      iex> change_user_room(DjRumble.Rooms.UserRoom{user_id: 1}, %{user_id: 2})
+      %Ecto.Changeset{data: %DjRumble.Rooms.UserRoom{user_id: 2}}
 
   """
   def change_user_room(%UserRoom{} = user_room, attrs \\ %{}) do
