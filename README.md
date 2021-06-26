@@ -238,6 +238,14 @@ make security.check
 make security.ci
 ```
 
+#### Otros
+
+> *Ejecuta localmente todos los chequeos que se realizan durante la CI.*
+
+```bash
+make check
+```
+
 ### Servidor de desarrollo
 
 Una vez configuradas las variables de entorno e instalado el ambiente de desarrollo es posible iniciar el servidor utilizando el comando `make server`.
