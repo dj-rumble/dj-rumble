@@ -63,7 +63,7 @@ defmodule DjRumble.Chat.ChatServerTest do
   defp assert_receive_new_video_message(video, user, action) do
     %DjRumble.Chats.Message.Video{
       video: video,
-      user: user,
+      added_by: user,
       action: action
     } = create_message([:video_message, video, user, action])
 
@@ -71,7 +71,7 @@ defmodule DjRumble.Chat.ChatServerTest do
       {:receive_new_message,
        %DjRumble.Chats.Message.Video{
          video: ^video,
-         user: ^user,
+         added_by: ^user,
          action: ^action
        }}
     )
@@ -386,7 +386,7 @@ defmodule DjRumble.Chat.ChatServerTest do
 
     defp assert_has_video_messages(state, video_messages) do
       expected_videos_messages =
-        for %{video: video, user: user, action: action} <- state.messages do
+        for %{video: video, added_by: user, action: action} <- state.messages do
           {video, user, action}
         end
 
@@ -503,22 +503,22 @@ defmodule DjRumble.Chat.ChatServerTest do
       {:ok, _state} = test_handle_new_video_message_is_called(state, chat_topic, 1000)
     end
 
-    test "handle_cast/2 :; {:get_messages, pid} is called once and returns a state with no messages",
+    test "handle_cast/2 :: {:get_messages, pid} is called once and returns a state with no messages",
          %{chat_topic: chat_topic, state: state} do
       {:ok, _state} = test_handle_get_messages_is_called(state, chat_topic, 0, 1)
     end
 
-    test "handle_cast/2 :; {:get_messages, pid} is called once and returns a state with messages",
+    test "handle_cast/2 :: {:get_messages, pid} is called once and returns a state with messages",
          %{chat_topic: chat_topic, state: state} do
       {:ok, _state} = test_handle_get_messages_is_called(state, chat_topic, 10, 1)
     end
 
-    test "handle_cast/2 :; {:get_messages, pid} is called ten times and returns a state with messages",
+    test "handle_cast/2 :: {:get_messages, pid} is called ten times and returns a state with messages",
          %{chat_topic: chat_topic, state: state} do
       {:ok, _state} = test_handle_get_messages_is_called(state, chat_topic, 100, 10)
     end
 
-    test "handle_cast/2 :; {:get_messages, pid} is called a hundred times and returns a state with messages",
+    test "handle_cast/2 :: {:get_messages, pid} is called a hundred times and returns a state with messages",
          %{chat_topic: chat_topic, state: state} do
       {:ok, _state} = test_handle_get_messages_is_called(state, chat_topic, 100, 100)
     end

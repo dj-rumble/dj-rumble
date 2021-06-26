@@ -306,12 +306,11 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   * **From:** `ChatServer`
   * **Topic:** `"room:<slug>:chat"`
-  * **Params:** `%{user: %User{}, message: String.t()}`
+  * **Params:** `%Message{}`
   """
-  def handle_receive_new_message(
-        %DjRumble.Chats.Message.User{from: _user, message: _message} = message,
-        socket
-      ) do
+  @spec handle_receive_new_message(DjRumble.Chats.Message, Phoenix.LiveView.Socket.t()) ::
+          {:noreply, map}
+  def handle_receive_new_message(message, socket) do
     %{assigns: %{chat_messages: chat_messages}} = socket
 
     # chat_message = Chat.create_message(:chat_message, params)
@@ -363,7 +362,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
           remaining_seconds = div(seconds, one_second)
 
           socket
-          |> assign(:round_info, "Round starts in #{remaining_seconds}")
+          |> assign(:round_info, "Video starts in #{remaining_seconds}")
           |> assign_page_title("Countdown: #{remaining_seconds}")
       end
 

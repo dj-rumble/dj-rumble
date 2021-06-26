@@ -6,6 +6,8 @@ defmodule DjRumble.Rooms.Matchmaking do
 
   require Logger
 
+  alias DjRumble.Chats.ChatServer
+
   alias DjRumble.Rounds.{
     Round,
     RoundServer,
@@ -13,7 +15,6 @@ defmodule DjRumble.Rooms.Matchmaking do
   }
 
   alias DjRumble.Rooms.Video
-
   alias DjRumbleWeb.Channels
 
   @time_between_rounds :timer.seconds(3)
@@ -399,7 +400,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     :ok = RoundServer.start_round(pid)
 
-    # :ok = DjRumble.Chats.ChatServer.new_message()
+    :ok = ChatServer.new_video_message(state.chat_server, video, user, :playing)
 
     :ok =
       Channels.broadcast(

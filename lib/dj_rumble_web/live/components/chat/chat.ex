@@ -47,9 +47,9 @@ defmodule DjRumbleWeb.Live.Components.Chat do
     {:noreply, socket}
   end
 
-  defp render_prompt(message) do
+  defp render_prompt(symbol, classes) do
     ~E"""
-      <span class="use-prompt"><%= message %></span>
+    <span class="<%= classes %>"><%= symbol %></span>
     """
   end
 
@@ -57,33 +57,53 @@ defmodule DjRumbleWeb.Live.Components.Chat do
     highlight_style =
       case timestamp =~ "04:20:" || timestamp =~ "16:20:" do
         true -> "text-green-400"
-        false -> "text-blue-500"
+        false -> "text-gray-600"
       end
 
     ~E"""
-      <span class="text-sm monospace font-bold <%= highlight_style %>">
-        [<%= timestamp %>]
-      </span>
+    <span class="text-sm monospace font-bold <%= highlight_style %>">
+      [<%= timestamp %>]
+    </span>
     """
   end
 
   defp render_username(username) do
     ~E"""
-      <span class="text-xl font-bold text-gray-300"><%= username %>:</span>
+    <span class="text-xl font-bold text-gray-300"><%= username %>:</span>
     """
   end
 
-  defp render_text(message) do
+  defp render_text(message, extra_classes \\ "") do
     ~E"""
-      <span class="italic text-xl text-gray-300"><%= message %></span>
+    <span class="italic text-xl text-gray-300 <%= extra_classes %>"><%= message %></span>
     """
   end
 
   def render_message(%Message.User{from: user, message: message, timestamp: timestamp}) do
     ~E"""
+    <p class="mb-0.5 text-lg text-left animated fadeIn px-2">
       <%= render_timestamp(timestamp) %>
-      <%= render_prompt(render_username(user.username)) %>
+      <%= render_username(user.username) %>
       <%= render_text(message) %>
+    </p>
+    """
+  end
+
+  def render_message(%Message.Video{} = message) do
+    message =
+      Message.narrate(message)
+      |> Enum.zip(["", "text-pink-500", "", ""])
+      |> Enum.map(fn {text, classes} -> render_text(text, classes) end)
+
+    ~E"""
+    <p class="
+      mb-0.5 my-2 py-4 px-2
+      text-lg not-italic font-normal text-left
+      animated fadeIn
+    ">
+    <%= render_prompt(">", "text-gray-300") %>
+    <%= message %>
+    </p>
     """
   end
 end
