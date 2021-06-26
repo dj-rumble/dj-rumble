@@ -415,6 +415,8 @@ defmodule DjRumble.Room.RoomServerTest do
     alias DjRumble.Rooms.Matchmaking
     alias DjRumbleWeb.Channels
 
+    @default_timezone "America/Buenos_Aires"
+
     setup do
       room = room_fixture(%{}, %{preload: true})
 
@@ -502,7 +504,7 @@ defmodule DjRumble.Room.RoomServerTest do
     end
 
     defp handle_new_message(state, {user, message}) do
-      response = RoomServer.handle_cast({:new_message, user, message}, state)
+      response = RoomServer.handle_cast({:new_message, user, message, @default_timezone}, state)
 
       {:noreply, ^state} = response
 

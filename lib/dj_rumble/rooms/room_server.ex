@@ -122,8 +122,8 @@ defmodule DjRumble.Rooms.RoomServer do
   end
 
   @impl GenServer
-  def handle_cast({:new_message, user, message}, state) do
-    :ok = ChatServer.new_message(state.chat_server, user, message)
+  def handle_cast({:new_message, user, message, timezone}, state) do
+    :ok = ChatServer.new_message(state.chat_server, user, message, timezone)
 
     {:noreply, state}
   end

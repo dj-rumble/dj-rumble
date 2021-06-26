@@ -10,12 +10,12 @@ defmodule DjRumble.Rooms.Chat do
   def create_message(:chat_message, %{
         message: message,
         user: %User{username: username},
-        timezone: timezone
+        timestamp: timestamp
       }) do
     {:chat_message,
      %{
        text: message,
-       timestamp: create_timestamp(timezone),
+       timestamp: create_timestamp(timestamp),
        username: username
      }}
   end
@@ -61,14 +61,7 @@ defmodule DjRumble.Rooms.Chat do
     Presence.update(self(), topic, key, metas)
   end
 
-  defp create_timestamp(timezone) do
-    timestamp =
-      DateTime.now(timezone, Tzdata.TimeZoneDatabase)
-      |> elem(1)
-      |> Time.to_string()
-      |> String.split(".")
-      |> hd
-
+  defp create_timestamp(timestamp) do
     highlight_style =
       case timestamp =~ "04:20:" || timestamp =~ "16:20:" do
         true -> "text-green-400"

@@ -13,6 +13,8 @@ defmodule DjRumble.Chat.ChatServerTest do
   alias DjRumble.Chats.ChatServer
   alias DjRumbleWeb.Channels
 
+  @default_timezone "America/Buenos_Aires"
+
   defp generate_message(user, message) do
     {user, message}
   end
@@ -26,8 +28,18 @@ defmodule DjRumble.Chat.ChatServerTest do
   end
 
   def assert_receive_new_message(user, message) do
-    message = create_message([message, user])
-    assert_receive({:receive_new_message, ^message})
+    %DjRumble.Chats.Message{
+      user: user,
+      message: message
+    } = create_message([message, user, @default_timezone])
+
+    assert_receive(
+      {:receive_new_message,
+       %DjRumble.Chats.Message{
+         user: ^user,
+         message: ^message
+       }}
+    )
   end
 
   def assert_receive_new_messages(users_messages) do
@@ -37,12 +49,17 @@ defmodule DjRumble.Chat.ChatServerTest do
   end
 
   def assert_pid_receive_messages(pid, users_messages) do
-    users_messages =
-      for {user, message} <- users_messages do
-        create_message([message, user])
-      end
+    assert_receive({:trace, ^pid, :receive, {:receive_messages, received_messages}})
 
-    assert_receive({:trace, ^pid, :receive, {:receive_messages, ^users_messages}})
+    received_messages =
+      Enum.map(
+        received_messages,
+        fn %DjRumble.Chats.Message{user: user, message: message} ->
+          {user, message}
+        end
+      )
+
+    ^users_messages = received_messages
   end
 
   def assert_pids_receive_messages(pids, users_messages) do
@@ -68,7 +85,7 @@ defmodule DjRumble.Chat.ChatServerTest do
     end
 
     defp do_new_message(pid, user, message) do
-      :ok = ChatServer.new_message(pid, user, message)
+      :ok = ChatServer.new_message(pid, user, message, @default_timezone)
     end
 
     defp do_new_messages(pid, users_messages) do
@@ -198,7 +215,7 @@ defmodule DjRumble.Chat.ChatServerTest do
     end
 
     defp handle_new_message(state, {user, message}) do
-      response = ChatServer.handle_cast({:new_message, user, message}, state)
+      response = ChatServer.handle_cast({:new_message, user, message, @default_timezone}, state)
 
       {:noreply, state} = response
 
@@ -295,6 +312,11 @@ defmodule DjRumble.Chat.ChatServerTest do
       {:ok, _state} = test_handle_new_message_is_called(state, chat_topic, 1)
     end
 
+    test "handle_cast/2 :: {:new_message, %User{}, message} is called ten times and returns a state with a new messages",
+         %{chat_topic: chat_topic, state: state} do
+      {:ok, _state} = test_handle_new_message_is_called(state, chat_topic, 10)
+    end
+
     test "handle_cast/2 :: {:new_message, %User{}, message} is called a hundred times and returns a state with a new messages",
          %{chat_topic: chat_topic, state: state} do
       {:ok, _state} = test_handle_new_message_is_called(state, chat_topic, 100)
@@ -305,16 +327,6 @@ defmodule DjRumble.Chat.ChatServerTest do
       {:ok, _state} = test_handle_new_message_is_called(state, chat_topic, 1000)
     end
 
-    test "handle_cast/2 :: {:new_message, %User{}, message} is called ten thousand times and returns a state with a new messages",
-         %{chat_topic: chat_topic, state: state} do
-      {:ok, _state} = test_handle_new_message_is_called(state, chat_topic, 10_000)
-    end
-
-    test "handle_cast/2 :: {:new_message, %User{}, message} is called ten times and returns a state with a new messages",
-         %{chat_topic: chat_topic, state: state} do
-      {:ok, _state} = test_handle_new_message_is_called(state, chat_topic, 10)
-    end
-
     test "handle_cast/2 :; {:get_messages, pid} is called once and returns a state with no messages",
          %{chat_topic: chat_topic, state: state} do
       {:ok, _state} = test_handle_get_messages_is_called(state, chat_topic, 0, 1)
@@ -322,7 +334,7 @@ defmodule DjRumble.Chat.ChatServerTest do
 
     test "handle_cast/2 :; {:get_messages, pid} is called once and returns a state with messages",
          %{chat_topic: chat_topic, state: state} do
-      {:ok, _state} = test_handle_get_messages_is_called(state, chat_topic, 100, 1)
+      {:ok, _state} = test_handle_get_messages_is_called(state, chat_topic, 10, 1)
     end
 
     test "handle_cast/2 :; {:get_messages, pid} is called ten times and returns a state with messages",
@@ -333,16 +345,6 @@ defmodule DjRumble.Chat.ChatServerTest do
     test "handle_cast/2 :; {:get_messages, pid} is called a hundred times and returns a state with messages",
          %{chat_topic: chat_topic, state: state} do
       {:ok, _state} = test_handle_get_messages_is_called(state, chat_topic, 100, 100)
-    end
-
-    test "handle_cast/2 :; {:get_messages, pid} is called a thousand times and returns a state with messages",
-         %{chat_topic: chat_topic, state: state} do
-      {:ok, _state} = test_handle_get_messages_is_called(state, chat_topic, 100, 1000)
-    end
-
-    test "handle_cast/2 :; {:get_messages, pid} is called ten thousand times and returns a state with messages",
-         %{chat_topic: chat_topic, state: state} do
-      {:ok, _state} = test_handle_get_messages_is_called(state, chat_topic, 100, 10_00)
     end
   end
 end

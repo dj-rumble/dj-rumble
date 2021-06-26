@@ -49,15 +49,16 @@ defmodule DjRumbleWeb.RoomLive.Show do
             connected_users = get_list_from_slug(slug)
 
             # Subscribe to the topic
-            DjRumbleWeb.Endpoint.subscribe(topic)
+            :ok = DjRumbleWeb.Endpoint.subscribe(topic)
 
             # Track changes to the topic
-            Presence.track(
-              self(),
-              topic,
-              socket.id,
-              %{username: user.username, user_id: user.id}
-            )
+            {:ok, _} =
+              Presence.track(
+                self(),
+                topic,
+                socket.id,
+                %{username: user.username, user_id: user.id}
+              )
 
             :ok = Channels.subscribe(:score, slug)
 
@@ -129,11 +130,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
 
   @impl true
   def handle_event("throw_confetti_interaction", _, socket) do
-    Channels.broadcast(
-      :room,
-      socket.assigns.room.slug,
-      {:throw_confetti_interaction, %{user: socket.assigns.user.username}}
-    )
+    :ok =
+      Channels.broadcast(
+        :room,
+        socket.assigns.room.slug,
+        {:throw_confetti_interaction, %{user: socket.assigns.user.username}}
+      )
 
     {:noreply, socket}
   end

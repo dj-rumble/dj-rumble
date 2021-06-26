@@ -29,9 +29,9 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
       _ ->
         %{assigns: assigns} = socket
-        %{chat_service: chat_service, user: user} = assigns
+        %{chat_service: chat_service, timezone: timezone, user: user} = assigns
 
-        :ok = ChatServer.new_message(chat_service, user, message)
+        :ok = ChatServer.new_message(chat_service, user, message, timezone)
 
         {:noreply, socket}
     end
