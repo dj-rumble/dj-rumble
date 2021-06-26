@@ -7,9 +7,11 @@ defmodule DjRumble.Chats.Message do
 
   alias DjRumble.Accounts.User
   alias DjRumble.Chats.Message
+  alias DjRumble.Rooms.Video
 
   @type id() :: String.t()
   @type user() :: User
+  @type video() :: Video
 
   defsum do
     defdata User do
@@ -18,13 +20,27 @@ defmodule DjRumble.Chats.Message do
       timestamp :: String.t() \\ ""
     end
 
-    defdata Notice do
-      from :: Message.user() \\ %User{}
-      message :: String.t() \\ ""
-      timestamp :: String.t() \\ ""
+    defdata Video do
+      video :: Message.video() \\ %Video{}
+      user :: Message.user() \\ %User{}
+      action :: :playing | :added \\ :playing
     end
   end
 
+  @spec create_message(
+          :user_message | :video_message,
+          DjRumble.Rooms.Video | binary,
+          DjRumble.Accounts.User,
+          :added | :playing | binary
+        ) :: %{
+          :__struct__ => DjRumble.Chats.Message.User | DjRumble.Chats.Message.Video,
+          optional(:action) => :added | :playing,
+          optional(:from) => DjRumble.Accounts.User,
+          optional(:message) => binary,
+          optional(:timestamp) => binary,
+          optional(:user) => DjRumble.Accounts.User,
+          optional(:video) => DjRumble.Rooms.Video
+        }
   @doc """
   Given a `type`, a `message`, a `user` and a `timezone`, returns a new `Message`.
 
@@ -43,10 +59,12 @@ defmodule DjRumble.Chats.Message do
       }
 
   """
-  @spec create_message(atom(), String.t(), DjRumble.Accounts.User, String.t()) ::
-          DjRumble.Chats.Message.t()
   def create_message(:user_message, message, user, timezone) do
     Message.User.new(user, message, timestamp(timezone))
+  end
+
+  def create_message(:video_message, video, user, action) do
+    Message.Video.new(video, user, action)
   end
 
   @doc """

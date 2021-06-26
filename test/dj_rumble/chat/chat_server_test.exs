@@ -27,7 +27,19 @@ defmodule DjRumble.Chat.ChatServerTest do
     for _n <- 1..n, do: generate_user_message(user, message)
   end
 
-  def assert_receive_new_user_message(user, message) do
+  defp generate_video_message(video, user, action) do
+    {video, user, action}
+  end
+
+  defp generate_video_messages(_video, _user, _action, 0) do
+    []
+  end
+
+  defp generate_video_messages(video, user, action, n) do
+    for _n <- 1..n, do: generate_video_message(video, user, action)
+  end
+
+  defp assert_receive_new_user_message(user, message) do
     %DjRumble.Chats.Message.User{
       from: user,
       message: message
@@ -42,13 +54,36 @@ defmodule DjRumble.Chat.ChatServerTest do
     )
   end
 
-  def assert_receive_new_user_messages(users_messages) do
+  defp assert_receive_new_user_messages(users_messages) do
     for {user, message} <- users_messages do
       assert_receive_new_user_message(user, message)
     end
   end
 
-  def assert_pid_receive_user_messages(pid, users_messages) do
+  defp assert_receive_new_video_message(video, user, action) do
+    %DjRumble.Chats.Message.Video{
+      video: video,
+      user: user,
+      action: action
+    } = create_message([:video_message, video, user, action])
+
+    assert_receive(
+      {:receive_new_message,
+       %DjRumble.Chats.Message.Video{
+         video: ^video,
+         user: ^user,
+         action: ^action
+       }}
+    )
+  end
+
+  defp assert_receive_new_video_messages(videos_messages) do
+    for {video, user, action} <- videos_messages do
+      assert_receive_new_video_message(video, user, action)
+    end
+  end
+
+  defp assert_pid_receive_user_messages(pid, users_messages) do
     assert_receive({:trace, ^pid, :receive, {:receive_messages, received_messages}})
 
     received_messages =
@@ -62,7 +97,7 @@ defmodule DjRumble.Chat.ChatServerTest do
     ^users_messages = received_messages
   end
 
-  def assert_pids_receive_user_messages(pids, users_messages) do
+  defp assert_pids_receive_user_messages(pids, users_messages) do
     for pid <- pids do
       assert_pid_receive_user_messages(pid, users_messages)
     end
@@ -85,12 +120,22 @@ defmodule DjRumble.Chat.ChatServerTest do
     end
 
     defp do_new_user_message(pid, user, message) do
-      :ok = ChatServer.new_message(pid, :user_message, user, message, @default_timezone)
+      :ok = ChatServer.new_user_message(pid, user, message, @default_timezone)
     end
 
     defp do_new_user_messages(pid, users_messages) do
       for {user, message} <- users_messages do
         :ok = do_new_user_message(pid, user, message)
+      end
+    end
+
+    defp do_new_video_message(pid, video, user, action) do
+      :ok = ChatServer.new_video_message(pid, video, user, action)
+    end
+
+    defp do_new_video_messages(pid, video_messages) do
+      for {video, user, action} <- video_messages do
+        :ok = do_new_video_message(pid, video, user, action)
       end
     end
 
@@ -104,7 +149,7 @@ defmodule DjRumble.Chat.ChatServerTest do
       end
     end
 
-    defp test_new_message_is_called(pid, chat_topic, messages_amount) do
+    defp test_new_user_message_is_called(pid, chat_topic, messages_amount) do
       # Setup
       :ok = Channels.subscribe(chat_topic)
       user = user_fixture()
@@ -117,6 +162,24 @@ defmodule DjRumble.Chat.ChatServerTest do
       # Verify
       ^messages_amount = length(responses)
       assert_receive_new_user_messages(users_messages)
+
+      :ok
+    end
+
+    defp test_new_video_message_is_called(pid, chat_topic, messages_amount) do
+      # Setup
+      :ok = Channels.subscribe(chat_topic)
+      video = video_fixture()
+      user = user_fixture()
+      action = :playing
+      users_messages = generate_video_messages(video, user, action, messages_amount)
+
+      # Exercise
+      responses = do_new_video_messages(pid, users_messages)
+
+      # Verify
+      ^messages_amount = length(responses)
+      assert_receive_new_video_messages(users_messages)
 
       :ok
     end
@@ -150,48 +213,83 @@ defmodule DjRumble.Chat.ChatServerTest do
       assert do_get_state(pid) == state
     end
 
-    test "new_message/1 is called once and returns :ok", %{pid: pid, chat_topic: chat_topic} do
-      :ok = test_new_message_is_called(pid, chat_topic, 1)
+    test "new_user_message/4 is called once and returns :ok", %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_new_user_message_is_called(pid, chat_topic, 1)
     end
 
-    test "new_message/1 is called ten times and returns :ok", %{pid: pid, chat_topic: chat_topic} do
-      :ok = test_new_message_is_called(pid, chat_topic, 10)
-    end
-
-    test "new_message/1 is called a hundred times and returns :ok", %{
+    test "new_user_message/4 is called ten times and returns :ok", %{
       pid: pid,
       chat_topic: chat_topic
     } do
-      :ok = test_new_message_is_called(pid, chat_topic, 100)
+      :ok = test_new_user_message_is_called(pid, chat_topic, 10)
     end
 
-    test "new_message/1 is called a thousand times and returns :ok", %{
+    test "new_user_message/4 is called a hundred times and returns :ok", %{
       pid: pid,
       chat_topic: chat_topic
     } do
-      :ok = test_new_message_is_called(pid, chat_topic, 1000)
+      :ok = test_new_user_message_is_called(pid, chat_topic, 100)
     end
 
-    test "new_message/1 is called ten thousand times and returns :ok", %{
+    test "new_user_message/4 is called a thousand times and returns :ok", %{
       pid: pid,
       chat_topic: chat_topic
     } do
-      :ok = test_new_message_is_called(pid, chat_topic, 10_000)
+      :ok = test_new_user_message_is_called(pid, chat_topic, 1000)
     end
 
-    test "get_messages/1 is called once with no messages and returns :ok", %{pid: pid} do
+    test "new_user_message/4 is called ten thousand times and returns :ok", %{
+      pid: pid,
+      chat_topic: chat_topic
+    } do
+      :ok = test_new_user_message_is_called(pid, chat_topic, 10_000)
+    end
+
+    test "new_video_message/4 is called once and returns :ok", %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_new_video_message_is_called(pid, chat_topic, 1)
+    end
+
+    test "new_video_message/4 is called ten times and returns :ok", %{
+      pid: pid,
+      chat_topic: chat_topic
+    } do
+      :ok = test_new_video_message_is_called(pid, chat_topic, 10)
+    end
+
+    test "new_video_message/4 is called a hundred times and returns :ok", %{
+      pid: pid,
+      chat_topic: chat_topic
+    } do
+      :ok = test_new_video_message_is_called(pid, chat_topic, 100)
+    end
+
+    test "new_video_message/4 is called a thousand times and returns :ok", %{
+      pid: pid,
+      chat_topic: chat_topic
+    } do
+      :ok = test_new_video_message_is_called(pid, chat_topic, 1000)
+    end
+
+    test "new_video_message/4 is called ten thousand times and returns :ok", %{
+      pid: pid,
+      chat_topic: chat_topic
+    } do
+      :ok = test_new_video_message_is_called(pid, chat_topic, 10_000)
+    end
+
+    test "get_messages/2 is called once with no messages and returns :ok", %{pid: pid} do
       :ok = test_messages_is_called(pid, 0, 1)
     end
 
-    test "get_messages/1 is called once and returns :ok", %{pid: pid} do
+    test "get_messages/2 is called once and returns :ok", %{pid: pid} do
       :ok = test_messages_is_called(pid, 100, 1)
     end
 
-    test "get_messages/1 is called ten times and returns :ok", %{pid: pid} do
+    test "get_messages/2 is called ten times and returns :ok", %{pid: pid} do
       :ok = test_messages_is_called(pid, 100, 10)
     end
 
-    test "get_messages/1 is called a hundred times and returns :ok", %{pid: pid} do
+    test "get_messages/2 is called a hundred times and returns :ok", %{pid: pid} do
       :ok = test_messages_is_called(pid, 100, 100)
     end
   end
@@ -217,7 +315,7 @@ defmodule DjRumble.Chat.ChatServerTest do
     defp handle_new_user_message(state, {user, message}) do
       response =
         ChatServer.handle_cast(
-          {:new_message, :user_message, user, message, @default_timezone},
+          {:new_message, [:user_message, message, user, @default_timezone]},
           state
         )
 
@@ -229,6 +327,24 @@ defmodule DjRumble.Chat.ChatServerTest do
     defp handle_new_user_messages(state, users_messages) do
       Enum.reduce(users_messages, {[], state}, fn {user, message}, {messages, state} ->
         {messages ++ [message], handle_new_user_message(state, {user, message})}
+      end)
+    end
+
+    defp handle_new_video_message(state, {video, user, action}) do
+      response =
+        ChatServer.handle_cast(
+          {:new_message, [:video_message, video, user, action]},
+          state
+        )
+
+      {:noreply, state} = response
+
+      state
+    end
+
+    defp handle_new_video_messages(state, video_messages) do
+      Enum.reduce(video_messages, {[], state}, fn {video, user, action}, {actions, state} ->
+        {actions ++ [action], handle_new_video_message(state, {video, user, action})}
       end)
     end
 
@@ -246,22 +362,40 @@ defmodule DjRumble.Chat.ChatServerTest do
       end)
     end
 
-    defp assert_has_message(expected_users_messages, {_user, _message} = user_message) do
+    defp assert_has_user_message(expected_users_messages, {_user, _message} = user_message) do
       assert Enum.member?(expected_users_messages, user_message)
     end
 
-    defp assert_has_messages(state, users_messages) do
+    defp assert_has_user_messages(state, users_messages) do
       expected_users_messages =
         for %{from: user, message: message} <- state.messages do
           {user, message}
         end
 
       for user_message <- users_messages do
-        assert_has_message(expected_users_messages, user_message)
+        assert_has_user_message(expected_users_messages, user_message)
       end
     end
 
-    defp test_handle_new_message_is_called(state, chat_topic, messages_amount) do
+    defp assert_has_video_message(
+           expected_video_messages,
+           {_video, _user, _action} = video_message
+         ) do
+      assert Enum.member?(expected_video_messages, video_message)
+    end
+
+    defp assert_has_video_messages(state, video_messages) do
+      expected_videos_messages =
+        for %{video: video, user: user, action: action} <- state.messages do
+          {video, user, action}
+        end
+
+      for video_message <- video_messages do
+        assert_has_video_message(expected_videos_messages, video_message)
+      end
+    end
+
+    defp test_handle_new_user_message_is_called(state, chat_topic, messages_amount) do
       :ok = Channels.subscribe(chat_topic)
       user = user_fixture()
       message = "Hello!"
@@ -272,8 +406,26 @@ defmodule DjRumble.Chat.ChatServerTest do
 
       # Verify
       ^messages_amount = length(state.messages)
-      assert_has_messages(state, users_messages)
+      assert_has_user_messages(state, users_messages)
       assert_receive_new_user_messages(users_messages)
+
+      {:ok, state}
+    end
+
+    defp test_handle_new_video_message_is_called(state, chat_topic, messages_amount) do
+      :ok = Channels.subscribe(chat_topic)
+      user = user_fixture()
+      video = video_fixture()
+      action = :playing
+      video_messages = generate_video_messages(video, user, action, messages_amount)
+
+      # Exercise
+      {_video_messages, state} = handle_new_video_messages(state, video_messages)
+
+      # Verify
+      ^messages_amount = length(state.messages)
+      assert_has_video_messages(state, video_messages)
+      assert_receive_new_video_messages(video_messages)
 
       {:ok, state}
     end
@@ -284,7 +436,7 @@ defmodule DjRumble.Chat.ChatServerTest do
       pids_users = spawn_players(players_amount)
       pids = for {pid, _user} <- pids_users, do: pid
 
-      {:ok, state} = test_handle_new_message_is_called(state, chat_topic, messages_amount)
+      {:ok, state} = test_handle_new_user_message_is_called(state, chat_topic, messages_amount)
 
       # Exercise
       new_state = handle_get_messages(state, pids)
@@ -311,24 +463,44 @@ defmodule DjRumble.Chat.ChatServerTest do
       ^state = handle_get_state(state)
     end
 
-    test "handle_cast/2 :: {:new_message, %User{}, message} is called once and returns a state with a new message",
+    test "handle_cast/2 :: {:new_message, [:user_message, message, %User{}, timezone]} is called once and returns a state with a new message",
          %{chat_topic: chat_topic, state: state} do
-      {:ok, _state} = test_handle_new_message_is_called(state, chat_topic, 1)
+      {:ok, _state} = test_handle_new_user_message_is_called(state, chat_topic, 1)
     end
 
-    test "handle_cast/2 :: {:new_message, %User{}, message} is called ten times and returns a state with a new messages",
+    test "handle_cast/2 :: {:new_message, [:user_message, message, %User{}, timezone]} is called ten times and returns a state with a new messages",
          %{chat_topic: chat_topic, state: state} do
-      {:ok, _state} = test_handle_new_message_is_called(state, chat_topic, 10)
+      {:ok, _state} = test_handle_new_user_message_is_called(state, chat_topic, 10)
     end
 
-    test "handle_cast/2 :: {:new_message, %User{}, message} is called a hundred times and returns a state with a new messages",
+    test "handle_cast/2 :: {:new_message, [:user_message, message, %User{}, timezone]} is called a hundred times and returns a state with a new messages",
          %{chat_topic: chat_topic, state: state} do
-      {:ok, _state} = test_handle_new_message_is_called(state, chat_topic, 100)
+      {:ok, _state} = test_handle_new_user_message_is_called(state, chat_topic, 100)
     end
 
-    test "handle_cast/2 :: {:new_message, %User{}, message} is called a thousand times and returns a state with a new messages",
+    test "handle_cast/2 :: {:new_message, [:user_message, message, %User{}, timezone]} is called a thousand times and returns a state with a new messages",
          %{chat_topic: chat_topic, state: state} do
-      {:ok, _state} = test_handle_new_message_is_called(state, chat_topic, 1000)
+      {:ok, _state} = test_handle_new_user_message_is_called(state, chat_topic, 1000)
+    end
+
+    test "handle_cast/2 :: {:new_message, [:video_message, %Video{}, %User{}, action]} is called once and returns a state with a new message",
+         %{chat_topic: chat_topic, state: state} do
+      {:ok, _state} = test_handle_new_video_message_is_called(state, chat_topic, 1)
+    end
+
+    test "handle_cast/2 :: {:new_message, [:video_message, %Video{}, %User{}, action]} is called ten times and returns a state with a new messages",
+         %{chat_topic: chat_topic, state: state} do
+      {:ok, _state} = test_handle_new_video_message_is_called(state, chat_topic, 10)
+    end
+
+    test "handle_cast/2 :: {:new_message, [:video_message, %Video{}, %User{}, action]} is called a hundred times and returns a state with a new messages",
+         %{chat_topic: chat_topic, state: state} do
+      {:ok, _state} = test_handle_new_video_message_is_called(state, chat_topic, 100)
+    end
+
+    test "handle_cast/2 :: {:new_message, [:video_message, %Video{}, %User{}, action]} is called a thousand times and returns a state with a new messages",
+         %{chat_topic: chat_topic, state: state} do
+      {:ok, _state} = test_handle_new_video_message_is_called(state, chat_topic, 1000)
     end
 
     test "handle_cast/2 :; {:get_messages, pid} is called once and returns a state with no messages",

@@ -50,6 +50,8 @@ defmodule DjRumble.Room.RoomServerTest do
   end
 
   describe "room_server client interface" do
+    @default_timezone "America/Buenos_Aires"
+
     setup do
       room = room_fixture()
       videos = videos_fixture(3)
@@ -142,7 +144,7 @@ defmodule DjRumble.Room.RoomServerTest do
     end
 
     defp do_new_user_message(pid, user, message) do
-      :ok = RoomServer.new_message(pid, :user_message, user, message)
+      :ok = RoomServer.new_message(pid, user, message, @default_timezone)
     end
 
     defp do_new_user_messages(pid, users_messages) do
