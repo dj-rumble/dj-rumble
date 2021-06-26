@@ -4,6 +4,7 @@ defmodule DjRumble.Chat.ChatServerTest do
   """
   use DjRumble.DataCase
   use DjRumble.TestCase
+  use DjRumble.Support.Chats.MessageCase
   use ExUnit.Case
 
   import DjRumble.AccountsFixtures
@@ -24,20 +25,21 @@ defmodule DjRumble.Chat.ChatServerTest do
     for _n <- 1..n, do: generate_message(user, message)
   end
 
-  def assert_receive_new_message(user_message) do
-    assert_receive({:receive_new_message, ^user_message})
+  def assert_receive_new_message(user, message) do
+    message = create_message([message, user])
+    assert_receive({:receive_new_message, ^message})
   end
 
   def assert_receive_new_messages(users_messages) do
     for {user, message} <- users_messages do
-      assert_receive_new_message(%{user: user, message: message})
+      assert_receive_new_message(user, message)
     end
   end
 
   def assert_pid_receive_messages(pid, users_messages) do
     users_messages =
       for {user, message} <- users_messages do
-        %{user: user, message: message}
+        create_message([message, user])
       end
 
     assert_receive({:trace, ^pid, :receive, {:receive_messages, ^users_messages}})

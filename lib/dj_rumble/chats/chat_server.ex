@@ -6,6 +6,7 @@ defmodule DjRumble.Chats.ChatServer do
 
   require Logger
 
+  alias DjRumble.Chats.Message
   alias DjRumbleWeb.Channels
 
   def start_link({chat_topic}) do
@@ -49,10 +50,10 @@ defmodule DjRumble.Chats.ChatServer do
 
   @impl GenServer
   def handle_cast({:new_message, user, message}, state) do
-    user_message = %{user: user, message: message}
-    state = %{state | messages: state.messages ++ [user_message]}
+    message = Message.create_message(message, user)
+    state = %{state | messages: state.messages ++ [message]}
 
-    :ok = Channels.broadcast(state.chat_topic, {:receive_new_message, user_message})
+    :ok = Channels.broadcast(state.chat_topic, {:receive_new_message, message})
 
     {:noreply, state}
   end

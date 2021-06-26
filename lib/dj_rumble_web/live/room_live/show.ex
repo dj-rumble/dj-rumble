@@ -311,7 +311,10 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Topic:** `"room:<slug>:chat"`
   * **Params:** `%{user: %User{}, message: String.t()}`
   """
-  def handle_receive_new_message(params, socket) do
+  def handle_receive_new_message(
+        %DjRumble.Chats.Message{user: _user, message: _message} = params,
+        socket
+      ) do
     %{assigns: %{chat_messages: chat_messages, timezone: timezone}} = socket
 
     params = Map.merge(params, %{timezone: timezone})
