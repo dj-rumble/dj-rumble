@@ -114,7 +114,7 @@ defmodule DjRumbleWeb.Live.Components.Searchbox do
         _params,
         %{assigns: %{search_query: query}} = socket
       ) do
-    opts = [maxResults: 5]
+    opts = [maxResults: 20]
 
     search_result =
       case Tubex.Video.search_by_query(query, opts) do

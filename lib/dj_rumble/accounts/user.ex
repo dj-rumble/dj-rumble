@@ -154,6 +154,7 @@ defmodule DjRumble.Accounts.User do
   end
 
   def create_random_name do
+    # coveralls-ignore-start
     adjectives = [
       fn -> Faker.Superhero.descriptor() end,
       fn -> Faker.Pizza.cheese() end,
@@ -170,6 +171,7 @@ defmodule DjRumble.Accounts.User do
       fn -> Faker.Superhero.name() end
     ]
 
+    # coveralls-ignore-stop
     descriptor = Enum.at(adjectives, Enum.random(0..(length(adjectives) - 1)))
     name = Enum.at(nouns, Enum.random(0..(length(nouns) - 1)))
     "#{descriptor.()} #{name.()}"
