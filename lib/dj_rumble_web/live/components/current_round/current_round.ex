@@ -45,13 +45,17 @@ defmodule DjRumbleWeb.Live.Components.CurrentRound do
 
       user ->
         ~L"""
-        Added by <span class="text-green-400"><%= user.username%></span>
+        Added by <span class="text-gray-300 font-bold"><%= user.username%></span>
         """
     end
   end
 
   defp render_equalizer(true) do
-    Phoenix.View.render(DjRumbleWeb.EqualizerView, "equalizer.html", extra_classes: "left-4")
+    Phoenix.View.render(
+      DjRumbleWeb.EqualizerView,
+      "equalizer.html",
+      extra_classes: "left-4 w-full pr-3 animated fadeIn"
+    )
   end
 
   defp render_equalizer(false), do: ""

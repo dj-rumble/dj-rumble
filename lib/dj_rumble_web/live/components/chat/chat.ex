@@ -100,6 +100,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
     ~E"""
     <p class="
       mb-0.5 my-2 py-4 px-2
+      border-t-2 border-gray-900 border-opacity-5
       text-lg not-italic font-normal text-left
       animated fadeIn
     ">

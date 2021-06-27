@@ -1,11 +1,17 @@
-<div class="grid grid-cols-6 grid-row-flow">
+<div class="grid grid-cols-6 grid-row-flow h-full">
   <div class="
     col-span-3 row-start-1 row-end-3
     relative align-center self-end
-    rounded-xl pl-4 animated fadeIn
+    pl-4
   ">
-    <%= img_tag(@current_round.video.img_url, class: "rounded", width: "80px", height: "80px") %>
+  <div class="rounded-md shadow-inner-input p-2">
+    <%= img_tag(
+      @current_round.video.img_url,
+      class: "rounded-md animated fadeIn",
+      width: "100%", height: "100%"
+    ) %>
     <%= render_equalizer(@is_playing) %>
+  </div>
   </div>
   <div class="col-span-6 row-start-3 row-end-4 self-end">
     <div class="grid grid-rows-2 text-left text-xl text-gray-400 p-3">

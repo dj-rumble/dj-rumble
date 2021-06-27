@@ -49,7 +49,6 @@ defmodule DjRumble.Chats.MessageTest do
         create_message([:video_message, video, user, {action, role, args}])
     end
 
-    @tag :wip
     test "narrate/1 :: (%Message.Video{action: :playing}) returns a message" do
       # Setup
       %{title: title} = video = video_fixture()
@@ -72,7 +71,6 @@ defmodule DjRumble.Chats.MessageTest do
       ] = message
     end
 
-    @tag :wip
     test "narrate/1 :: (%Message.Video{action: :scheduled, role: :spectator, args: 0}) returns a message" do
       # Setup
       %{title: title} = video = video_fixture()
@@ -92,7 +90,6 @@ defmodule DjRumble.Chats.MessageTest do
       [{:username, ^username}, "adds", {:video, ^title}, "and it's next to come"] = message
     end
 
-    @tag :wip
     test "narrate/1 :: (%Message.Video{action: :scheduled, role: :spectator, args: 10}) returns a message" do
       # Setup
       %{title: title} = video = video_fixture()
@@ -121,7 +118,6 @@ defmodule DjRumble.Chats.MessageTest do
       ] = message
     end
 
-    @tag :wip
     test "narrate/1 :: (%Message.Video{action: :scheduled, role: :dj, args: 0}) returns a message" do
       # Setup
       %{title: title} = video = video_fixture()
@@ -141,7 +137,6 @@ defmodule DjRumble.Chats.MessageTest do
       ["💿 Dj", {:username, ^username}, "casts", {:video, ^title}, "to be next in queue"] = message
     end
 
-    @tag :wip
     test "narrate/1 :: (%Message.Video{action: :scheduled, role: :dj, args: 10}) returns a message" do
       # Setup
       %{title: title} = video = video_fixture()

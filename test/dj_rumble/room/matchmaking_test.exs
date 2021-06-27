@@ -580,7 +580,6 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert new_state == state
     end
 
-    @tag :wip
     test "handle_call/3 :: {:schedule_round, %Video{}} is called once with a prepared round and replies :ok",
          %{
            state: state
