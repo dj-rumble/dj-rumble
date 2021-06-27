@@ -6,7 +6,9 @@ defmodule DjRumble.Rooms.Matchmaking do
 
   require Logger
 
+  alias DjRumble.Accounts.User
   alias DjRumble.Chats.ChatServer
+  alias DjRumble.Rooms.Video
 
   alias DjRumble.Rounds.{
     Round,
@@ -79,7 +81,7 @@ defmodule DjRumble.Rooms.Matchmaking do
       | next_rounds: state.next_rounds ++ [schedule_round(video, state.room, user)]
     }
 
-    :ok = send_announcement(state, video, user, :scheduled)
+    :ok = send_announcement(state, :round_scheduled, video, user)
 
     Logger.info(fn ->
       "Scheduled a round for video title: #{video.title}, added by user: #{user.username}"
@@ -152,12 +154,16 @@ defmodule DjRumble.Rooms.Matchmaking do
 
   @impl GenServer
   def handle_call({:score, user, type}, _from, state) do
-    {_ref, {round_pid, _video, _time, _user}} = state.current_round
+    {_ref, {round_pid, video, _time, _user}} = state.current_round
 
     response =
       case Process.alive?(round_pid) do
         true ->
-          %Round.InProgress{} = RoundServer.score(round_pid, user, type)
+          %Round.InProgress{} = round = RoundServer.score(round_pid, user, type)
+
+          :ok = send_announcement(state, :score, video, user, type, round)
+
+          round
 
         false ->
           :error
@@ -402,7 +408,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     :ok = RoundServer.start_round(pid)
 
-    :ok = send_announcement(state, video, user, :playing)
+    :ok = send_announcement(state, :round_started, video, user)
 
     :ok =
       Channels.broadcast(
@@ -420,11 +426,11 @@ defmodule DjRumble.Rooms.Matchmaking do
     %{state | status: :playing}
   end
 
-  defp send_announcement(state, video, user, :playing) do
+  defp send_announcement(state, :round_started, %Video{} = video, %User{} = user) do
     ChatServer.new_video_message(state.chat_server, video, user, :playing)
   end
 
-  defp send_announcement(state, video, user, :scheduled = type) do
+  defp send_announcement(state, :round_scheduled, %Video{} = video, %User{} = user) do
     case state.current_round do
       {_ref, {_pid, _current_video, _time, ^user}} ->
         # Although the video added by this Dj is at the end of the queue, it is
@@ -432,9 +438,7 @@ defmodule DjRumble.Rooms.Matchmaking do
         # the current round. We count current Dj videos to predict a place at
         # the queue.
         remaining_videos =
-          Enum.filter(state.next_rounds, fn {_ref, {_pid, _current_video, _time, next_round_user}} ->
-            user == next_round_user
-          end)
+          get_current_dj_rounds(state.next_rounds, user)
           |> length()
 
         :ok =
@@ -442,7 +446,7 @@ defmodule DjRumble.Rooms.Matchmaking do
             state.chat_server,
             video,
             user,
-            {type, :dj, remaining_videos}
+            {:scheduled, :dj, remaining_videos}
           )
 
       _ ->
@@ -455,8 +459,40 @@ defmodule DjRumble.Rooms.Matchmaking do
             state.chat_server,
             video,
             user,
-            {type, :spectator, remaining_videos}
+            {:scheduled, :spectator, remaining_videos}
           )
     end
+  end
+
+  defp send_announcement(
+         state,
+         :score,
+         %Video{} = video,
+         %User{} = user,
+         score_type,
+         %Round.InProgress{} = round
+       ) do
+    role =
+      case state.current_round do
+        {_ref, {_pid, _current_video, _time, ^user}} ->
+          :dj
+
+        _round ->
+          :spectator
+      end
+
+    :ok =
+      ChatServer.new_score_message(
+        state.chat_server,
+        video,
+        user,
+        {score_type, role, round}
+      )
+  end
+
+  defp get_current_dj_rounds(rounds, %User{} = user) do
+    Enum.filter(rounds, fn {_ref, {_pid, _current_video, _time, round_user}} ->
+      user == round_user
+    end)
   end
 end

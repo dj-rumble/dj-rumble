@@ -8,8 +8,10 @@ defmodule DjRumble.Chats.Message do
   alias DjRumble.Accounts.User, as: AccountUser
   alias DjRumble.Chats.Message
   alias DjRumble.Rooms.Video
+  alias DjRumble.Rounds.Round
 
   @type id() :: String.t()
+  @type round() :: Round
   @type user() :: AccountUser
   @type video() :: Video
 
@@ -26,6 +28,14 @@ defmodule DjRumble.Chats.Message do
       action :: :playing | :scheduled \\ :playing
       role :: :dj | :spectator | :system \\ :system
       args :: any() \\ nil
+    end
+
+    defdata Score do
+      video :: Message.video() \\ %Video{}
+      scored_by :: Message.user() \\ %AccountUser{}
+      score_type :: :positive | :negative \\ :positive
+      role :: :dj | :spectator \\ :spectator
+      round :: Message.round() \\ %Round.InProgress{}
     end
   end
 
@@ -57,6 +67,10 @@ defmodule DjRumble.Chats.Message do
 
   def create_message(:video_message, video, user, action) do
     Message.Video.new(video, user, action)
+  end
+
+  def create_message(:score_message, video, user, {score_type, role, round}) do
+    Message.Score.new(video, user, score_type, role, round)
   end
 
   @doc """
@@ -140,6 +154,13 @@ defmodule DjRumble.Chats.Message do
       {:args, "##{args}"},
       "in queue"
     ]
+  end
+
+  def narrate(%Message.Score{
+        video: video,
+        scored_by: user
+      }) do
+    []
   end
 
   @doc """

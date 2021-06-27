@@ -9,6 +9,10 @@ defmodule DjRumble.Chats.MessageTest do
   import DjRumble.AccountsFixtures
   import DjRumble.RoomsFixtures
 
+  alias DjRumble.Accounts.User
+  alias DjRumble.Rooms.Video
+  alias DjRumble.Rounds.Round
+
   describe "round" do
     alias DjRumble.Chats.Message
 
@@ -47,6 +51,26 @@ defmodule DjRumble.Chats.MessageTest do
       # Exercise & Verify
       %Message.Video{action: ^action, added_by: ^user, args: ^args, role: ^role, video: ^video} =
         create_message([:video_message, video, user, {action, role, args}])
+    end
+
+    test "create_message/4 :: (:score_message, %Video{}, %User{}, {:positive, :spectator, %Round{}}) returns a %Message.Score{}" do
+      # Setup
+      %Video{} = video = video_fixture()
+      %User{} = user = user_fixture()
+      score_type = :positive
+      role = :spectator
+
+      %Round.InProgress{} =
+        round = %Round.InProgress{elapsed_time: 10, time: 20, score: {10, 5}, outcome: :continue}
+
+      # Exercise & Verify
+      %Message.Score{
+        role: ^role,
+        round: ^round,
+        score_type: ^score_type,
+        scored_by: ^user,
+        video: ^video
+      } = create_message([:score_message, video, user, {score_type, role, round}])
     end
 
     test "narrate/1 :: (%Message.Video{action: :playing}) returns a message" do
