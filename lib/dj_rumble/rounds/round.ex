@@ -88,6 +88,43 @@ defmodule DjRumble.Rounds.Round do
     |> check_if_finished()
   end
 
+  @doc """
+  Given a `%Round.InProgress{elapsed_time: elapsed_time, time: time}` and a number of
+  stages, returns a number representing the stage of the round, according to
+  elapsed_time, where `elapsed_time` is the time has passed since the round
+  started and `time` the total time of the round.
+
+  ## Examples
+
+      iex> %DjRumble.Rounds.Round.InProgress{time: 30, elapsed_time: 9}
+      ...> |> Round.get_estimated_round_stage(3)
+      1
+
+      iex> %DjRumble.Rounds.Round.InProgress{time: 30, elapsed_time: 10}
+      ...> |> Round.get_estimated_round_stage(3)
+      2
+
+      iex> %DjRumble.Rounds.Round.InProgress{time: 30, elapsed_time: 20}
+      ...> |> Round.get_estimated_round_stage(3)
+      3
+
+      iex> %DjRumble.Rounds.Round.InProgress{time: 30, elapsed_time: 30}
+      ...> |> Round.get_estimated_round_stage(3)
+      3
+
+  """
+  @spec get_estimated_round_stage(%Round.InProgress{}, non_neg_integer) :: non_neg_integer
+  def get_estimated_round_stage(%Round.InProgress{time: time}, _stages) when time <= 19, do: 1
+
+  def get_estimated_round_stage(%Round.InProgress{time: time} = round, stages) when stages > 2 do
+    %Round.InProgress{elapsed_time: elapsed_time} = round
+    count = div(time, stages)
+    chunks = Enum.chunk_every(Enum.to_list(0..time), count, count, :discard)
+    Enum.count(chunks, &(elapsed_time >= Enum.max(&1) or elapsed_time in &1))
+  end
+
+  def get_estimated_round_stage(_round, _stages), do: 1
+
   defp track_time(%Round.InProgress{} = round) do
     action = Action.from_properties(ActionsDeck.count_action_properties())
     time = Action.apply(action, round)

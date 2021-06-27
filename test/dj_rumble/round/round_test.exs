@@ -180,5 +180,87 @@ defmodule DjRumble.Round.RoundTest do
       round = %Round.InProgress{time: time, score: score, outcome: outcome}
       %Round.Finished{time: ^time, outcome: :thrown} = Round.simulate_tick(round)
     end
+
+    @tag :wip
+    test "get_estimated_round_stage/3 given 3 stages, returns an integer that represents a given moment in a round" do
+      # Base case that always returns 1
+      1 =
+        %Round.InProgress{time: 19, elapsed_time: 15}
+        |> Round.get_estimated_round_stage(3)
+
+      # Round with 30 seconds
+      time = 30
+
+      1 =
+        %Round.InProgress{time: time, elapsed_time: 0}
+        |> Round.get_estimated_round_stage(3)
+
+      1 =
+        %Round.InProgress{time: time, elapsed_time: 9}
+        |> Round.get_estimated_round_stage(3)
+
+      2 =
+        %Round.InProgress{time: time, elapsed_time: 11}
+        |> Round.get_estimated_round_stage(3)
+
+      2 =
+        %Round.InProgress{time: time, elapsed_time: 19}
+        |> Round.get_estimated_round_stage(3)
+
+      3 =
+        %Round.InProgress{time: time, elapsed_time: 20}
+        |> Round.get_estimated_round_stage(3)
+
+      3 =
+        %Round.InProgress{time: time, elapsed_time: 30}
+        |> Round.get_estimated_round_stage(3)
+
+      # Round with 257 seconds
+      time = 257
+
+      1 =
+        %Round.InProgress{time: time, elapsed_time: 0}
+        |> Round.get_estimated_round_stage(3)
+
+      1 =
+        %Round.InProgress{time: time, elapsed_time: 42}
+        |> Round.get_estimated_round_stage(3)
+
+      1 =
+        %Round.InProgress{time: time, elapsed_time: 84}
+        |> Round.get_estimated_round_stage(3)
+
+      2 =
+        %Round.InProgress{time: time, elapsed_time: 85}
+        |> Round.get_estimated_round_stage(3)
+
+      2 =
+        %Round.InProgress{time: time, elapsed_time: 122}
+        |> Round.get_estimated_round_stage(3)
+
+      2 =
+        %Round.InProgress{time: time, elapsed_time: 169}
+        |> Round.get_estimated_round_stage(3)
+
+      3 =
+        %Round.InProgress{time: time, elapsed_time: 170}
+        |> Round.get_estimated_round_stage(3)
+
+      3 =
+        %Round.InProgress{time: time, elapsed_time: 207}
+        |> Round.get_estimated_round_stage(3)
+
+      3 =
+        %Round.InProgress{time: time, elapsed_time: 256}
+        |> Round.get_estimated_round_stage(3)
+
+      3 =
+        %Round.InProgress{time: time, elapsed_time: time}
+        |> Round.get_estimated_round_stage(3)
+
+      3 =
+        %Round.InProgress{time: time, elapsed_time: time + 1}
+        |> Round.get_estimated_round_stage(3)
+    end
   end
 end
