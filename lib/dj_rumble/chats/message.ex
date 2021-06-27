@@ -5,24 +5,24 @@ defmodule DjRumble.Chats.Message do
   """
   import Algae
 
-  alias DjRumble.Accounts.User
+  alias DjRumble.Accounts.User, as: AccountUser
   alias DjRumble.Chats.Message
   alias DjRumble.Rooms.Video
 
   @type id() :: String.t()
-  @type user() :: User
+  @type user() :: AccountUser
   @type video() :: Video
 
   defsum do
     defdata User do
-      from :: Message.user() \\ %User{}
+      from :: Message.user() \\ %AccountUser{}
       message :: String.t() \\ ""
       timestamp :: String.t() \\ ""
     end
 
     defdata Video do
       video :: Message.video() \\ %Video{}
-      added_by :: Message.user() \\ %User{}
+      added_by :: Message.user() \\ %AccountUser{}
       action :: :playing | :added \\ :playing
     end
   end
