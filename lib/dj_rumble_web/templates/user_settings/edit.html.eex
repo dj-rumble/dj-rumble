@@ -7,6 +7,13 @@
     <% end %>
   </div>
   <div class="m-2">
+    <%= link to: Routes.user_reset_password_path(@conn, :new),
+      class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
+    do %>
+      Reset password
+    <% end %>
+  </div>
+  <div class="m-2">
     <%= link to: Routes.user_settings_path(@conn, :index),
       class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
     do %>

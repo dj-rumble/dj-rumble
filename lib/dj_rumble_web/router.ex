@@ -56,7 +56,6 @@ defmodule DjRumbleWeb.Router do
     post "/users/register", UserRegistrationController, :create
     get "/users/log_in", UserSessionController, :new
     post "/users/log_in", UserSessionController, :create
-    get "/users/reset_password", UserResetPasswordController, :new
     post "/users/reset_password", UserResetPasswordController, :create
     get "/users/reset_password/:token", UserResetPasswordController, :edit
     put "/users/reset_password/:token", UserResetPasswordController, :update
@@ -76,6 +75,7 @@ defmodule DjRumbleWeb.Router do
   scope "/", DjRumbleWeb do
     pipe_through [:browser]
 
+    get "/users/reset_password", UserResetPasswordController, :new
     delete "/users/log_out", UserSessionController, :delete
     get "/users/confirm", UserConfirmationController, :new
     post "/users/confirm", UserConfirmationController, :create
