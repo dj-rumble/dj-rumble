@@ -181,7 +181,6 @@ defmodule DjRumble.Round.RoundTest do
       %Round.Finished{time: ^time, outcome: :thrown} = Round.simulate_tick(round)
     end
 
-    @tag :wip
     test "get_estimated_round_stage/3 given 3 stages, returns an integer that represents a given moment in a round" do
       # Base case that always returns 1
       1 =

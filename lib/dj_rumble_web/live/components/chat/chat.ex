@@ -90,12 +90,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
   end
 
   def render_message(%Message.Video{} = message) do
-    message =
-      Message.narrate(message)
-      |> Enum.map(fn chunk ->
-        {text, classes} = get_styles_maybe(chunk)
-        render_text(text, classes)
-      end)
+    message = narrate_message(Message.narrate(message))
 
     ~E"""
     <p class="
@@ -108,6 +103,29 @@ defmodule DjRumbleWeb.Live.Components.Chat do
     <%= message %>
     </p>
     """
+  end
+
+  def render_message(%Message.Score{} = message) do
+    message = narrate_message(Message.narrate(message))
+
+    ~E"""
+    <p class="
+      mb-0.5 my-2 py-4 px-2
+      border-t-2 border-gray-900 border-opacity-5
+      text-lg not-italic font-normal text-left
+      animated fadeIn
+    ">
+    <%= render_prompt(">", "text-gray-300") %>
+    <%= message %>
+    </p>
+    """
+  end
+
+  defp narrate_message(message_chunks) do
+    Enum.map(message_chunks, fn chunk ->
+      {text, classes} = get_styles_maybe(chunk)
+      render_text(text, classes)
+    end)
   end
 
   defp get_styles_maybe({type, text}), do: {text, get_style_by_type(type)}
