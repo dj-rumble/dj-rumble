@@ -399,11 +399,10 @@ defmodule DjRumble.Room.MatchmakingTest do
 
       Enum.reduce(Enum.with_index(videos_users), state, fn {{video, user}, index}, acc_state ->
         %{
-          current_round: current_round,
+          current_round: _current_round,
           next_rounds: next_rounds
         } = state = handle_schedule_round(acc_state, video, user)
 
-        assert current_round == nil
         assert length(next_rounds) == index + 1
         assert is_valid_round(:scheduled, Enum.at(next_rounds, index), %{video: video})
         assert_received({:round_scheduled, _scheduled_round})
@@ -579,6 +578,30 @@ defmodule DjRumble.Room.MatchmakingTest do
       # Verify
       state = %{state | next_rounds: state.next_rounds ++ new_state.next_rounds}
       assert new_state == state
+    end
+
+    @tag :wip
+    test "handle_call/3 :: {:schedule_round, %Video{}} is called once with a prepared round and replies :ok",
+         %{
+           state: state
+         } do
+      # Setup
+      :ok = Channels.subscribe(:room, state.room.slug)
+
+      [video_user | videos_users] = get_videos_users(state.room)
+
+      # Exercise
+      prepared_round_state =
+        schedule_rounds(state, [video_user])
+        |> handle_prepare_next_round()
+
+      new_state = schedule_rounds(prepared_round_state, videos_users)
+
+      # Verify
+      state = %{state | next_rounds: prepared_round_state.next_rounds ++ new_state.next_rounds}
+
+      assert new_state.next_rounds == state.next_rounds
+      assert_received({:round_scheduled, _scheduled_round})
     end
 
     test "handle_call/3 :: :list_next_rounds is called and replies with an empty list of rounds and videos",

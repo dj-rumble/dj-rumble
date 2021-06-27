@@ -313,8 +313,6 @@ defmodule DjRumbleWeb.RoomLive.Show do
   def handle_receive_new_message(message, socket) do
     %{assigns: %{chat_messages: chat_messages}} = socket
 
-    # chat_message = Chat.create_message(:chat_message, params)
-
     chat_messages = chat_messages ++ [message]
 
     {:noreply,

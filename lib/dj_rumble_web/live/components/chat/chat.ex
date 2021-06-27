@@ -92,8 +92,10 @@ defmodule DjRumbleWeb.Live.Components.Chat do
   def render_message(%Message.Video{} = message) do
     message =
       Message.narrate(message)
-      |> Enum.zip(["", "text-pink-500", "", ""])
-      |> Enum.map(fn {text, classes} -> render_text(text, classes) end)
+      |> Enum.map(fn chunk ->
+        {text, classes} = get_styles_maybe(chunk)
+        render_text(text, classes)
+      end)
 
     ~E"""
     <p class="
@@ -106,4 +108,12 @@ defmodule DjRumbleWeb.Live.Components.Chat do
     </p>
     """
   end
+
+  defp get_styles_maybe({type, text}), do: {text, get_style_by_type(type)}
+  defp get_styles_maybe(text), do: {text, ""}
+
+  defp get_style_by_type(:args), do: "text-blue-500"
+  defp get_style_by_type(:username), do: "not-italic font-bold"
+  defp get_style_by_type(:video), do: "text-pink-500"
+  defp get_style_by_type(_), do: ""
 end

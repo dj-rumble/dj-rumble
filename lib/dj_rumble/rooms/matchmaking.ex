@@ -79,6 +79,8 @@ defmodule DjRumble.Rooms.Matchmaking do
       | next_rounds: state.next_rounds ++ [schedule_round(video, state.room, user)]
     }
 
+    :ok = send_announcement(state, video, user, :scheduled)
+
     Logger.info(fn ->
       "Scheduled a round for video title: #{video.title}, added by user: #{user.username}"
     end)
@@ -400,7 +402,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     :ok = RoundServer.start_round(pid)
 
-    :ok = ChatServer.new_video_message(state.chat_server, video, user, :playing)
+    :ok = send_announcement(state, video, user, :playing)
 
     :ok =
       Channels.broadcast(
@@ -416,5 +418,45 @@ defmodule DjRumble.Rooms.Matchmaking do
       )
 
     %{state | status: :playing}
+  end
+
+  defp send_announcement(state, video, user, :playing) do
+    ChatServer.new_video_message(state.chat_server, video, user, :playing)
+  end
+
+  defp send_announcement(state, video, user, :scheduled = type) do
+    case state.current_round do
+      {_ref, {_pid, _current_video, _time, ^user}} ->
+        # Although the video added by this Dj is at the end of the queue, it is
+        # likely to change if a :continue outcome is determined at the end of
+        # the current round. We count current Dj videos to predict a place at
+        # the queue.
+        remaining_videos =
+          Enum.filter(state.next_rounds, fn {_ref, {_pid, _current_video, _time, next_round_user}} ->
+            user == next_round_user
+          end)
+          |> length()
+
+        :ok =
+          ChatServer.new_video_message(
+            state.chat_server,
+            video,
+            user,
+            {type, :dj, remaining_videos}
+          )
+
+      _ ->
+        # This is not the Dj player, the video will remain at the end of the
+        # queue.
+        remaining_videos = length(state.next_rounds)
+
+        :ok =
+          ChatServer.new_video_message(
+            state.chat_server,
+            video,
+            user,
+            {type, :spectator, remaining_videos}
+          )
+    end
   end
 end

@@ -23,7 +23,9 @@ defmodule DjRumble.Chats.Message do
     defdata Video do
       video :: Message.video() \\ %Video{}
       added_by :: Message.user() \\ %AccountUser{}
-      action :: :playing | :added \\ :playing
+      action :: :playing | :scheduled \\ :playing
+      role :: :dj | :spectator | :system \\ :system
+      args :: any() \\ nil
     end
   end
 
@@ -45,22 +47,12 @@ defmodule DjRumble.Chats.Message do
       }
 
   """
-  @spec create_message(
-          :user_message | :video_message,
-          DjRumble.Rooms.Video | binary,
-          DjRumble.Accounts.User,
-          :added | :playing | binary
-        ) :: %{
-          :__struct__ => DjRumble.Chats.Message.User | DjRumble.Chats.Message.Video,
-          optional(:action) => :added | :playing,
-          optional(:added_by) => DjRumble.Accounts.User,
-          optional(:from) => DjRumble.Accounts.User,
-          optional(:message) => binary,
-          optional(:timestamp) => binary,
-          optional(:video) => DjRumble.Rooms.Video
-        }
   def create_message(:user_message, message, user, timezone) do
     Message.User.new(user, message, timestamp(timezone))
+  end
+
+  def create_message(:video_message, video, user, {action, role, args}) do
+    Message.Video.new(video, user, action, role, args)
   end
 
   def create_message(:video_message, video, user, action) do
@@ -84,9 +76,69 @@ defmodule DjRumble.Chats.Message do
   def narrate(%Message.Video{video: video, added_by: user, action: :playing}) do
     [
       "Now playing",
-      "#{video.title}",
+      {:video, "#{video.title}"},
       "added by",
-      "#{user.username}"
+      {:username, "#{user.username}"}
+    ]
+  end
+
+  def narrate(%Message.Video{
+        video: video,
+        added_by: user,
+        action: :scheduled,
+        role: :spectator,
+        args: 0
+      }) do
+    [
+      {:username, "#{user.username}"},
+      "adds",
+      {:video, "#{video.title}"},
+      "and it's next to come"
+    ]
+  end
+
+  def narrate(%Message.Video{
+        video: video,
+        added_by: user,
+        action: :scheduled,
+        role: :spectator,
+        args: args
+      }) do
+    [
+      {:username, "#{user.username}"},
+      "adds",
+      {:video, "#{video.title}"},
+      "and it's placed",
+      {:args, "##{args}"},
+      "in the queue"
+    ]
+  end
+
+  def narrate(%Message.Video{video: video, added_by: user, action: :scheduled, role: :dj, args: 0}) do
+    [
+      "💿 Dj",
+      {:username, "#{user.username}"},
+      "casts",
+      {:video, "#{video.title}"},
+      "to be next in queue"
+    ]
+  end
+
+  def narrate(%Message.Video{
+        video: video,
+        added_by: user,
+        action: :scheduled,
+        role: :dj,
+        args: args
+      }) do
+    [
+      "💿 Dj",
+      {:username, "#{user.username}"},
+      "casts",
+      {:video, "#{video.title}"},
+      "to be",
+      {:args, "##{args}"},
+      "in queue"
     ]
   end
 
