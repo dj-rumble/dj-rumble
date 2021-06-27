@@ -138,7 +138,9 @@ const PlayerSyncing = initPlayer => ({
       videoId = ''
     }) => {
       player.loadVideoById({ startSeconds: time, videoId })
+      player.unMute()
       player.playVideo()
+      player.set
       updateTimeDisplays(
         startTimeTrackerElem,
         endTimeTrackerElem,
