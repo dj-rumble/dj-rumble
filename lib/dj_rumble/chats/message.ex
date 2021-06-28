@@ -36,6 +36,7 @@ defmodule DjRumble.Chats.Message do
       score_type :: :positive | :negative \\ :positive
       role :: :dj | :spectator \\ :spectator
       round :: Message.round() \\ %Round.InProgress{}
+      narration :: [String.t()] \\ []
     end
   end
 
@@ -71,6 +72,7 @@ defmodule DjRumble.Chats.Message do
 
   def create_message(:score_message, video, user, {score_type, role, round}) do
     Message.Score.new(video, user, score_type, role, round)
+    |> Message.narrate()
   end
 
   @spec narrate(%{
@@ -134,7 +136,8 @@ defmodule DjRumble.Chats.Message do
 
   def narrate(%Message.Video{video: video, added_by: user, action: :scheduled, role: :dj, args: 0}) do
     [
-      "💿 Dj",
+      {:emoji, "💿"},
+      "Dj",
       {:username, "#{user.username}"},
       "casts",
       {:video, "#{video.title}"},
@@ -150,7 +153,8 @@ defmodule DjRumble.Chats.Message do
         args: args
       }) do
     [
-      "💿 Dj",
+      {:emoji, "💿"},
+      "Dj",
       {:username, "#{user.username}"},
       "casts",
       {:video, "#{video.title}"},
@@ -163,9 +167,12 @@ defmodule DjRumble.Chats.Message do
   def narrate(%Message.Score{round: %Round.InProgress{} = round} = message) do
     stage = Round.get_estimated_round_stage(round, 3)
 
-    get_round_narrations_by_stage(message)
-    |> Map.get(stage)
-    |> pick_random_narration()
+    narration =
+      get_round_narrations_by_stage(message)
+      |> Map.get(stage)
+      |> pick_random_narration()
+
+    %Message.Score{message | narration: narration}
   end
 
   defp pick_random_narration(narrations) do
@@ -189,35 +196,38 @@ defmodule DjRumble.Chats.Message do
     %{
       1 => [
         [
-          "💿",
+          {:emoji, "💿"},
           username,
-          "rushes to upvote itself 😳.",
+          "rushes to upvote itself",
+          {:emoji, "😳"},
           "This Dj really wants to own the queue..."
         ]
       ],
       2 => [
         [
-          "💿 Dj",
+          {:emoji, "💿"},
+          "Dj",
           username,
           "listened for a while and votes in favor. Seems to be enjoying!",
           "Score says",
-          "#{positives}",
+          {:positive_score, "#{positives}"},
           "in favor and",
-          "#{negatives}",
+          {:negative_score, "#{negatives}"},
           "against."
         ]
       ],
       3 => [
         [
           "Reaching the end",
-          "💿 Dj",
+          {:emoji, "💿"},
+          "Dj",
           username,
           "secures the jam with a positive vote for",
-          title,
+          {:light_video, title},
           ". Score says",
-          "#{positives}",
+          {:positive_score, "#{positives}"},
           "in favor and",
-          "#{negatives}",
+          {:negative_score, "#{negatives}"},
           "against."
         ]
       ]
@@ -242,37 +252,40 @@ defmodule DjRumble.Chats.Message do
       1 => [
         [
           "Just when",
-          title,
+          {:light_video, title},
           "started,",
-          "💿 Dj",
+          {:emoji, "💿"},
+          "Dj",
           username,
           "quickly tries to secure an upvote to keep jamming the next round",
           "and leaves the score",
-          "#{positives}",
+          {:positive_score, "#{positives}"},
           "in favor and",
-          "#{negatives}",
+          {:negative_score, "#{negatives}"},
           "against."
         ]
       ],
       2 => [
         [
           "In the midst of anxiety",
-          "💿 Dj",
+          {:emoji, "💿"},
+          "Dj",
           username,
           "tries to fix the next round with an upvote. Still halfway to go while",
-          title,
+          {:light_video, title},
           "rumbles."
         ]
       ],
       3 => [
         [
           "Reaching the end",
-          "💿 Dj",
+          {:emoji, "💿"},
+          "Dj",
           username,
           "tries to keep the cool with a positive vote but is not enough to win... Score says",
-          "#{positives}",
+          {:positive_score, "#{positives}"},
           "in favor and",
-          "#{negatives}",
+          {:negative_score, "#{negatives}"},
           "against."
         ]
       ]
@@ -296,36 +309,45 @@ defmodule DjRumble.Chats.Message do
     %{
       1 => [
         [
-          title,
+          {:light_video, title},
           "brings the bad memories to",
-          "💿 Dj",
+          {:emoji, "💿"},
+          "Dj",
           username,
           "and inflicts a harmless downvote."
         ],
         [
-          "💿 Dj",
+          {:emoji, "💿"},
+          "Dj",
           username,
-          "takes a look at the score and crunches some 🍅."
+          "takes a look at the score and crunches some",
+          {:emoji, "🍅"},
+          "."
         ]
       ],
       2 => [
         [
-          "💿 Dj ",
+          {:emoji, "💿"},
+          "Dj",
           username,
-          "turns around to pour the face in 🍅 soup but the crowd is actually enjoying",
-          title,
+          "turns around to pour the face in",
+          {:emoji, "🍅"},
+          "soup but the crowd is actually enjoying",
+          {:light_video, title},
           "."
         ]
       ],
       3 => [
         [
           "Near the end score for",
-          title,
+          {:light_video, title},
           "is closing",
-          "#{positives}",
+          {:positive_score, "#{positives}"},
           "in favor that",
           username,
-          "goes wild and gets gorged on folate, vitamin c and potassium 🍅."
+          "goes wild and gets gorged on folate, vitamin c and potassium",
+          {:emoji, "🍅"},
+          "."
         ]
       ]
     }
@@ -348,18 +370,29 @@ defmodule DjRumble.Chats.Message do
     %{
       1 => [
         [
-          "💿 Dj",
+          {:emoji, "💿"},
+          "Dj",
           username,
           "just doesn't care and downvotes it's way out of the queue."
         ]
       ],
       2 => [
-        ["Dj 💿", username, "👎", title, "."],
-        ["Dj 💿", username, "takes a 🍅 bath while the score tells", "#{negatives}", "against."]
+        [{:emoji, "💿"}, "Dj", username, {:emoji, "👎"}, {:light_video, title}, "."],
+        [
+          {:emoji, "💿"},
+          "Dj",
+          username,
+          "takes a",
+          {:emoji, "🍅"},
+          "bath while the score tells",
+          {:negative_score, "#{negatives}"},
+          "against."
+        ]
       ],
       3 => [
         [
-          "💿 Dj",
+          {:emoji, "💿"},
+          "Dj",
           username,
           "is ashamed and poops on it's own video queue."
         ]
@@ -381,12 +414,12 @@ defmodule DjRumble.Chats.Message do
         role: :spectator,
         round: %Round.InProgress{score: {positives, _negatives}, outcome: :continue}
       }) do
-    default = [username, "cheers 🎉 at", title, "."]
+    default = [username, "cheers", {:emoji, "🎉"}, "at", {:light_video, title}, "."]
 
     %{
       1 => [
         default,
-        [username, "rapidly gets in the mix and upvotes", title, "."]
+        [username, "rapidly gets in the mix and upvotes", {:light_video, title}, "."]
       ],
       2 => [
         default,
@@ -394,7 +427,7 @@ defmodule DjRumble.Chats.Message do
           "Spectator",
           username,
           "listened for a while and votes in favor. Seems to be enjoying",
-          title,
+          {:light_video, title},
           "."
         ]
       ],
@@ -404,9 +437,10 @@ defmodule DjRumble.Chats.Message do
           "In the last minute",
           username,
           "slips out from the crown to cheer for",
-          title,
-          "🎉 and leaves the score",
-          "#{positives}",
+          {:light_video, title},
+          {:emoji, "🎉"},
+          "and leaves the score",
+          {:positive_score, "#{positives}"},
           "in favor."
         ]
       ]
@@ -427,7 +461,7 @@ defmodule DjRumble.Chats.Message do
         role: :spectator,
         round: %Round.InProgress{score: {positives, negatives}, outcome: :thrown}
       }) do
-    default = [username, "cheers 🎉 at", title, "."]
+    default = [username, "cheers", {:emoji, "🎉"}, "at", {:light_video, title}, "."]
 
     %{
       1 => [
@@ -435,11 +469,11 @@ defmodule DjRumble.Chats.Message do
         [
           username,
           "shows",
-          title,
+          {:light_video, title},
           "some support but looks like the odds are against from the beginning. Score tells",
-          "#{negatives}",
+          {:negative_score, "#{negatives}"},
           "against and",
-          "#{positives}",
+          {:positive_score, "#{positives}"},
           "in favor."
         ]
       ],
@@ -449,11 +483,11 @@ defmodule DjRumble.Chats.Message do
           "Without a hint of shame",
           username,
           "cheers at",
-          title,
+          {:light_video, title},
           "despite the obvious boredom. Score tells",
-          "#{negatives}",
+          {:negative_score, "#{negatives}"},
           "against and",
-          "#{positives}",
+          {:positive_score, "#{positives}"},
           "in favor."
         ]
       ],
@@ -462,9 +496,9 @@ defmodule DjRumble.Chats.Message do
         [
           username,
           "waited 'til the end to show some compasion.",
-          title,
+          {:light_video, title},
           "took a total of votes of",
-          "#{negatives}",
+          {:negative_score, "#{negatives}"},
           "."
         ]
       ]
@@ -485,7 +519,7 @@ defmodule DjRumble.Chats.Message do
         role: :spectator,
         round: %Round.InProgress{score: {positives, negatives}, outcome: :continue}
       }) do
-    default = [username, "throws 🍅 at", title, "."]
+    default = [username, "throws", {:emoji, "🍅"}, "at", {:light_video, title}, "."]
 
     %{
       1 => [
@@ -493,8 +527,10 @@ defmodule DjRumble.Chats.Message do
         [
           "Out of nowhere",
           username,
-          "swiftly throws a 🍅 over",
-          title,
+          "swiftly throws a",
+          {:emoji, "🍅"},
+          "over",
+          {:light_video, title},
           "."
         ]
       ],
@@ -503,20 +539,26 @@ defmodule DjRumble.Chats.Message do
         [
           "Without a hint of shame",
           username,
-          "throws a 🍅 but it's not enough to overcome",
-          "#{positives}",
-          "votes in favor",
-          title,
+          "throws a",
+          {:emoji, "🍅"},
+          "but it's not enough to overcome",
+          {:positive_score, "#{positives}"},
+          "in favor against",
+          "#{negatives} for",
+          {:light_video, title},
           "."
         ],
         [
           username,
           "waited halfway at",
-          title,
-          "and intimidates the Dj with a shiny 🍅.",
+          {:light_video, title},
+          "and intimidates the Dj with a shiny",
+          {:emoji, "🍅"},
           "Score is",
-          "#{negatives}",
-          "votes against."
+          {:positive_score, "#{positives}"},
+          "in favor and",
+          {:negative_score, "#{negatives}"},
+          "against."
         ]
       ],
       3 => [
@@ -524,10 +566,12 @@ defmodule DjRumble.Chats.Message do
         [
           "Spectator",
           username,
-          "throws a rotten 🍅 that's been holding all this time! Still can't beat",
-          "#{positives}",
-          "votes in favor for",
-          title,
+          "throws a rotten",
+          {:emoji, "🍅"},
+          "that's been holding all this time! Still can't beat score of",
+          {:positive_score, "#{positives}"},
+          "in favor for",
+          {:light_video, title},
           "."
         ]
       ]
@@ -548,17 +592,19 @@ defmodule DjRumble.Chats.Message do
         role: :spectator,
         round: %Round.InProgress{score: {_positives, negatives}, outcome: :thrown}
       }) do
-    default = [username, "throws 🍅 at", title, "."]
+    default = [username, "throws", {:emoji, "🍅"}, "at", {:light_video, title}, "."]
 
     %{
       1 => [
         default,
         [
           username,
-          "quickly leaps into action and throws some fresh 🍅 at",
-          title,
+          "quickly leaps into action and throws some fresh",
+          {:emoji, "🍅"},
+          "at",
+          {:light_video, title},
           "to put the score down to",
-          "#{negatives}",
+          {:negative_score, "#{negatives}"},
           "against."
         ]
       ],
@@ -567,10 +613,12 @@ defmodule DjRumble.Chats.Message do
         [
           "Spectator",
           username,
-          "tirelessly strikes with a dripping 🍅 and leaves",
-          title,
+          "tirelessly strikes with a dripping",
+          {:emoji, "🍅"},
+          "and leaves",
+          {:light_video, title},
           "with",
-          "#{negatives}",
+          {:negative_score, "#{negatives}"},
           "votes against."
         ]
       ],
@@ -580,9 +628,11 @@ defmodule DjRumble.Chats.Message do
           "Naughty",
           username,
           "takes the score down to",
-          "#{negatives}",
-          "by throwing a bag of decomposting 🍅 at",
-          title,
+          {:negative_score, "#{negatives}"},
+          "by throwing a bag of decomposting",
+          {:emoji, "🍅"},
+          "at",
+          {:light_video, title},
           "."
         ]
       ]

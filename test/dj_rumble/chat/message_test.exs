@@ -28,13 +28,13 @@ defmodule DjRumble.Chats.MessageTest do
       end
     end
 
-    defp assert_message_is_in_narrations(message) do
+    defp assert_message_is_in_narrations(%Message.Score{narration: narration} = message) do
       assert Message.get_round_narrations_by_stage(message)
              |> Map.values()
              |> Enum.reduce([], fn sub_narrations, acc ->
                acc ++ sub_narrations
              end)
-             |> Enum.member?(Message.narrate(message))
+             |> Enum.member?(narration)
     end
 
     defp assert_messages_are_in_narrations(messages) do
@@ -212,8 +212,16 @@ defmodule DjRumble.Chats.MessageTest do
         |> Message.narrate()
 
       # Verify
-      5 = length(message)
-      ["💿 Dj", {:username, ^username}, "casts", {:video, ^title}, "to be next in queue"] = message
+      6 = length(message)
+
+      [
+        {:emoji, "💿"},
+        "Dj",
+        {:username, ^username},
+        "casts",
+        {:video, ^title},
+        "to be next in queue"
+      ] = message
     end
 
     test "narrate/1 :: (%Message.Video{action: :scheduled, role: :dj, args: 10}) returns a narration" do
@@ -231,11 +239,12 @@ defmodule DjRumble.Chats.MessageTest do
         |> Message.narrate()
 
       # Verify
-      7 = length(message)
+      8 = length(message)
       expected_args = "##{args}"
 
       [
-        "💿 Dj",
+        {:emoji, "💿"},
+        "Dj",
         {:username, ^username},
         "casts",
         {:video, ^title},

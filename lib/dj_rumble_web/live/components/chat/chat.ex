@@ -89,50 +89,53 @@ defmodule DjRumbleWeb.Live.Components.Chat do
     """
   end
 
-  def render_message(%Message.Video{} = message) do
-    message = narrate_message(Message.narrate(message))
+  def render_message(%Message.Video{action: action} = message) do
+    container_classes = get_classes_by_action(action)
 
     ~E"""
     <p class="
-      mb-0.5 my-2 py-4 px-2
+      mb-0.5 my-2 pt-6 px-2
       border-t-2 border-gray-900 border-opacity-5
-      text-lg not-italic font-normal text-left
-      animated fadeIn
+      font-normal text-left
+      animated fadeIn <%= container_classes %>
     ">
-    <%= render_prompt(">", "text-gray-300") %>
-    <%= message %>
+    <%= render_prompt(">", "text-xl text-gray-300") %>
+    <%= narrate_message(Message.narrate(message), "not-italic animate-pulse") %>
     </p>
     """
   end
 
-  def render_message(%Message.Score{} = message) do
-    message = narrate_message(Message.narrate(message))
-
+  def render_message(%Message.Score{narration: narration} = message) do
     ~E"""
     <p class="
-      mb-0.5 my-2 py-4 px-2
-      border-t-2 border-gray-900 border-opacity-5
-      text-lg not-italic font-normal text-left
+      mb-0.5 my-2 py-2 px-2
+      not-italic font-normal text-left
       animated fadeIn
     ">
-    <%= render_prompt(">", "text-gray-300") %>
-    <%= message %>
+    <%= narrate_message(narration, "font-md text-gray-400") %>
     </p>
     """
   end
 
-  defp narrate_message(message_chunks) do
+  defp narrate_message(message_chunks, extra_classes \\ "") do
     Enum.map(message_chunks, fn chunk ->
       {text, classes} = get_styles_maybe(chunk)
-      render_text(text, classes)
+      render_text(text, "#{extra_classes} #{classes}")
     end)
   end
+
+  defp get_classes_by_action(:playing), do: ""
+  defp get_classes_by_action(_), do: ""
 
   defp get_styles_maybe({type, text}), do: {text, get_style_by_type(type)}
   defp get_styles_maybe(text), do: {text, ""}
 
   defp get_style_by_type(:args), do: "text-blue-500"
+  defp get_style_by_type(:positive_score), do: "text-green-700"
+  defp get_style_by_type(:negative_score), do: "text-red-800"
   defp get_style_by_type(:username), do: "not-italic font-bold"
-  defp get_style_by_type(:video), do: "text-pink-500"
+  defp get_style_by_type(:video), do: "text-pink-400"
+  defp get_style_by_type(:light_video), do: "text-pink-300"
+  defp get_style_by_type(:emoji), do: "not-italic"
   defp get_style_by_type(_), do: ""
 end
