@@ -105,7 +105,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
     """
   end
 
-  def render_message(%Message.Score{narration: narration} = message) do
+  def render_message(%Message.Score{narration: narration}) do
     ~E"""
     <p class="
       mb-0.5 my-2 py-2 px-2
@@ -117,7 +117,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
     """
   end
 
-  defp narrate_message(message_chunks, extra_classes \\ "") do
+  defp narrate_message(message_chunks, extra_classes) do
     Enum.map(message_chunks, fn chunk ->
       {text, classes} = get_styles_maybe(chunk)
       render_text(text, "#{extra_classes} #{classes}")
