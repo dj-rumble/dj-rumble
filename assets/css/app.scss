@@ -6,24 +6,6 @@
 @import "./scrollbar.scss";
 @import "./hearts.scss";
 
-.rooms-container {
-
-  .room-item {
-    margin-bottom: 0px;
-
-    &.separator {
-      border-bottom-style: groove;
-      border-bottom-width: 1px;
-      border-bottom-color: $primary;
-    }
-
-    &.separator:last-child {
-      border-bottom-width: 0px;
-    }
-  }
-}
-
-
 /* LiveView specific classes for your customizations */
 .phx-no-feedback.invalid-feedback,
 .phx-no-feedback .invalid-feedback {
