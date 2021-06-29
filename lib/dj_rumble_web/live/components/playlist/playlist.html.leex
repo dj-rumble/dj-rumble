@@ -6,18 +6,62 @@
       <%= get_card_class(index) %>
       shadow-card queued <%= classes %>
     ">
-      <div class="col-span-1 align-center w-3/4 self-center">
+      <div class="
+        col-span-2
+        sm:col-span-1
+        md:col-span-1
+        lg:col-span-1
+        xl:col-span-1
+        2xl:col-span-1
+
+        align-center self-center
+        w-3/4
+      ">
         <%= img_tag(video.img_url, class: "rounded-l-md") %>
       </div>
-      <div class="col-span-6 grid grid-rows-2 self-center pl-1">
-        <div class="row-span-3 text-left text-gray-400 text-xl">
+      <div class="
+        col-span-4     grid-rows-2
+        sm:col-span-6  sm:grid-rows-2
+        md:col-span-6  md:grid-rows-2
+        lg:col-span-6  lg:grid-rows-2
+        xl:col-span-6  xl:grid-rows-2
+        2xl:col-span-6 2xl:grid-rows-2
+
+        self-center pl-1
+        grid
+      ">
+        <div class="
+          row-span-3
+          text-left text-gray-400 text-xl
+        ">
           <p class="font-bold m-0"><%= video.title %>, added by <span class="font-normal text-gray-300 font-bold"><%= username %></span></p>
         </div>
-        <div class="row-span-2 text-left text-gray-400 text-lg">
-          <p class="m-0"><%= video.description %></p>
+        <div class="
+          row-span-2
+          text-left text-gray-400 text-lg
+        ">
+          <p class="
+            m-0
+            hidden
+            sm:block
+            md:block
+            lg:block
+            xl:block
+            2xl:block
+          "><%= video.description %></p>
         </div>
       </div>
-      <div class="col-span-1 text-left text-green-600 text-lg">
+      <div class="
+        col-span-2
+        sm:col-span-1
+        md:col-span-1
+        lg:col-span-1
+        xl:col-span-1
+        2xl:col-span-1
+
+        justify-self-center
+        text-center text-green-600 text-lg
+      ">
         <%= get_notice_by_video_position(video_user, index, @socket) %>
       </div>
     </div>
