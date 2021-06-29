@@ -5,8 +5,26 @@
   <%= live_component DjRumbleWeb.Components.Modal,
     id: "#{@id}-menu",
     title: "Search video",
-    extra_classes: "bg-black bg-opacity-50",
-    modal_container_grid_classes: "animated fadeIn grid grid-cols-flow w-full h-screen w-screen",
+    extra_classes: "
+      bg-black bg-opacity-50
+      max-screen-200 h-max-content
+      sm:h-screen
+      md:h-screen
+      lg:h-screen
+      xl:h-screen
+      2xl:h-screen
+    ",
+    modal_container_grid_classes: "
+      animated fadeIn
+      grid grid-cols-flow
+      w-screen
+      h-screen-150
+      sm:h-full
+      md:h-full
+      lg:h-full
+      xl:h-full
+      2xl:h-full
+    ",
     modal_subcontainer_grid_classes: "col-start-4 col-end-5 self-end m-10",
     state: @state
   do %>

@@ -3,9 +3,33 @@
   <%= live_component DjRumbleWeb.Components.Modal,
     id: "#{@id}-menu",
     title: "#{@title}",
-    modal_container_grid_classes: "animated fadeIn grid grid-cols-flow grid-rows-4 w-full h-99/100",
+    modal_container_grid_classes: "
+      grid grid-cols-flow
+
+      sm:grid-rows-4
+      md:grid-rows-4
+      lg:grid-rows-4
+      xl:grid-rows-4
+      2xl:grid-rows-4
+
+      animated fadeIn w-full
+      h-screen-150
+      sm:h-99/100
+      md:h-99/100
+      lg:h-99/100
+      xl:h-99/100
+      2xl:h-99/100
+    ",
     modal_subcontainer_grid_classes: "
-      col-start-2 col-end-2 row-start-2 row-end-4 h-fit
+      col-start-4 col-end-5 self-end m-10
+
+      sm:col-start-2  sm:col-end-2  sm:row-start-2  sm:row-end-4
+      md:col-start-2  md:col-end-2  md:row-start-2  md:row-end-4
+      lg:col-start-2  lg:col-end-2  lg:row-start-2  lg:row-end-4
+      xl:col-start-2  xl:col-end-2  xl:row-start-2  xl:row-end-4
+      2xl:col-start-2 2xl:col-end-2 2xl:row-start-2 2xl:row-end-4
+
+
       w-3/4
       sm:w-1/2
       md:w-1/2
@@ -13,7 +37,7 @@
       xl:w-1/2
       2xl:w-1/2
     ",
-    extra_classes: "bg-black bg-opacity-50",
+    extra_classes: "bg-black bg-opacity-50 max-screen-200 h-max-content",
     state: @state
     do %>
 
