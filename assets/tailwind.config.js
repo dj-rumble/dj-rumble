@@ -21,6 +21,38 @@ module.exports = {
         'inner-input':
           'inset -4px -4px 10px #323637, inset 4px 4px 10px #080a0a'
       },
+      gridAutoRows: {
+        'custom':
+          'minmax(10%, auto) minmax(10%, auto) minmax(10%, auto) minmax(10%, auto) minmax(10%, auto) minmax(10%, auto) minmax(30%, auto) minmax(30%, auto) minmax(30%, auto) minmax(10%, auto) minmax(10%, auto) minmax(10%, auto)'
+      },
+      gridRow: {
+        'span-10': 'span 10 / span 10',
+        'span-11': 'span 11 / span 11',
+        'span-12': 'span 12 / span 12',
+        'span-7': 'span 7 / span 7',
+        'span-8': 'span 8 / span 8',
+        'span-9': 'span 9 / span 9'
+      },
+      gridRowEnd: {
+        '10': '10',
+        '11': '11',
+        '12': '12',
+        '7': '7',
+        '8': '8',
+        '9': '9'
+      },
+      gridRowStart: {
+        '10': '10',
+        '11': '11',
+        '12': '12',
+        '7': '7',
+        '8': '8',
+        '9': '9'
+      },
+      gridTemplateRows: {
+        'custom':
+          'repeat(6, minmax(10%, auto)) repeat(3, minmax(30%, auto)) repeat(3, minmax(10%, auto))'
+      },
       height: {
         '1/10': '10vh',
         '2/10': '20vh',
@@ -32,7 +64,9 @@ module.exports = {
         '8/10': '80vh',
         '9/10': '90vh',
         '99/100': '99vh',
-        'fit': 'fit-content'
+        'fit': 'fit-content',
+        'max-content': 'max-content',
+        'screen-150': '150vh'
       },
       maxHeight: {
         '1/10': '10vh',
@@ -43,7 +77,8 @@ module.exports = {
         '6/10': '60vh',
         '7/10': '70vh',
         '8/10': '80vh',
-        '9/10': '90vh'
+        '9/10': '90vh',
+        'screen-200': '200vh'
       },
       minHeight: {
         '1/10': '10vh',
