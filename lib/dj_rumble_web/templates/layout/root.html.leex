@@ -42,6 +42,23 @@
       </div>
     <% end %>
     </header>
-    <%= @inner_content %>
+    <div id="dj-rumble-inner-content">
+      <%= @inner_content %>
+    </div>
+
+    <div id="dj-rumble-alert" class="
+      fixed -bottom-10 left-0 sm:left-1/4 w-full sm:w-6/12 h-48
+      invisible rounded-t-3xl
+      bg-black
+      opacity-100
+    "
+      style="box-shadow: -4px -4px 10px #323637, 4px 0px 10px #080a0a"
+    >
+      <div
+        id="dj-rumble-alert-container"
+        class="flex h-full justify-center pt-5 px-5 items-start"
+      >
+      </div>
+    </div>
   </body>
 </html>

@@ -16,16 +16,14 @@ import "../css/app.scss"
 //     import socket from "./socket"
 //
 import "phoenix_html"
-import ChatSyncing from "./hooks/chat-syncing"
+import ChatSyncing from "./lib/hooks/chat-syncing"
 import {LiveSocket} from "phoenix_live_view"
 import LoadYTIframeAPI from './deps/yt-iframe-api'
-import ModalInteracting from "./hooks/modal-interacting"
-import PlayerSyncing from "./hooks/player-syncing"
+import ModalInteracting from "./lib/hooks/modal-interacting"
+import PlayerSyncing from "./lib/hooks/player-syncing"
 import {Socket} from "phoenix"
-import UiFeedback from "./hooks/ui-feedback"
+import UiFeedback from "./lib/hooks/ui-feedback"
 import createPlayer from './lib/player'
-import topbar from "topbar"
-
 
 
 function onIframeReady() {
@@ -67,11 +65,5 @@ function initLiveview() {
   // >> liveSocket.disableLatencySim()
   window.liveSocket = liveSocket
 }
-
-
-// Show progress bar on live navigation and form submits
-topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
-window.addEventListener("phx:page-loading-start", () => topbar.show())
-window.addEventListener("phx:page-loading-stop", () => topbar.hide())
 
 LoadYTIframeAPI(onIframeReady)

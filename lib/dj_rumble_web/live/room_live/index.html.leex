@@ -1,50 +1,52 @@
-<%= if connected?(@socket) do %>
+<div id="ui-feedback-data" phx-hook="UiFeedback">
+  <%= if connected?(@socket) do %>
 
-  <%= live_component DjRumbleWeb.Live.Components.Navbar,
-    visitor: @visitor,
-    username: @user.username,
-    homepage: false
-  %>
+    <%= live_component DjRumbleWeb.Live.Components.Navbar,
+      visitor: @visitor,
+      username: @user.username,
+      homepage: false
+    %>
 
-  <h3 class="text-gray-50 p-4 m-4 text-5xl font-street-ruler">Dj Rooms</h3>
+    <h3 class="text-gray-50 p-4 m-4 text-5xl font-street-ruler">Dj Rooms</h3>
 
-  <%= if @live_action in [:new, :edit] do %>
-    <%= live_modal @socket, DjRumbleWeb.RoomLive.FormComponent,
-      id: @room.id || :new,
-      title: @page_title,
-      action: @live_action,
-      room: @room,
-      return_to: Routes.room_index_path(@socket, :index) %>
-  <% end %>
+    <%= if @live_action in [:new, :edit] do %>
+      <%= live_modal @socket, DjRumbleWeb.RoomLive.FormComponent,
+        id: @room.id || :new,
+        title: @page_title,
+        action: @live_action,
+        room: @room,
+        return_to: Routes.room_index_path(@socket, :index) %>
+    <% end %>
 
-  <div
-    class="text-gray-50"
-  >
-    <%= if @rooms != [] do %>
+    <div
+      class="text-gray-50"
+    >
+      <%= if @rooms != [] do %>
 
-    <div class="mb-4">
-      <div class="
-        grid grid-cols-2 grid-flow-row auto-rows-max gap-6
-        sm:grid-cols-4 sm:gap-6
-        md:grid-cols-4
-        lg:grid-cols-6
-        xl:grid-cols-8
-        2xl:grid-cols-12
+      <div class="mb-4">
+        <div class="
+          grid grid-cols-2 grid-flow-row auto-rows-max gap-6
+          sm:grid-cols-4 sm:gap-6
+          md:grid-cols-4
+          lg:grid-cols-6
+          xl:grid-cols-8
+          2xl:grid-cols-12
 
-        m-2
-      ">
-      <%= for %{room: %{slug: slug}} = ms <- @matchmaking_servers do %>
-        <%= live_component DjRumbleWeb.Live.Components.RoomCard,
-          id: "dj-rumble-room-card-#{slug}",
-          matchmaking_server_state: ms
-        %>
-      <% end %>
+          m-2
+        ">
+        <%= for %{room: %{slug: slug}} = ms <- @matchmaking_servers do %>
+          <%= live_component DjRumbleWeb.Live.Components.RoomCard,
+            id: "dj-rumble-room-card-#{slug}",
+            matchmaking_server_state: ms
+          %>
+        <% end %>
+        </div>
       </div>
+
+      <% else %>
+        <p><span>Go ahead, create the first room!</span></p>
+      <% end %>
     </div>
 
-    <% else %>
-      <p><span>Go ahead, create the first room!</span></p>
-    <% end %>
-  </div>
-
-<% end %>
+  <% end %>
+</div>

@@ -1,4 +1,4 @@
-import { secondsToTime } from '../lib/date-utils'
+import { secondsToTime } from '../../lib/date-utils'
 
 const updateTimeDisplay = (timeTrackerElem, time) => {
   const videoTime = (time === 0 || time === undefined)
