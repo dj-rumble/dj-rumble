@@ -1,9 +1,25 @@
 <div id="ui-feedback-data" phx-hook="UiFeedback" style="">
   <%= if connected?(@socket) do %>
 
-    <div class="grid grid-flow-row h-screen max-h-screen min-h-screen">
+    <!-- Main Grid Starts -->
 
-      <div class="max-h-full py-1 auto-rows-max">
+    <div class="
+      grid      grid-flow-row     h-screen     max-h-screen     min-h-screen
+      sm:grid   sm:grid-flow-row  sm:h-screen  sm:max-h-screen  sm:min-h-screen
+      md:grid   md:grid-flow-row  md:h-screen  md:max-h-screen  md:min-h-screen
+      lg:grid   lg:grid-flow-row  lg:h-screen  lg:max-h-screen  lg:min-h-screen
+      xl:grid   xl:grid-flow-row  xl:h-screen  xl:max-h-screen  xl:min-h-screen
+      2xl:grid  2xl:grid-flow-row 2xl:h-screen 2xl:max-h-screen 2xl:min-h-screen
+    ">
+
+      <div class="
+        sm:max-h-full  sm:auto-rows-max
+        md:max-h-full  md:auto-rows-max
+        lg:max-h-full  lg:auto-rows-max
+        xl:max-h-full  xl:auto-rows-max
+        2xl:max-h-full 2xl:auto-rows-max
+        py-1 px-2
+      ">
         <%= live_component DjRumbleWeb.Live.Components.Navbar,
           visitor: @visitor,
           username: @user.username,
@@ -11,11 +27,52 @@
         %>
       </div>
 
+      <!-- Layout Grid Starts -->
+
       <div
-        class="grid grid-rows-6 grid-cols-12 grid-flow-col gap-6"
+        class="
+          grid     grid-rows-6     grid-cols-12     gap-y-4
+          sm:grid  sm:grid-rows-6  sm:grid-cols-12  sm:grid-flow-col  sm:gap-6
+          md:grid  md:grid-rows-6  md:grid-cols-12  md:grid-flow-col  md:gap-6
+          lg:grid  lg:grid-rows-6  lg:grid-cols-12  lg:grid-flow-col  lg:gap-6
+          xl:grid  xl:grid-rows-6  xl:grid-cols-12  xl:grid-flow-col  xl:gap-6
+          2xl:grid 2xl:grid-rows-6 2xl:grid-cols-12 2xl:grid-flow-col 2xl:gap-6
+        "
         style="min-height: 98%; max-height: 98%"
       >
-        <div class="rounded-lg bg-black col-start-1 col-end-9 row-start-1 row-end-4 text-center p-4 shadow-card">
+
+        <!-- Grid :: Video Player Starts -->
+
+        <div class="
+          col-start-1     col-end-13    row-start-1     row-end-3
+          sm:col-start-1  sm:col-end-9  sm:row-start-1  sm:row-end-3
+          md:col-start-1  md:col-end-9  md:row-start-1  md:row-end-4
+          lg:col-start-1  lg:col-end-9  lg:row-start-1  lg:row-end-4
+          xl:col-start-1  xl:col-end-9  xl:row-start-1  xl:row-end-4
+          2xl:col-start-1 2xl:col-end-9 2xl:row-start-1 2xl:row-end-4
+
+
+          w-full
+          h-full
+          sm:h-full
+          md:h-full
+          lg:h-full
+          xl:h-full
+          2xl:h-full
+
+          p-4
+
+          m-0
+          sm:ml-2
+          md:ml-2
+          lg:ml-2
+          xl:ml-2
+          2xl:ml-2
+
+          self-center justify-self-center
+          rounded-lg bg-black shadow-card text-center
+        ">
+
           <div class="grid grid-rows-6 h-full w-full">
             <div class="row-span-6 relative overflow-hidden">
               <%= live_component DjRumbleWeb.Live.Components.RoundInfo,
@@ -27,15 +84,60 @@
               %>
             </div>
           </div>
+
         </div>
-        <div class="rounded-lg bg-gray-800 col-start-1 col-end-9 row-start-4 row-end-6 text-center overflow-y-scroll shadow-card">
+
+        <!-- Grid :: Video Player Ends -->
+
+        <!-- Grid :: Playlist Starts -->
+
+        <div class="
+            col-start-1     col-end-13    row-start-3     row-end-4
+            sm:col-start-1  sm:col-end-9  sm:row-start-3  sm:row-end-6
+            md:col-start-1  md:col-end-9  md:row-start-4  md:row-end-6
+            lg:col-start-1  lg:col-end-9  lg:row-start-4  lg:row-end-6
+            xl:col-start-1  xl:col-end-9  xl:row-start-4  xl:row-end-6
+            2xl:col-start-1 2xl:col-end-9 2xl:row-start-4 2xl:row-end-6
+
+            mx-3
+            sm:ml-2  sm:mx-0
+            md:ml-2  md:mx-0
+            lg:ml-2  lg:mx-0
+            xl:ml-2  xl:mx-0
+            2xl:ml-2 2xl:mx-0
+
+
+            overflow-y-scroll
+            shadow-card rounded-lg bg-gray-800
+            text-center
+          "
+        >
+
           <%= live_component DjRumbleWeb.Live.Components.Playlist,
             id: "djrumble-playlist",
             next_rounds: @next_rounds,
             room_server: @room_server
           %>
+
         </div>
-        <div class="rounded-lg col-start-9 col-end-13 row-start-1 row-end-6 text-center align-middle px-3 h-full">
+
+        <!-- Grid :: Playlist Panel Ends -->
+
+        <!-- Grid :: Users & Chat Panel Starts -->
+
+        <div class="
+          col-start-1     col-end-13     row-start-4     row-end-6
+          sm:col-start-9  sm:col-end-13  sm:row-start-1  sm:row-end-6
+          md:col-start-9  md:col-end-13  md:row-start-1  md:row-end-6
+          lg:col-start-9  lg:col-end-13  lg:row-start-1  lg:row-end-6
+          xl:col-start-9  xl:col-end-13  xl:row-start-1  xl:row-end-6
+          2xl:col-start-9 2xl:col-end-13 2xl:row-start-1 2xl:row-end-6
+          text-center align-middle
+          rounded-lg
+          px-3
+          h-full
+        ">
+
           <div class="grid grid-rows-6 h-full">
             <div class="row-span-2 mb-5 h-full">
               <%= live_component DjRumbleWeb.Live.Components.ConnectedUsers,
@@ -57,19 +159,45 @@
                 room: @room
               %>
             </div>
+
           </div>
         </div>
-        <div class="col-start-1 col-end-13 row-start-6 row-end-7">
-          <div class="rounded-lg bg-gray-800 grid grid-cols-12 shadow-card">
 
-            <div class="col-start-1 col-end-4 self-center h-full">
+        <!-- Grid :: Users & Chat Panel Ends -->
+
+        <!-- Grid :: Bottom Panel Starts -->
+
+        <div class="
+          col-start-1     col-end-13     row-start-6     row-end-7
+          sm:col-start-1  sm:col-end-13  sm:row-start-6  sm:row-end-7
+          md:col-start-1  md:col-end-13  md:row-start-6  md:row-end-7
+          lg:col-start-1  lg:col-end-13  lg:row-start-6  lg:row-end-7
+          xl:col-start-1  xl:col-end-13  xl:row-start-6  xl:row-end-7
+          2xl:col-start-1 2xl:col-end-13 2xl:row-start-6 2xl:row-end-7
+        ">
+          <div class="
+            grid grid-cols-12 shadow-card
+
+            rounded-lg bg-gray-800
+          ">
+
+            <div class="
+              col-start-1 col-end-4 row-start-1 row-end-2
+
+              h-full
+              self-center
+            ">
               <%= live_component DjRumbleWeb.Live.Components.CurrentRound,
                 id: "djrumble-current-round",
                 current_round: @current_round
               %>
             </div>
 
-            <div class="col-start-4 col-end-10 text-center">
+            <div class="
+              col-start-4 col-end-10 row-start-1 row-end-2
+
+              text-center
+            ">
               <%= live_component DjRumbleWeb.Live.Components.PlayerControls,
                 id: "djrumble-player-controls",
                 current_round: @current_round,
@@ -81,13 +209,24 @@
               %>
             </div>
 
-            <div class="col-start-10 col-end-11 flex flex-grow self-center justify-self-end p-4">
+            <div class="
+              col-start-10 col-end-11 row-start-1 row-end-2
+
+              self-center justify-self-end
+              p-4
+            ">
               <%= live_component DjRumbleWeb.Live.Components.ConfettiFab,
                 id: "djrumble-confetti-button"
               %>
             </div>
 
-            <div class="col-start-11 col-end-12 flex self-center justify-self-start p-4">
+            <div class="
+              col-start-11 col-end-12 row-start-1 row-end-2
+
+              flex
+              self-center justify-self-start
+              p-4
+            ">
               <%= live_component DjRumbleWeb.Live.Components.SearchFab,
                 id: "djrumble-searchbox-modal-button-1",
                 is_search_enabled: !@visitor
@@ -95,7 +234,12 @@
             </div>
           </div>
         </div>
+
+        <!-- Grid :: Bottom Panel Ends -->
+
       </div>
+
+      <!-- Layout Grid Ends -->
 
       <div class="absolute top-0 left-0 right-0 pr-4 h-0">
 
@@ -119,5 +263,8 @@
 
       </div>
     </div>
+
+    <!-- Main Grid Ends -->
+
   <% end %>
 </div>
