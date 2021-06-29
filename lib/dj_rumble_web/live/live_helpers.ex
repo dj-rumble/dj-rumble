@@ -45,4 +45,16 @@ defmodule DjRumbleWeb.LiveHelpers do
     opts = Keyword.merge([extra_classes: "", text: ""], opts)
     Phoenix.View.render(DjRumbleWeb.TooltipView, "tooltip.html", opts)
   end
+
+  def render_equalizer(false, _opts), do: ""
+
+  def render_equalizer(true, opts) do
+    extra_classes = Keyword.get(opts, :extra_classes, "")
+
+    Phoenix.View.render(
+      DjRumbleWeb.EqualizerView,
+      "equalizer.html",
+      extra_classes: "w-full animated fadeIn rounded-b-lg #{extra_classes}"
+    )
+  end
 end
