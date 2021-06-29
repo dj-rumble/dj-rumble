@@ -18,42 +18,28 @@
   <% end %>
 
   <div
-    class="rooms-container text-gray-50"
+    class="text-gray-50"
   >
     <%= if @rooms != [] do %>
 
     <div class="mb-4">
-      <ul class="like-list grid gap-2 grid-cols-1 lg:grid-cols-2 m-2">
-      <%= for room <- @rooms do %>
-        <li class="room-item col-span-1 hover:text-green-300 px-2 cursor-pointer round">
-          <div class="flex grid grid-cols-8 xl:grid-cols-12 shadow-card">
+      <div class="
+        grid grid-cols-2 grid-flow-row auto-rows-max gap-6
+        sm:grid-cols-4 sm:gap-6
+        md:grid-cols-4
+        lg:grid-cols-6
+        xl:grid-cols-8
+        2xl:grid-cols-12
 
-            <div class="
-              col-span-2 row-span-1
-              sm:col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-2
-              self-center justify-self-center
-            ">
-              <%= Phoenix.View.render DjRumbleWeb.AlbumCoverGridView,
-                "album_cover_grid.html",
-                videos: room.videos
-              %>
-            </div>
-
-            <div
-              class="
-                p-4
-                col-span-6 row-span-1
-                sm:col-span-5 md:col-span-6 lg:col-span-6 xl:col-span-10
-              "
-              phx-click="redirect_room"
-              phx-value-slug="<%= room.slug %>"
-            >
-              <p class="text-2xl"><%= room.name %></p>
-            </div>
-          </div>
-        </li>
+        m-2
+      ">
+      <%= for %{room: %{slug: slug}} = ms <- @matchmaking_servers do %>
+        <%= live_component DjRumbleWeb.Live.Components.RoomCard,
+          id: "dj-rumble-room-card-#{slug}",
+          matchmaking_server_state: ms
+        %>
       <% end %>
-      </ul>
+      </div>
     </div>
 
     <% else %>

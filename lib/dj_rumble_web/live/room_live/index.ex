@@ -7,14 +7,25 @@ defmodule DjRumbleWeb.RoomLive.Index do
   alias DjRumble.Repo
   alias DjRumble.Rooms
   alias DjRumble.Rooms.Room
+  alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor}
 
   @impl true
   def mount(params, session, socket) do
     socket = assign_defaults(socket, params, session)
-    rooms = list_rooms() |> Enum.map(fn room -> Repo.preload(room, [:videos]) end)
+
+    rooms =
+      list_rooms()
+      |> Enum.map(fn room -> Repo.preload(room, [:videos, users_rooms_videos: [:video]]) end)
+
+    matchmaking_servers =
+      MatchmakingSupervisor.list_matchmaking_servers(MatchmakingSupervisor)
+      |> Enum.map(&Matchmaking.get_state(&1))
+
+    # IO.inspect(matchmaking_servers, label: "matchmaking_servers")
 
     {:ok,
      socket
+     |> assign(:matchmaking_servers, matchmaking_servers)
      |> assign(:rooms, rooms)}
   end
 

@@ -49,14 +49,4 @@ defmodule DjRumbleWeb.Live.Components.CurrentRound do
         """
     end
   end
-
-  defp render_equalizer(true) do
-    Phoenix.View.render(
-      DjRumbleWeb.EqualizerView,
-      "equalizer.html",
-      extra_classes: "left-4 w-full animated fadeIn rounded-b-lg"
-    )
-  end
-
-  defp render_equalizer(false), do: ""
 end
