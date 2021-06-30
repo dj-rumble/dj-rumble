@@ -1,0 +1,18 @@
+<div class="grid grid-cols-12">
+  <div class="
+    col-start-1 col-end-3
+    fill-current <%= get_icon_color(@users_count) %>
+    animated fadeIn
+    transition duration-400 ease-linear
+  ">
+    <%= render_svg() %>
+  </div>
+  <div class="
+    col-start-3 col-end-4 text-lg
+    self-center	justify-self-center
+    animated fadeIn
+    transition duration-400 ease-linear
+  ">
+    <%= @users_count %>
+  </div>
+</div>

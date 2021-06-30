@@ -26,13 +26,18 @@
       <div class="mb-4">
         <div class="
           grid grid-cols-2 grid-flow-row auto-rows-max gap-6
-          sm:grid-cols-4 sm:gap-6
+          sm:grid-cols-3 sm:gap-6
           md:grid-cols-4
-          lg:grid-cols-6
-          xl:grid-cols-8
-          2xl:grid-cols-12
+          lg:grid-cols-5
+          xl:grid-cols-6
+          2xl:grid-cols-8
 
-          m-2
+          px-1 m-2
+          sm:px-2
+          md:px-4
+          lg:px-10
+          xl:px-10
+          2xl:px-10
         ">
         <%= for {current_round, room, status, videos} <- @rooms do %>
           <%= live_component DjRumbleWeb.Live.Components.RoomCard,
@@ -41,7 +46,13 @@
             room: room,
             status: status,
             videos: videos
-          %>
+          do %>
+
+            <%= live_component DjRumbleWeb.Live.Components.UsersCounter,
+              id: "dj-rumble-users-counter-#{room.slug}",
+              users_count: @users_count[room.slug]
+            %>
+          <% end %>
         <% end %>
         </div>
       </div>

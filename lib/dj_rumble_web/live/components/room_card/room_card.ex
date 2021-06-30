@@ -31,4 +31,28 @@ defmodule DjRumbleWeb.Live.Components.RoomCard do
   defp is_playing(status) do
     status == :playing
   end
+
+  defp get_player_info(current_round, status) do
+    case status do
+      :idle ->
+        texts = ["So quiet in here...", "Come in and make some noise"]
+        text = Enum.at(texts, Enum.random(0..(length(texts) - 1)))
+
+        ~E"""
+        <span><%= text %></span>
+        """
+
+      :playing ->
+        %{video: video} = current_round
+
+        ~E"""
+        <span>Now playing <span><%= video.title %></span></span>
+        """
+
+      _ ->
+        ~E"""
+        <span>Taking a short break...</span>
+        """
+    end
+  end
 end

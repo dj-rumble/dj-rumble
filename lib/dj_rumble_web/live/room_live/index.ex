@@ -6,8 +6,10 @@ defmodule DjRumbleWeb.RoomLive.Index do
 
   alias DjRumble.Rooms.Room
   alias DjRumble.Rooms.{Matchmaking, MatchmakingSupervisor}
-
   alias DjRumbleWeb.Channels
+  alias DjRumbleWeb.Presence
+
+  @users_count_tick_rate :timer.seconds(2)
 
   @impl true
   def mount(params, session, socket) do
@@ -17,14 +19,20 @@ defmodule DjRumbleWeb.RoomLive.Index do
 
     :ok = subscribe_to_room_topics(rooms)
 
+    schedule_next_users_count_tick()
+
     {:ok,
      socket
-     |> assign_rooms(rooms)}
+     |> assign_rooms(rooms)
+     |> assign_users_count(Map.new())}
   end
 
   @impl true
   def handle_info({:receive_current_player, params}, socket),
     do: handle_video_is_playing(params, socket)
+
+  @impl true
+  def handle_info(:fetch_users_count, socket), do: handle_fetch_users_count(socket)
 
   @impl true
   def handle_params(params, _url, socket) do
@@ -45,6 +53,14 @@ defmodule DjRumbleWeb.RoomLive.Index do
     )
 
     {:noreply, socket}
+  end
+
+  defp handle_fetch_users_count(socket) do
+    schedule_next_users_count_tick()
+
+    {:noreply,
+     socket
+     |> assign_users_count(socket.assigns.users_count)}
   end
 
   defp apply_action(socket, :new, _params) do
@@ -89,5 +105,27 @@ defmodule DjRumbleWeb.RoomLive.Index do
       Enum.each(rooms, fn {_, room, _, _} ->
         :ok = Channels.subscribe(:lobby, room.slug)
       end)
+  end
+
+  defp assign_users_count(socket, users_count) do
+    %{rooms: rooms} = socket.assigns
+
+    users_count =
+      Enum.reduce(rooms, users_count, fn {_video_user, room, _status, _videos}, users_count ->
+        count = get_users_count(room.slug)
+        Map.put(users_count, room.slug, count)
+      end)
+
+    assign(socket, :users_count, users_count)
+  end
+
+  defp get_users_count(slug) do
+    Presence.list(DjRumbleWeb.Channels.get_topic(:room, slug))
+    |> Enum.map(fn {uuid, %{metas: metas}} -> %{uuid: uuid, metas: metas} end)
+    |> length()
+  end
+
+  defp schedule_next_users_count_tick do
+    Process.send_after(self(), :fetch_users_count, @users_count_tick_rate)
   end
 end
