@@ -10,6 +10,7 @@ defmodule DjRumbleWeb.Channels do
   @score_topic "room:<slug>:score"
   @room_chat_topic "room:<slug>:chat"
   @global_chat_topic "global:chat"
+  @lobby_round_started "lobby:<slug>:round_started"
 
   def get_topic(:room), do: @room_topic
 
@@ -24,6 +25,8 @@ defmodule DjRumbleWeb.Channels do
   def get_topic(:room_chat), do: @room_chat_topic
 
   def get_topic(:global_chat), do: @global_chat_topic
+
+  def get_topic(:lobby), do: @lobby_round_started
 
   def get_topic(type, slug), do: String.replace(get_topic(type), "<slug>", slug)
 

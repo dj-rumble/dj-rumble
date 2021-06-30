@@ -637,7 +637,12 @@ defmodule DjRumble.Room.RoomServerTest do
       {^matchmaking_server, %{current_round: current_round}} =
         MatchmakingSupervisor.get_matchmaking_server(MatchmakingSupervisor, slug)
 
-      assert current_round == nil
+      round_ref = nil
+      round_pid = nil
+      round_video = nil
+      round_time = nil
+      round_user = nil
+      {^round_ref, {^round_pid, ^round_video, ^round_time, ^round_user}} = current_round
 
       :ok =
         tl(pids)

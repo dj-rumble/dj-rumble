@@ -34,10 +34,13 @@
 
           m-2
         ">
-        <%= for %{room: %{slug: slug}} = ms <- @matchmaking_servers do %>
+        <%= for {current_round, room, status, videos} <- @rooms do %>
           <%= live_component DjRumbleWeb.Live.Components.RoomCard,
-            id: "dj-rumble-room-card-#{slug}",
-            matchmaking_server_state: ms
+            id: "dj-rumble-room-card-#{room.slug}",
+            current_round: current_round,
+            room: room,
+            status: status,
+            videos: videos
           %>
         <% end %>
         </div>

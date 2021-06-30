@@ -1,6 +1,6 @@
 defmodule DjRumble.Support.Chats.MessageCase do
   @moduledoc """
-  This module defines the setup and helper functio9ns for tests requiring
+  This module defines the setup and helper functions for tests requiring
   access to the application's messages model.
 
   You may define functions here to be used as helpers in

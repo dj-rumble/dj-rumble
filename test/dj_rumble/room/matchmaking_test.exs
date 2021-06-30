@@ -3,14 +3,16 @@ defmodule DjRumble.Room.MatchmakingTest do
   Matchmaking tests
   """
   use DjRumble.DataCase
+  use DjRumble.Support.Rooms.RoomCase
   use DjRumble.TestCase
   use ExUnit.Case
 
   import DjRumble.AccountsFixtures
+  import DjRumble.CollectionsFixtures
   import DjRumble.RoomsFixtures
 
+  alias DjRumble.Rooms
   alias DjRumble.Rooms.Video
-
   alias DjRumble.Rounds.Round
 
   # Helper functions
@@ -49,13 +51,7 @@ defmodule DjRumble.Room.MatchmakingTest do
     alias DjRumble.Rooms.Matchmaking
 
     setup do
-      %{room: room} =
-        room_videos_fixture(
-          %{room: room_fixture(), videos: videos_fixture()},
-          %{preload: true}
-        )
-
-      user = user_fixture()
+      %{room: room, user: user} = create_user_room_videos()
 
       chat_topic = DjRumbleWeb.Channels.get_topic(:room_chat, room.slug)
       chat_server = start_supervised!({ChatServer, {chat_topic}})
@@ -358,25 +354,12 @@ defmodule DjRumble.Room.MatchmakingTest do
 
   describe "matchmaking server implementation" do
     alias DjRumble.Chats.ChatServer
-    alias DjRumble.Rooms
     alias DjRumble.Rooms.Matchmaking
     alias DjRumble.Rounds.Round
     alias DjRumbleWeb.Channels
 
-    import DjRumble.CollectionsFixtures
-
     setup do
-      room = room_fixture()
-      videos = videos_fixture(3)
-      user = user_fixture()
-
-      :ok =
-        Enum.each(videos, fn video ->
-          user_room_video = %{user: user, room: room, video: video}
-          user_room_video_fixture(user_room_video)
-        end)
-
-      room = Rooms.preload_room(room, users_rooms_videos: [:video, :user])
+      %{room: room, user: user} = create_user_room_videos()
 
       chat_topic = Channels.get_topic(:room_chat, room.slug)
       chat_server = start_supervised!({ChatServer, {chat_topic}})
@@ -537,6 +520,15 @@ defmodule DjRumble.Room.MatchmakingTest do
         is_valid_round(:generic, round, args.video),
         get_time(round) == args.time
       ])
+    end
+
+    def assert_round_is_nil(current_round) do
+      round_ref = nil
+      round_pid = nil
+      round_video = nil
+      round_time = nil
+      round_user = nil
+      {^round_ref, {^round_pid, ^round_video, ^round_time, ^round_user}} = current_round
     end
 
     test "handle_call/3 :: :get_state replies with a state", %{state: state} do
@@ -1010,7 +1002,7 @@ defmodule DjRumble.Room.MatchmakingTest do
       state = handle_round_finished(state, ref, round)
 
       # Verify
-      assert state.current_round == nil
+      assert_round_is_nil(state.current_round)
       assert Enum.member?(state.finished_rounds, round)
       assert state.status == :cooldown
 
@@ -1079,8 +1071,8 @@ defmodule DjRumble.Room.MatchmakingTest do
 
       assert Enum.take(state.next_rounds, length(winner_queued_rounds)) == winner_queued_rounds
 
-      # # Verify
-      assert state.current_round == nil
+      # Verify
+      assert_round_is_nil(state.current_round)
       assert Enum.member?(state.finished_rounds, round)
       assert state.status == :cooldown
 
@@ -1150,8 +1142,8 @@ defmodule DjRumble.Room.MatchmakingTest do
       assert Enum.take(state.next_rounds, length(waiting_user_queued_rounds)) ==
                waiting_user_queued_rounds
 
-      # # Verify
-      assert state.current_round == nil
+      # Verify
+      assert_round_is_nil(state.current_round)
       assert Enum.member?(state.finished_rounds, round)
       assert state.status == :cooldown
 
@@ -1183,7 +1175,7 @@ defmodule DjRumble.Room.MatchmakingTest do
 
       state = handle_round_crashed(state)
 
-      assert state.current_round == nil
+      assert_round_is_nil(state.current_round)
       assert Enum.member?(state.crashed_rounds, crashed_round)
       assert state.status == :cooldown
     end

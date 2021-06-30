@@ -38,7 +38,7 @@
       <%= Phoenix.View.render DjRumbleWeb.AlbumCoverGridView,
         "album_cover_grid.html",
         videos: @videos,
-        is_playing: false
+        is_playing: is_playing(@status)
       %>
     </div>
 

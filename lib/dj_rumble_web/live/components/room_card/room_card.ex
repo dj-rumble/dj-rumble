@@ -5,28 +5,30 @@ defmodule DjRumbleWeb.Live.Components.RoomCard do
 
   use DjRumbleWeb, :live_component
 
-  alias DjRumble.Repo
+  @impl true
+  def mount(socket) do
+    {:ok,
+     socket
+     |> assign(:current_round, %{video: nil, added_by: nil})
+     |> assign(:room, nil)
+     |> assign(:status, :idle)
+     |> assign(:videos, [])}
+  end
 
   @impl true
   def update(assigns, socket) do
-    %{matchmaking_server_state: matchmaking_server_state} = assigns
-
-    IO.inspect(matchmaking_server_state)
-
-    # videos = Enum.map(state.next_rounds, fn {_ref, {_pid, video, _ _user}} ->
-    #   video
-    # end)
-
-    videos = Repo.preload(matchmaking_server_state.room, [:videos]).videos
-
-    IO.inspect(videos)
-
-    room = matchmaking_server_state.room
+    %{current_round: current_round, room: room, status: status, videos: videos} = assigns
 
     {:ok,
      socket
-     |> assign(assigns)
+     |> assign(:current_round, current_round)
      |> assign(:room, room)
-     |> assign(:videos, videos)}
+     |> assign(:status, status)
+     |> assign(:videos, videos)
+     |> assign(assigns)}
+  end
+
+  defp is_playing(status) do
+    status == :playing
   end
 end

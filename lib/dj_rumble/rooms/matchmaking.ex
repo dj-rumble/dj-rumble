@@ -53,7 +53,7 @@ defmodule DjRumble.Rooms.Matchmaking do
   def initial_state(args) do
     %{
       room: args.room,
-      current_round: nil,
+      current_round: {nil, {nil, nil, nil, nil}},
       finished_rounds: [],
       next_rounds: [],
       crashed_rounds: [],
@@ -104,16 +104,16 @@ defmodule DjRumble.Rooms.Matchmaking do
   def handle_call(:get_current_round, _from, state) do
     response =
       case state.current_round do
-        {_ref, {pid, video, _time, user}} ->
-          %{round: RoundServer.get_round(pid), video: video, user: user}
-
-        nil ->
+        {_ref, {nil, _video, _time, _user}} ->
           video =
             Video.video_placeholder(%{
               title: "Waiting for the next round"
             })
 
           %{round: nil, video: video, user: nil}
+
+        {_ref, {pid, video, _time, user}} ->
+          %{round: RoundServer.get_round(pid), video: video, user: user}
       end
 
     {:reply, response, state}
@@ -250,6 +250,8 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     video_details = %{title: video.title}
 
+    :ok = broadcast_lobby(state, nil, nil)
+
     :ok =
       Channels.broadcast(
         :room,
@@ -283,7 +285,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     state = %{
       state
-      | current_round: nil,
+      | current_round: {nil, {nil, nil, nil, nil}},
         finished_rounds: [round | state.finished_rounds],
         next_rounds: next_rounds ++ [schedule_round(video, state.room, finished_round_user)],
         status: :cooldown
@@ -309,7 +311,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     state = %{
       state
-      | current_round: nil,
+      | current_round: {nil, {nil, nil, nil, nil}},
         crashed_rounds: [state.current_round | state.crashed_rounds],
         status: :cooldown
     }
@@ -408,7 +410,11 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     :ok = RoundServer.start_round(pid)
 
+    state = %{state | status: :playing}
+
     :ok = send_announcement(state, :round_started, video, user)
+
+    :ok = broadcast_lobby(state, video, user)
 
     :ok =
       Channels.broadcast(
@@ -423,7 +429,7 @@ defmodule DjRumble.Rooms.Matchmaking do
          }}
       )
 
-    %{state | status: :playing}
+    state
   end
 
   defp send_announcement(state, :round_started, %Video{} = video, %User{} = user) do
@@ -494,5 +500,20 @@ defmodule DjRumble.Rooms.Matchmaking do
     Enum.filter(rounds, fn {_ref, {_pid, _current_video, _time, round_user}} ->
       user == round_user
     end)
+  end
+
+  defp broadcast_lobby(state, video, user) do
+    :ok =
+      Channels.broadcast(
+        :lobby,
+        state.room.slug,
+        {:receive_current_player,
+         %{
+           current_round: %{video: video, added_by: user},
+           room: state.room,
+           status: state.status,
+           videos: Enum.map(state.room.users_rooms_videos, & &1.video)
+         }}
+      )
   end
 end

@@ -24,7 +24,7 @@ defmodule DjRumble.RoomsFixtures do
 
     case opts.preload do
       false -> room
-      true -> Repo.preload(room, :videos)
+      true -> Repo.preload(room, [:videos, users_rooms_videos: [:video, :user]])
     end
   end
 

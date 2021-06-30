@@ -1,10 +1,13 @@
 defmodule DjRumbleWeb.RoomLiveTest do
   @moduledoc false
 
+  use DjRumble.Support.Rooms.RoomCase
   use DjRumbleWeb.ConnCase
 
   import DjRumble.RoomsFixtures
   import Phoenix.LiveViewTest
+
+  alias DjRumble.Rooms.RoomSupervisor
 
   # @create_attrs %{name: "some name", slug: "some slug"}
   # @update_attrs %{name: "some updated name", slug: "some updated slug"}
@@ -12,16 +15,28 @@ defmodule DjRumbleWeb.RoomLiveTest do
 
   describe "Index" do
     setup do
-      rooms = rooms_fixture(10)
+      servers_amount = 5
+      room_servers = start_room_servers(servers_amount)
+
+      %{rooms: rooms} = fetch_matchmaking_rooms()
+
+      # Teardown
+      on_exit(fn ->
+        Enum.each(room_servers, fn %{pid: pid} ->
+          RoomSupervisor.terminate_room_server(RoomSupervisor, pid)
+        end)
+      end)
+
       %{rooms: rooms}
     end
 
+    @tag :wip
     test "lists all rooms", %{conn: conn, rooms: rooms} do
       {:ok, _index_live, html} = live(conn, Routes.room_index_path(conn, :index))
 
       assert html =~ "Dj Rooms"
 
-      for room <- rooms do
+      for {_current_round, room, _videos} <- rooms do
         assert html =~ room.name
       end
     end
@@ -47,20 +62,17 @@ defmodule DjRumbleWeb.RoomLiveTest do
     #   assert html =~ "Room created successfully"
     #   assert html =~ "some name"
     # end
-
-    # test "deletes room in listing", %{conn: conn, room: room} do
-    #   {:ok, index_live, _html} = live(conn, Routes.room_index_path(conn, :index))
-
-    #   assert index_live |> element("#room-#{room.id} a", "Delete") |> render_click()
-    #   refute has_element?(index_live, "#room-#{room.id}")
-    # end
   end
 
   describe "Show" do
-    alias DjRumble.Rooms.RoomSupervisor
-
     defp start_room_server(room) do
-      {:ok, _pid} = RoomSupervisor.start_room_server(RoomSupervisor, room)
+      {:ok, pid} = RoomSupervisor.start_room_server(RoomSupervisor, room)
+
+      # Teardown
+      on_exit(fn ->
+        RoomSupervisor.terminate_room_server(RoomSupervisor, pid)
+      end)
+
       :ok
     end
 
@@ -82,27 +94,5 @@ defmodule DjRumbleWeb.RoomLiveTest do
       {:ok, _show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
       # assert html =~ Enum.at(room.videos, 0).title
     end
-
-    # test "updates room within modal", %{conn: conn, room: room} do
-    #   {:ok, _show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
-
-    #   # assert show_live |> element("a", "Edit") |> render_click() =~
-    #   #          "Edit Room"
-
-    #   # assert_patch(show_live, Routes.room_show_path(conn, :edit, room))
-
-    #   # assert show_live
-    #   #        |> form("#room-form", room: @invalid_attrs)
-    #   #        |> render_change() =~ "can&#39;t be blank"
-
-    #   # {:ok, _, html} =
-    #   #   show_live
-    #   #   |> form("#room-form", room: @update_attrs)
-    #   #   |> render_submit()
-    #   #   |> follow_redirect(conn, Routes.room_show_path(conn, :show, room))
-
-    #   # assert html =~ "Room updated successfully"
-    #   # assert html =~ "some updated name"
-    # end
   end
 end
