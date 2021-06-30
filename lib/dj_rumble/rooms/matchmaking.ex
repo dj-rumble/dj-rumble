@@ -250,6 +250,8 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     video_details = %{title: video.title}
 
+    state = %{state | status: :cooldown}
+
     :ok = broadcast_lobby(state, nil, nil)
 
     :ok =
@@ -287,8 +289,7 @@ defmodule DjRumble.Rooms.Matchmaking do
       state
       | current_round: {nil, {nil, nil, nil, nil}},
         finished_rounds: [round | state.finished_rounds],
-        next_rounds: next_rounds ++ [schedule_round(video, state.room, finished_round_user)],
-        status: :cooldown
+        next_rounds: next_rounds ++ [schedule_round(video, state.room, finished_round_user)]
     }
 
     Process.send_after(self(), :prepare_next_round, @time_between_rounds)
