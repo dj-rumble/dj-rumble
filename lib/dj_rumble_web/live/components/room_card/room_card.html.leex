@@ -8,6 +8,7 @@
   cursor-pointer
   group
   bg-gray-800
+  opacity-90
   hover:shadow-card
   transition duration-400 ease-linear
   rounded-lg
@@ -40,41 +41,43 @@
       %>
     </div>
 
-    <div
-      class="
-        py-2
-        col-span-12 row-start-8 row-end-10
-      "
-    >
-      <span class="
-        transition duration-300 ease-in-out
-        group-hover:text-red-500 text-2xl
-      ">
-        <%= @room.name %>
-      </span>
-    </div>
+    <div class="px-11 py-3 col-span-12">
+      <div
+        class="
+          py-2
+          col-span-12 row-start-8 row-end-10
+        "
+      >
+        <span class="
+          transition duration-300 ease-in-out
+          group-hover:text-red-500 text-2xl
+        ">
+          <%= @room.name %>
+        </span>
+      </div>
 
-    <div
-      class="
-        p-1
-        col-span-12 row-start-10 row-end-11
-        transition duration-400 ease-linear
-        animated fadeIn
-      "
-    >
-      <p class="
-        m-0 overflow-hidden whitespace-nowrap overflow-ellipsis text-lg
-      ">
-        <%= get_player_info(@current_round, @status) %>
-      </p>
-    </div>
-    <div
-      class="
-        p-1
-        col-span-12 row-start-11 row-end-12
-      "
-    >
-      <%= render_block(@inner_block) %>
+      <div
+        class="
+          p-1
+          col-span-12 row-start-10 row-end-11
+          transition duration-400 ease-linear
+          animated fadeIn
+        "
+      >
+        <p class="
+          m-0 overflow-hidden whitespace-nowrap overflow-ellipsis text-lg
+        ">
+          <%= get_player_info(@current_round, @status) %>
+        </p>
+      </div>
+      <div
+        class="
+          p-1
+          col-span-12 row-start-11 row-end-12
+        "
+      >
+        <%= render_block(@inner_block) %>
+      </div>
     </div>
   </div>
 </div>
