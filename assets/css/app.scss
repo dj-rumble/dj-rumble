@@ -6,6 +6,11 @@
 @import "./scrollbar.scss";
 @import "./hearts.scss";
 
+/* App Background */
+.app-background {
+  background-image: url(https://i.pinimg.com/originals/43/56/a5/4356a514adf5ecc503558caad8014e66.jpg);
+}
+
 /* LiveView specific classes for your customizations */
 .phx-no-feedback.invalid-feedback,
 .phx-no-feedback .invalid-feedback {

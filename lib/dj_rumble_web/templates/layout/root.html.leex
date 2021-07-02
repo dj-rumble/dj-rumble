@@ -9,12 +9,13 @@
     <link phx-track-static rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
     <script defer phx-track-static type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </head>
-  <body class="bg-gray-900 cursor-default select-none">
+  <body class="bg-gray-900 cursor-default select-none app-background">
     <header class="absolute top-0 border-0 py-4 pl-2">
     <%= link to: Routes.room_index_path(@conn, :index) do %>
       <div class="
         flex flex-row
         group
+        ml-6
       ">
         <div>
           <%= PhoenixInlineSvg.Helpers.svg_image(

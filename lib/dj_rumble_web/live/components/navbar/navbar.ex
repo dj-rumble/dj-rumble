@@ -26,6 +26,7 @@ defmodule DjRumbleWeb.Live.Components.Navbar do
         2xl:text-2xl 2xl:h-24
 
         text-gray-300
+        mr-3
       ">
         <%= render_navbar(assigns.visitor, assigns.username, assigns.homepage, @socket) %>
       </div>
@@ -56,9 +57,9 @@ defmodule DjRumbleWeb.Live.Components.Navbar do
 
   defp render_username(username, assigns) do
     ~L"""
-      <div class="m-2">
+      <div class="m-2 mr-9 text-2xl font-street-ruler">
         <span>
-          Hello, <span class="text-green-300 font-sans"><%= username %></span>
+          Hello, <span class="text-green-300 text-3xl"><%= username %></span>
         </span>
       </div>
     """
@@ -68,9 +69,9 @@ defmodule DjRumbleWeb.Live.Components.Navbar do
     ~L"""
       <div class="m-2">
         <%= link to: to, method: method,
-          class: "text-gray-300 text-center hover:text-red-400 hover:underline transition duration-500 ease-in-out"
+          class: "text-gray-300 text-4xl font-street-ruler text-center hover:text-red-400 hover:underline transition duration-500 ease-in-out"
         do %>
-          <%= text %>
+          <%= String.downcase(text) %>
         <% end %>
       </div>
     """
