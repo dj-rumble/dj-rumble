@@ -476,7 +476,7 @@ defmodule DjRumble.Rooms.Matchmaking do
   defp send_announcement(
          state,
          :round_finished,
-         %Round.Finished{score: score, outcome: outcome} = round
+         %Round.Finished{score: score, outcome: outcome}
        ) do
     {_ref, {_pid, %Video{} = video, _time, %User{} = user}} = state.current_round
 
