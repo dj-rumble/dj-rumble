@@ -97,21 +97,23 @@ defmodule DjRumble.Rounds.RoundServer do
   def handle_call({:score, user, type}, _from, %{round: %Round.InProgress{} = round} = state) do
     %{voters: voters} = state
 
-    state =
+    {response, state} =
       case Map.get(voters, user.id) do
         nil ->
           round = Round.set_score(round, type)
           voters = Map.put(voters, user.id, type)
 
-          %{state | round: round, voters: voters}
+          state = %{state | round: round, voters: voters}
+
+          {round, state}
 
         _vote ->
-          state
+          {:error, state}
       end
 
     :ok = send_check_scoring_permission(state.room_slug, %{voters: state.voters})
 
-    {:reply, state.round, state}
+    {:reply, response, state}
   end
 
   @impl GenServer

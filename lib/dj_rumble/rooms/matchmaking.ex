@@ -159,11 +159,15 @@ defmodule DjRumble.Rooms.Matchmaking do
     response =
       case Process.alive?(round_pid) do
         true ->
-          %Round.InProgress{} = round = RoundServer.score(round_pid, user, type)
+          case RoundServer.score(round_pid, user, type) do
+            %Round.InProgress{} = round ->
+              :ok = send_announcement(state, :score, video, user, type, round)
 
-          :ok = send_announcement(state, :score, video, user, type, round)
+              round
 
-          round
+            :error ->
+              :error
+          end
 
         false ->
           :error

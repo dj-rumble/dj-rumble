@@ -287,8 +287,6 @@ defmodule DjRumble.Round.RoundServerTest do
 
       {:reply, new_round, %{round: round} = state} = response
 
-      assert new_round == round
-
       state
     end
 
