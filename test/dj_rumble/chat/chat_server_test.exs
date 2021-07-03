@@ -816,7 +816,6 @@ defmodule DjRumble.Chat.ChatServerTest do
       {:ok, _state} = test_handle_new_user_message_is_called(state, chat_topic, 1000)
     end
 
-    # @tag :wip
     test "handle_cast/2 :: {:new_message, [:video_message, %Video{}, %User{}, action]} is called once and returns a state with a new message",
          %{chat_topic: chat_topic, state: state} do
       {:ok, _state} = test_handle_new_video_message_is_called(state, chat_topic, 1)

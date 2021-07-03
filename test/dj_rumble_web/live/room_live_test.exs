@@ -4,6 +4,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
   use DjRumble.Support.Rooms.RoomCase
   use DjRumbleWeb.ConnCase
 
+  import DjRumble.AccountsFixtures
   import DjRumble.RoomsFixtures
   import Phoenix.LiveViewTest
 
@@ -38,6 +39,25 @@ defmodule DjRumbleWeb.RoomLiveTest do
       for {_current_round, room, _videos} <- rooms do
         assert html =~ room.name
       end
+    end
+
+    test "renders room player", %{conn: conn, rooms: rooms} do
+      user = user_fixture()
+      {_, room, videos} = hd(rooms)
+      video = Enum.at(videos, 0)
+
+      args = %{
+        current_round: %{video: video, added_by: user},
+        room: room,
+        status: :playing,
+        videos: videos
+      }
+
+      {:ok, index_live, html} = live(conn, Routes.room_index_path(conn, :index))
+
+      send(index_live.pid, {:receive_current_player, args})
+
+      assert html =~ "Come in"
     end
 
     # test "saves new room", %{conn: conn} do
