@@ -18,7 +18,7 @@ defmodule DjRumble.Chats.MessageTest do
 
     @default_timezone "America/Buenos_Aires"
 
-    defp generate_round(outcome, time, elapsed_time) do
+    defp generate_round_in_progress(outcome, time, elapsed_time) do
       %Round.InProgress{outcome: outcome, time: time, elapsed_time: elapsed_time}
     end
 
@@ -28,7 +28,7 @@ defmodule DjRumble.Chats.MessageTest do
       end
     end
 
-    defp assert_message_is_in_narrations(%Message.Score{narration: narration} = message) do
+    defp assert_score_message_is_in_narrations(%Message.Score{narration: narration} = message) do
       assert Message.get_round_narrations_by_stage(message)
              |> Map.values()
              |> Enum.reduce([], fn sub_narrations, acc ->
@@ -37,9 +37,9 @@ defmodule DjRumble.Chats.MessageTest do
              |> Enum.member?(narration)
     end
 
-    defp assert_messages_are_in_narrations(messages) do
+    defp assert_score_messages_are_in_narrations(messages) do
       for message <- messages do
-        assert_message_is_in_narrations(message)
+        assert_score_message_is_in_narrations(message)
       end
     end
 
@@ -49,28 +49,54 @@ defmodule DjRumble.Chats.MessageTest do
       %User{} = user = user_fixture()
 
       # Tests messages for rounds in stage 1
-      round = generate_round(outcome, 30, 5)
+      round = generate_round_in_progress(outcome, 30, 5)
 
       messages =
         generate_score_messages(video, user, score_type, role, round, amount_per_round_stage)
 
-      assert_messages_are_in_narrations(messages)
+      assert_score_messages_are_in_narrations(messages)
 
       # Tests messages for rounds in stage 2
-      round = generate_round(outcome, 30, 15)
+      round = generate_round_in_progress(outcome, 30, 15)
 
       messages =
         generate_score_messages(video, user, score_type, role, round, amount_per_round_stage)
 
-      assert_messages_are_in_narrations(messages)
+      assert_score_messages_are_in_narrations(messages)
 
       # Tests messages for rounds in stage 3
-      round = generate_round(outcome, 30, 25)
+      round = generate_round_in_progress(outcome, 30, 25)
 
       messages =
         generate_score_messages(video, user, score_type, role, round, amount_per_round_stage)
 
-      assert_messages_are_in_narrations(messages)
+      assert_score_messages_are_in_narrations(messages)
+    end
+
+    defp assert_video_message_is_in_narrations(%Message.Video{narration: narration} = message) do
+      assert Message.get_finished_round_narrations(message)
+             |> Enum.member?(narration)
+    end
+
+    defp assert_video_messages_are_in_narrations(messages) do
+      for message <- messages do
+        assert_video_message_is_in_narrations(message)
+      end
+    end
+
+    defp test_video_messages_are_narrated(action, role, outcome, score, next_tracks_count) do
+      # Setup
+      %Video{} = video = video_fixture()
+      %User{} = user = user_fixture()
+      args = {score, outcome, next_tracks_count}
+
+      # Exercise
+      message =
+        create_message([:video_message, video, user, {action, role, args}])
+        |> Message.narrate()
+
+      # Verify
+      assert_video_messages_are_in_narrations([message])
     end
 
     test "create_message/4 :: (:user_message, message, %User{}, timezone) returns a %Message.User{}" do
@@ -169,7 +195,39 @@ defmodule DjRumble.Chats.MessageTest do
       [{:username, ^username}, "adds", {:video, ^title}, "and it's next to come"] = message
     end
 
-    test "narrate/1 :: (%Message.Video{action: :scheduled, role: :spectator, args: 10}) returns a narration" do
+    test "narrate/1 :: (%Message.Video{action: :finished, role: :spectator, args: {score, :continue, 0}}) returns a narration" do
+      test_video_messages_are_narrated(:finished, :spectator, :continue, {1, 0}, 0)
+    end
+
+    test "narrate/1 :: (%Message.Video{action: :finished, role: :spectator, args: {score, :thrown, 0}}) returns a narration" do
+      test_video_messages_are_narrated(:finished, :spectator, :thrown, {1, 0}, 0)
+    end
+
+    test "narrate/1 :: (%Message.Video{action: :finished, role: :spectator, args: {score, :continue, 2}}) returns a narration" do
+      test_video_messages_are_narrated(:finished, :spectator, :continue, {1, 0}, 2)
+    end
+
+    test "narrate/1 :: (%Message.Video{action: :finished, role: :spectator, args: {score, :thrown, 2}}) returns a narration" do
+      test_video_messages_are_narrated(:finished, :spectator, :thrown, {1, 0}, 2)
+    end
+
+    test "narrate/1 :: (%Message.Video{action: :finished, role: :dj, args: {score, :continue, 0}}) returns a narration" do
+      test_video_messages_are_narrated(:finished, :dj, :continue, {1, 0}, 0)
+    end
+
+    test "narrate/1 :: (%Message.Video{action: :finished, role: :dj, args: {score, :thrown, 0}}) returns a narration" do
+      test_video_messages_are_narrated(:finished, :dj, :thrown, {1, 0}, 0)
+    end
+
+    test "narrate/1 :: (%Message.Video{action: :finished, role: :dj, args: {score, :continue, 2}}) returns a narration" do
+      test_video_messages_are_narrated(:finished, :dj, :continue, {1, 0}, 2)
+    end
+
+    test "narrate/1 :: (%Message.Video{action: :finished, role: :dj, args: {score, :thrown, 2}}) returns a narration" do
+      test_video_messages_are_narrated(:finished, :dj, :thrown, {1, 0}, 2)
+    end
+
+    test "narrate/1 :: (%Message.Video{action: :finished, role: :spectator, args: 10}) returns a narration" do
       # Setup
       %Video{title: title} = video = video_fixture()
       %User{username: username} = user = user_fixture()

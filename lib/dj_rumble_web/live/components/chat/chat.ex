@@ -89,6 +89,22 @@ defmodule DjRumbleWeb.Live.Components.Chat do
     """
   end
 
+  def render_message(%Message.Video{action: :finished = action, narration: narration}) do
+    container_classes = get_classes_by_action(action)
+
+    ~E"""
+    <p class="
+      mb-0.5 my-2 pt-6 px-2
+      border-t-2 border-gray-900 border-opacity-5
+      font-normal text-left
+      animated fadeIn <%= container_classes %>
+    ">
+    <%= render_prompt(">", "text-xl text-gray-300") %>
+    <%= narrate_message(narration, "not-italic") %>
+    </p>
+    """
+  end
+
   def render_message(%Message.Video{action: action} = message) do
     container_classes = get_classes_by_action(action)
 
@@ -125,6 +141,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
   end
 
   defp get_classes_by_action(:playing), do: ""
+  defp get_classes_by_action(:finished), do: ""
   defp get_classes_by_action(_), do: ""
 
   defp get_styles_maybe({type, text}), do: {text, get_style_by_type(type)}

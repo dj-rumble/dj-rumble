@@ -30,7 +30,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
       %{rooms: rooms}
     end
 
-    @tag :wip
     test "lists all rooms", %{conn: conn, rooms: rooms} do
       {:ok, _index_live, html} = live(conn, Routes.room_index_path(conn, :index))
 

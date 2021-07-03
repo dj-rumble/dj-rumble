@@ -75,7 +75,7 @@ defmodule DjRumble.Chat.ChatServerTest do
     end
   end
 
-  defp assert_receive_new_video_message(video, user, action) do
+  defp assert_receive_video_message(video, user, :playing = action) do
     %DjRumble.Chats.Message.Video{
       video: video,
       added_by: user,
@@ -92,9 +92,38 @@ defmodule DjRumble.Chat.ChatServerTest do
     )
   end
 
-  defp assert_receive_new_video_messages(videos_messages) do
-    for {video, user, action} <- videos_messages do
-      assert_receive_new_video_message(video, user, action)
+  defp assert_receive_video_message(
+         video,
+         user,
+         {:finished = action, role, score, outcome, next_rounds_count}
+       ) do
+    args = {score, outcome, next_rounds_count}
+
+    %DjRumble.Chats.Message.Video{
+      video: ^video,
+      added_by: ^user,
+      action: ^action,
+      role: ^role,
+      args: ^args,
+      narration: narration
+    } = create_message([:video_message, video, user, {action, role, args}])
+
+    assert_receive(
+      {:receive_new_message,
+       %DjRumble.Chats.Message.Video{
+         video: ^video,
+         added_by: ^user,
+         action: ^action,
+         role: ^role,
+         args: ^args,
+         narration: ^narration
+       }}
+    )
+  end
+
+  defp assert_receive_video_messages(videos_messages) do
+    for {video, user, args} <- videos_messages do
+      assert_receive_video_message(video, user, args)
     end
   end
 
@@ -169,6 +198,17 @@ defmodule DjRumble.Chat.ChatServerTest do
       end
     end
 
+    defp do_new_finished_video_message(pid, video, user, args) do
+      :ok = ChatServer.new_finished_video_message(pid, video, user, args)
+    end
+
+    defp do_new_finished_video_messages(pid, video_messages) do
+      for {video, user, {action, role, score, outcome, next_rounds_count}} <- video_messages do
+        args = {action, role, {score, outcome, next_rounds_count}}
+        :ok = do_new_finished_video_message(pid, video, user, args)
+      end
+    end
+
     defp do_new_score_message(pid, %Video{} = video, %User{} = user, args) do
       :ok = ChatServer.new_score_message(pid, video, user, args)
     end
@@ -219,7 +259,35 @@ defmodule DjRumble.Chat.ChatServerTest do
 
       # Verify
       ^messages_amount = length(responses)
-      assert_receive_new_video_messages(users_messages)
+      assert_receive_video_messages(users_messages)
+
+      :ok
+    end
+
+    defp test_finished_video_message_is_called(
+           pid,
+           chat_topic,
+           role,
+           outcome,
+           next_rounds_count,
+           messages_amount
+         ) do
+      # Setup
+      :ok = Channels.subscribe(chat_topic)
+      video = video_fixture()
+      user = user_fixture()
+      action = :finished
+      role = role
+      score = {1, 0}
+      args = {action, role, score, outcome, next_rounds_count}
+      messages = generate_video_messages(video, user, args, messages_amount)
+
+      # Exercise
+      responses = do_new_finished_video_messages(pid, messages)
+
+      # Verify
+      ^messages_amount = length(responses)
+      assert_receive_video_messages(messages)
 
       :ok
     end
@@ -339,6 +407,66 @@ defmodule DjRumble.Chat.ChatServerTest do
       :ok = test_new_video_message_is_called(pid, chat_topic, 10_000)
     end
 
+    test "finished_video_message/4 {:continue, 0 rounds remaining} is called once and returns :ok",
+         %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_finished_video_message_is_called(pid, chat_topic, :spectator, :continue, 0, 1)
+    end
+
+    test "finished_video_message/4 {:continue, 0 rounds remaining} is called ten times and returns :ok",
+         %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_finished_video_message_is_called(pid, chat_topic, :spectator, :continue, 0, 10)
+    end
+
+    test "finished_video_message/4 {:continue, 0 rounds remaining} is called a hundred and returns :ok",
+         %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_finished_video_message_is_called(pid, chat_topic, :spectator, :continue, 0, 100)
+    end
+
+    test "finished_video_message/4 {:thrown, 0 rounds remaining} is called once and returns :ok",
+         %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_finished_video_message_is_called(pid, chat_topic, :spectator, :thrown, 0, 1)
+    end
+
+    test "finished_video_message/4 {:thrown, 0 rounds remaining} is called ten times and returns :ok",
+         %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_finished_video_message_is_called(pid, chat_topic, :spectator, :thrown, 0, 10)
+    end
+
+    test "finished_video_message/4 {:thrown, 0 rounds remaining} is called a hundred times and returns :ok",
+         %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_finished_video_message_is_called(pid, chat_topic, :spectator, :thrown, 0, 100)
+    end
+
+    test "finished_video_message/4 {:continue, 3 rounds remaining} is called once and returns :ok",
+         %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_finished_video_message_is_called(pid, chat_topic, :spectator, :continue, 3, 1)
+    end
+
+    test "finished_video_message/4 {:continue, 3 rounds remaining} is called ten times and returns :ok",
+         %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_finished_video_message_is_called(pid, chat_topic, :spectator, :continue, 3, 10)
+    end
+
+    test "finished_video_message/4 {:continue, 3 rounds remaining} is called a hundred times and returns :ok",
+         %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_finished_video_message_is_called(pid, chat_topic, :spectator, :continue, 3, 100)
+    end
+
+    test "finished_video_message/4 {:thrown, 3 rounds remaining} is called once and returns :ok",
+         %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_finished_video_message_is_called(pid, chat_topic, :spectator, :thrown, 3, 1)
+    end
+
+    test "finished_video_message/4 {:thrown, 3 rounds remaining} is called ten times and returns :ok",
+         %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_finished_video_message_is_called(pid, chat_topic, :spectator, :thrown, 3, 10)
+    end
+
+    test "finished_video_message/4 {:thrown, 3 rounds remaining} is called a hundred times and returns :ok",
+         %{pid: pid, chat_topic: chat_topic} do
+      :ok = test_finished_video_message_is_called(pid, chat_topic, :spectator, :thrown, 3, 100)
+    end
+
     test "new_score_message/6 is called once and returns :ok", %{pid: pid, chat_topic: chat_topic} do
       :ok = test_new_score_message_is_called(pid, chat_topic, 1)
     end
@@ -424,7 +552,7 @@ defmodule DjRumble.Chat.ChatServerTest do
       end)
     end
 
-    defp handle_new_video_message(state, {video, user, action}) do
+    defp handle_new_video_message(state, {video, user, :playing = action}) do
       response =
         ChatServer.handle_cast(
           {:new_message, [:video_message, video, user, action]},
@@ -436,9 +564,26 @@ defmodule DjRumble.Chat.ChatServerTest do
       state
     end
 
+    defp handle_new_video_message(
+           state,
+           {video, user, {:finished = action, role, score, outcome, next_rounds_count}}
+         ) do
+      args = {action, role, {score, outcome, next_rounds_count}}
+
+      response =
+        ChatServer.handle_cast(
+          {:new_message, [:video_message, video, user, args]},
+          state
+        )
+
+      {:noreply, state} = response
+
+      state
+    end
+
     defp handle_new_video_messages(state, video_messages) do
-      Enum.reduce(video_messages, {[], state}, fn {video, user, action}, {actions, state} ->
-        {actions ++ [action], handle_new_video_message(state, {video, user, action})}
+      Enum.reduce(video_messages, {[], state}, fn {video, user, args}, {argss, state} ->
+        {argss ++ [args], handle_new_video_message(state, {video, user, args})}
       end)
     end
 
@@ -507,6 +652,23 @@ defmodule DjRumble.Chat.ChatServerTest do
       end
     end
 
+    defp assert_has_finished_video_messages(state, video_messages) do
+      expected_videos_messages =
+        for %{
+              video: video,
+              added_by: user,
+              action: action,
+              args: {score, outcome, next_rounds_count},
+              role: role
+            } <- state.messages do
+          {video, user, {action, role, score, outcome, next_rounds_count}}
+        end
+
+      for video_message <- video_messages do
+        assert_has_video_message(expected_videos_messages, video_message)
+      end
+    end
+
     defp assert_has_score_message(
            expected_score_messages,
            {_video, _user, {_score_type, _role, _round}} = score_message
@@ -556,7 +718,25 @@ defmodule DjRumble.Chat.ChatServerTest do
       # Verify
       ^messages_amount = length(state.messages)
       assert_has_video_messages(state, video_messages)
-      assert_receive_new_video_messages(video_messages)
+      assert_receive_video_messages(video_messages)
+
+      {:ok, state}
+    end
+
+    defp test_handle_new_video_message_is_called(state, chat_topic, args, messages_amount) do
+      :ok = Channels.subscribe(chat_topic)
+      user = user_fixture()
+      video = video_fixture()
+
+      video_messages = generate_video_messages(video, user, args, messages_amount)
+
+      # Exercise
+      {_video_messages, state} = handle_new_video_messages(state, video_messages)
+
+      # Verify
+      ^messages_amount = length(state.messages)
+      assert_has_finished_video_messages(state, video_messages)
+      assert_receive_video_messages(video_messages)
 
       {:ok, state}
     end
@@ -636,6 +816,7 @@ defmodule DjRumble.Chat.ChatServerTest do
       {:ok, _state} = test_handle_new_user_message_is_called(state, chat_topic, 1000)
     end
 
+    # @tag :wip
     test "handle_cast/2 :: {:new_message, [:video_message, %Video{}, %User{}, action]} is called once and returns a state with a new message",
          %{chat_topic: chat_topic, state: state} do
       {:ok, _state} = test_handle_new_video_message_is_called(state, chat_topic, 1)
@@ -654,6 +835,50 @@ defmodule DjRumble.Chat.ChatServerTest do
     test "handle_cast/2 :: {:new_message, [:video_message, %Video{}, %User{}, action]} is called a thousand times and returns a state with a new messages",
          %{chat_topic: chat_topic, state: state} do
       {:ok, _state} = test_handle_new_video_message_is_called(state, chat_topic, 1000)
+    end
+
+    test """
+         handle_cast/2 :: {
+           :new_message,
+           [:video_message, %Video{}, %User{}, {
+             :playing = action,
+             :spectator = role,
+             :continue, 0 = next_rounds
+             }]} is called once and returns a state with a new message
+         """,
+         %{chat_topic: chat_topic, state: state} do
+      action = :finished
+      role = :spectator
+      outcome = :continue
+      next_rounds_count = 0
+      score = {1, 0}
+      args = {action, role, score, outcome, next_rounds_count}
+
+      {:ok, _state} = test_handle_new_video_message_is_called(state, chat_topic, args, 1)
+    end
+
+    test "handle_cast/2 :: {:new_message, [:video_message, %Video{}, %User{}, {:playing = action, :spectator = role, :continue, 0 = next_rounds}]} is called ten times and returns a state with a new message",
+         %{chat_topic: chat_topic, state: state} do
+      action = :finished
+      role = :spectator
+      outcome = :continue
+      next_rounds_count = 0
+      score = {1, 0}
+      args = {action, role, score, outcome, next_rounds_count}
+
+      {:ok, _state} = test_handle_new_video_message_is_called(state, chat_topic, args, 10)
+    end
+
+    test "handle_cast/2 :: {:new_message, [:video_message, %Video{}, %User{}, {:playing = action, :spectator = role, :continue, 0 = next_rounds}]} is called a hundred times and returns a state with a new message",
+         %{chat_topic: chat_topic, state: state} do
+      action = :finished
+      role = :spectator
+      outcome = :continue
+      next_rounds_count = 0
+      score = {1, 0}
+      args = {action, role, score, outcome, next_rounds_count}
+
+      {:ok, _state} = test_handle_new_video_message_is_called(state, chat_topic, args, 100)
     end
 
     test "handle_cast/2 :: {:score_message, [:video_message, %Video{}, %User{}, args]} is called once and returns a state with a new message",
