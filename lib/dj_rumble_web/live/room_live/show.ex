@@ -329,9 +329,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Args:** `%{videoId: String.t(), time: non_neg_integer()}`
   """
   def handle_playback_details_request(video_details, socket) do
+    # coveralls-ignore-start
     Logger.info(fn ->
       "[Pid #{inspect(self())}] receives playback details request for video time."
     end)
+
+    # coveralls-ignore-stop
 
     {:noreply,
      socket
