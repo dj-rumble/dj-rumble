@@ -14,6 +14,17 @@ defmodule DjRumbleWeb.RoomLiveTest do
   # @update_attrs %{name: "some updated name", slug: "some updated slug"}
   # @invalid_attrs %{name: nil, slug: nil}
 
+  defp start_room_server(room) do
+    {:ok, pid} = RoomSupervisor.start_room_server(RoomSupervisor, room)
+
+    # Teardown
+    on_exit(fn ->
+      RoomSupervisor.terminate_room_server(RoomSupervisor, pid)
+    end)
+
+    :ok
+  end
+
   describe "Index" do
     setup do
       servers_amount = 5
@@ -60,6 +71,34 @@ defmodule DjRumbleWeb.RoomLiveTest do
       assert html =~ "Come in"
     end
 
+    @tag :wip
+    test "renders users count", %{conn: conn, rooms: rooms} do
+      _show_conns =
+        for {_current_round, %{slug: slug} = _room, _videos} <- rooms do
+          conn =
+            build_conn()
+            |> get("/rooms/#{slug}")
+
+          topic = DjRumbleWeb.Channels.get_topic(:room, slug)
+          user = user_fixture()
+
+          {:ok, _} =
+            DjRumbleWeb.Presence.track(
+              self(),
+              topic,
+              user.id,
+              %{username: user.username, user_id: user.id}
+            )
+
+          conn
+        end
+
+      {:ok, _index_live, html} = live(conn, Routes.room_index_path(conn, :index))
+
+      assert html =~
+               "<div class=\"\n    col-start-3 col-end-4 text-lg\n    self-center\tjustify-self-center\n    animated fadeIn\n    transition duration-400 ease-linear\n  \">\n1\n  </div>"
+    end
+
     # test "saves new room", %{conn: conn} do
     #   {:ok, index_live, _html} = live(conn, Routes.room_index_path(conn, :index))
 
@@ -84,17 +123,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
   end
 
   describe "Show" do
-    defp start_room_server(room) do
-      {:ok, pid} = RoomSupervisor.start_room_server(RoomSupervisor, room)
-
-      # Teardown
-      on_exit(fn ->
-        RoomSupervisor.terminate_room_server(RoomSupervisor, pid)
-      end)
-
-      :ok
-    end
-
     test "displays room with no videos", %{conn: conn} do
       room = room_fixture(%{}, %{preload: true})
       :ok = start_room_server(room)
