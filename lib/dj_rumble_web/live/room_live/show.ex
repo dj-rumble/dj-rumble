@@ -110,7 +110,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
   end
 
   @impl true
-  def handle_event("receive_video_time", time, socket) do
+  def handle_event("receive_video_time", %{"duration" => time}, socket) do
     Logger.info(fn -> "Received time: '#{time}' from yt client" end)
 
     :ok =

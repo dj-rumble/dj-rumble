@@ -121,7 +121,7 @@ const PlayerSyncing = initPlayer => ({
         if (duration !== undefined && duration !== 0) {
           clearInterval(getTotalDurationInterval)
 
-          this.pushEvent('receive_video_time', duration)
+          this.pushEvent('receive_video_time', {duration})
           player.pauseVideo()
           player.seekTo(0)
         }

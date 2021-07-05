@@ -54,8 +54,9 @@ defmodule DjRumbleWeb.RoomLiveTest do
 
     test "renders room player", %{conn: conn, rooms: rooms} do
       user = user_fixture()
-      {_, room, videos} = hd(rooms)
-      video = Enum.at(videos, 0)
+      {_, %{slug: slug} = room, _} = hd(rooms)
+
+      [video | _vs] = videos = videos_fixture(3)
 
       args = %{
         current_round: %{video: video, added_by: user},
@@ -64,14 +65,39 @@ defmodule DjRumbleWeb.RoomLiveTest do
         videos: videos
       }
 
-      {:ok, index_live, html} = live(conn, Routes.room_index_path(conn, :index))
+      {:ok, index_live, _html} = live(conn, Routes.room_index_path(conn, :index))
+
+      %{pid: view_pid} = index_live
+
+      :erlang.trace(view_pid, true, [:receive])
 
       send(index_live.pid, {:receive_current_player, args})
 
-      assert html =~ "Come in"
+      room_card_id = "dj-rumble-room-card-#{slug}"
+
+      assert_receive(
+        {
+          :trace,
+          ^view_pid,
+          :receive,
+          {
+            :phoenix,
+            :send_update,
+            {
+              DjRumbleWeb.Live.Components.RoomCard,
+              ^room_card_id,
+              %{
+                current_round: %{added_by: ^user, video: ^video},
+                status: :playing,
+                videos: ^videos
+              }
+            }
+          }
+        },
+        3000
+      )
     end
 
-    @tag :wip
     test "renders users count", %{conn: conn, rooms: rooms} do
       _show_conns =
         for {_current_round, %{slug: slug} = _room, _videos} <- rooms do
@@ -157,6 +183,19 @@ defmodule DjRumbleWeb.RoomLiveTest do
       :ok
     end
 
+    defp add_video(view) do
+      view
+      |> element("#search-element-button-1")
+      |> render_click()
+
+      # Closes the modal window
+      view
+      |> element(@search_video_close_modal_button_class)
+      |> render_click()
+
+      :ok
+    end
+
     defp type_chat_message(view, message) do
       view
       |> element(@new_message_form_id)
@@ -172,13 +211,11 @@ defmodule DjRumbleWeb.RoomLiveTest do
       %{conn: conn, room: room}
     end
 
-    @tag :wip
     test "displays room with no videos", %{conn: conn, room: room} do
       {:ok, show_live, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
       assert page_title(show_live) == nil
     end
 
-    @tag :wip
     test "displays room navbar with a username", %{conn: conn, room: room} do
       %{user: user, conn: conn} = authenticated_conn(conn)
 
@@ -188,7 +225,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
                "<span>\n      Hello, <span class=\"text-green-300 font-sans\">#{user.username}</span>"
     end
 
-    @tag :wip
     test "create a round", %{conn: conn, room: room} do
       %{user: _user, conn: conn} = authenticated_conn(conn)
 
@@ -200,17 +236,9 @@ defmodule DjRumbleWeb.RoomLiveTest do
       :ok = search_video(view, search_query)
 
       # Adds a video to the queue
-      view
-      |> element("#search-element-button-1")
-      |> render_click()
-
-      # Closes the modal window
-      view
-      |> element(@search_video_close_modal_button_class)
-      |> render_click()
+      :ok = add_video(view)
     end
 
-    @tag :wip
     test "receives a chat message", %{conn: conn, room: room} do
       %{user: user, conn: conn} = authenticated_conn(conn)
 
@@ -226,6 +254,77 @@ defmodule DjRumbleWeb.RoomLiveTest do
                "<span class=\"text-xl font-bold text-gray-300\">#{user.username}:</span>"
 
       assert render(view) =~ "<span class=\"italic text-xl text-gray-300 \">#{message}</span>"
+    end
+
+    test "a player connects, adds a video and a round is started", %{conn: conn, room: room} do
+      %{user: user, conn: conn} = authenticated_conn(conn)
+
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+
+      %{pid: view_pid} = view
+
+      :erlang.trace(view_pid, true, [:receive])
+
+      # Adds a video to the queue
+      :ok = search_video(view, "some video")
+      :ok = add_video(view)
+
+      view
+      |> element("#player-syncing-data")
+      |> render_hook(:player_is_ready, %{})
+
+      assert_receive(
+        {:trace, ^view_pid, :receive, {:request_playback_details, %{time: 0, videoId: _video_id}}}
+      )
+
+      # Send some duration for a video
+      duration = 30
+
+      view
+      |> element("#player-syncing-data")
+      |> render_hook(:receive_video_time, %{duration: duration})
+
+      assert_receive({
+        :trace,
+        ^view_pid,
+        :receive,
+        %Phoenix.Socket.Message{
+          event: "event",
+          payload: %{
+            "cid" => nil,
+            "event" => "receive_video_time",
+            "type" => "hook",
+            "value" => %{"duration" => ^duration}
+          }
+        }
+      })
+
+      assert_receive({:trace, ^view_pid, :receive, {:receive_countdown, 3000}}, 1000)
+      assert_receive({:trace, ^view_pid, :receive, {:receive_countdown, 2000}}, 2000)
+      assert_receive({:trace, ^view_pid, :receive, {:receive_countdown, 1000}}, 3000)
+      assert_receive({:trace, ^view_pid, :receive, {:receive_countdown, 0}}, 3000)
+
+      assert_receive(
+        {
+          :trace,
+          ^view_pid,
+          :receive,
+          {:round_started,
+           %{
+             added_by: ^user,
+             round: %DjRumble.Rounds.Round.InProgress{
+               elapsed_time: 0,
+               log: %DjRumble.Rounds.Log{actions: [], narrations: []},
+               outcome: :continue,
+               score: {0, 0},
+               time: ^duration
+             },
+             video: %DjRumble.Rooms.Video{},
+             video_details: %{time: 0, videoId: _video_id}
+           }}
+        },
+        3000
+      )
     end
   end
 end
