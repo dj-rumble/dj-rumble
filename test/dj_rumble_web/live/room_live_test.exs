@@ -123,9 +123,12 @@ defmodule DjRumbleWeb.RoomLiveTest do
   end
 
   describe "Show" do
-    @search_video_modal_button_id "#djrumble-searchbox-modal-button-1"
+    @search_video_open_modal_button_id "#djrumble-searchbox-modal-button-1"
+    @search_video_close_modal_button_class ".modal-close-icon"
     @search_form_id "#search-form"
     @video_search_received_event_name "receive_search_completed_signal"
+
+    @new_message_form_id "#new-message"
 
     defp authenticated_conn(conn) do
       user = user_fixture()
@@ -134,11 +137,11 @@ defmodule DjRumbleWeb.RoomLiveTest do
       %{user: user, conn: conn}
     end
 
-    def search_video(view, search_query) do
+    defp search_video(view, search_query) do
       # Simulates a search video interaction
       # Opens modal
       view
-      |> element(@search_video_modal_button_id)
+      |> element(@search_video_open_modal_button_id)
       |> render_click()
 
       view
@@ -150,6 +153,14 @@ defmodule DjRumbleWeb.RoomLiveTest do
       |> render_submit(%{})
 
       assert_push_event(view, @video_search_received_event_name, %{})
+
+      :ok
+    end
+
+    defp type_chat_message(view, message) do
+      view
+      |> element(@new_message_form_id)
+      |> render_submit(%{submit: %{message: message}})
 
       :ok
     end
@@ -181,6 +192,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
     test "create a round", %{conn: conn, room: room} do
       %{user: _user, conn: conn} = authenticated_conn(conn)
 
+      conn = get(conn, "/rooms/#{room.slug}")
       {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
 
       # Simulates a search video interaction
@@ -194,8 +206,26 @@ defmodule DjRumbleWeb.RoomLiveTest do
 
       # Closes the modal window
       view
-      |> element(".modal-close-icon")
+      |> element(@search_video_close_modal_button_class)
       |> render_click()
+    end
+
+    @tag :wip
+    test "receives a chat message", %{conn: conn, room: room} do
+      %{user: user, conn: conn} = authenticated_conn(conn)
+
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+
+      message = "Hello there!"
+      :ok = type_chat_message(view, message)
+
+      # Establishes a connection
+      _conn = get(conn, "/rooms/#{room.slug}")
+
+      assert render(view) =~
+               "<span class=\"text-xl font-bold text-gray-300\">#{user.username}:</span>"
+
+      assert render(view) =~ "<span class=\"italic text-xl text-gray-300 \">#{message}</span>"
     end
   end
 end
