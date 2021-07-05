@@ -98,6 +98,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
       )
     end
 
+    @tag :wip
     test "renders users count", %{conn: conn, rooms: rooms} do
       _show_conns =
         for {_current_round, %{slug: slug} = _room, _videos} <- rooms do
@@ -119,10 +120,13 @@ defmodule DjRumbleWeb.RoomLiveTest do
           conn
         end
 
-      {:ok, _index_live, html} = live(conn, Routes.room_index_path(conn, :index))
+      {:ok, index_live, _html} = live(conn, Routes.room_index_path(conn, :index))
 
-      assert html =~
-               "<div class=\"\n    col-start-3 col-end-4 text-lg\n    self-center\tjustify-self-center\n    animated fadeIn\n    transition duration-400 ease-linear\n  \">\n1\n  </div>"
+      %{pid: view_pid} = index_live
+
+      :erlang.trace(view_pid, true, [:receive])
+
+      assert_receive({:trace, ^view_pid, :receive, :fetch_users_count}, 2000)
     end
 
     # test "saves new room", %{conn: conn} do
