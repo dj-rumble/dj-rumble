@@ -1,4 +1,5 @@
 import { dropConfetti, randomConfetti } from '../../lib/components/confetti'
+// import { dropReactionTo } from '../../lib/components/reactions'
 import {
   handlePageLoadingStart,
   handlePageLoadingStop
@@ -13,6 +14,8 @@ const UiFeedback = () => ({
       const container = document.getElementById(elementId)
 
       spawnHeart(container, type)
+
+      // dropReactionTo(type)
     })
 
     this.handleEvent('drop_confetti', () => {

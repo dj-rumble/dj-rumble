@@ -2,6 +2,7 @@
   <%= if connected?(@socket) do %>
 
     <!-- Main Grid Starts -->
+    <%# <canvas style="position: absolute; z-index: 1; width: 100%; height: 100%;"  id="confetti-canvas"></canvas> %>
 
     <div class="
       grid      grid-flow-row     h-screen     max-h-screen     min-h-screen
@@ -174,7 +175,7 @@
 
         <!-- Grid :: Bottom Panel Starts -->
 
-        <div class="
+        <div style="z-index: 1" class="
           col-start-1     col-end-13     row-start-10     row-end-12
           sm:col-start-1  sm:col-end-13  sm:row-start-6  sm:row-end-7
           md:col-start-1  md:col-end-13  md:row-start-6  md:row-end-7
@@ -219,9 +220,6 @@
           state: @register_modal_state,
           user: @user
         %>
-
-        <canvas class="w-0" id="confetti-canvas"></canvas>
-
       </div>
     </div>
 
