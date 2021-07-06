@@ -29,6 +29,10 @@ defmodule DjRumble.Chats.ChatServer do
     GenServer.cast(pid, {:new_message, [:video_message, video, user, action]})
   end
 
+  def new_finished_video_message(pid, video, user, args) do
+    GenServer.cast(pid, {:new_message, [:video_message, video, user, args]})
+  end
+
   def new_score_message(pid, video, user, args) do
     GenServer.cast(pid, {:new_message, [:score_message, video, user, args]})
   end

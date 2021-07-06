@@ -25,9 +25,10 @@ defmodule DjRumble.Chats.Message do
     defdata Video do
       video :: Message.video() \\ %Video{}
       added_by :: Message.user() \\ %AccountUser{}
-      action :: :playing | :scheduled \\ :playing
+      action :: :playing | :scheduled | :finished \\ :playing
       role :: :dj | :spectator | :system \\ :system
       args :: any() \\ nil
+      narration :: [String.t()] \\ []
     end
 
     defdata Score do
@@ -60,6 +61,11 @@ defmodule DjRumble.Chats.Message do
   """
   def create_message(:user_message, message, user, timezone) do
     Message.User.new(user, message, timestamp(timezone))
+  end
+
+  def create_message(:video_message, video, user, {:finished = action, role, args}) do
+    Message.Video.new(video, user, action, role, args)
+    |> Message.narrate()
   end
 
   def create_message(:video_message, video, user, {action, role, args}) do
@@ -134,6 +140,14 @@ defmodule DjRumble.Chats.Message do
     ]
   end
 
+  def narrate(%Message.Video{action: :finished} = message) do
+    narration =
+      get_finished_round_narrations(message)
+      |> pick_random_narration()
+
+    %Message.Video{message | narration: narration}
+  end
+
   def narrate(%Message.Video{video: video, added_by: user, action: :scheduled, role: :dj, args: 0}) do
     [
       {:emoji, "💿"},
@@ -173,6 +187,174 @@ defmodule DjRumble.Chats.Message do
       |> pick_random_narration()
 
     %Message.Score{message | narration: narration}
+  end
+
+  # ----------------------------------------------------------------------------
+  # Finished Round Narrations
+  # Role: :spectator
+  # ----------------------------------------------------------------------------
+
+  defp get_text(1, {singular, _plural}), do: singular
+  defp get_text(_, {_singular, plural}), do: plural
+
+  def get_finished_round_narrations(%Message.Video{
+        video: %Video{title: title},
+        added_by: %AccountUser{username: username},
+        action: :finished,
+        role: :spectator,
+        args: {{positives, _negatives}, :continue, 0}
+      }) do
+    [
+      [
+        {:video, "#{title}"},
+        "heated it up and got",
+        {:positive_score, "#{positives}"},
+        "likes.",
+        {:username, "#{username}"},
+        "haven't scheduled a jam and some other Dj is playing next."
+      ]
+    ]
+  end
+
+  def get_finished_round_narrations(%Message.Video{
+        video: %Video{title: title},
+        action: :finished,
+        role: :spectator,
+        args: {_score, :thrown, 0}
+      }) do
+    [
+      [
+        "People really didn't get on with",
+        {:video, "#{title}"},
+        "Some other Dj is going to play next."
+      ]
+    ]
+  end
+
+  def get_finished_round_narrations(%Message.Video{
+        video: %Video{title: title},
+        added_by: %AccountUser{username: username},
+        action: :finished,
+        role: :spectator,
+        args: {{positives, _negatives}, :continue, next_tracks_count}
+      }) do
+    [
+      [
+        {:video, "#{title}"},
+        "heated it up and got",
+        {:positive_score, "#{positives}"},
+        "likes.",
+        next_tracks_count,
+        "#{get_text(next_tracks_count, {"track", "tracks"})} added by",
+        {:username, "#{username}"},
+        "come next in queue."
+      ]
+    ]
+  end
+
+  def get_finished_round_narrations(%Message.Video{
+        video: %Video{title: title},
+        added_by: %AccountUser{username: username},
+        action: :finished,
+        role: :spectator,
+        args: {_score, :thrown, next_tracks_count}
+      }) do
+    [
+      [
+        "People really didn't get on with",
+        {:video, "#{title}"},
+        "Some other Dj is going to play next.",
+        next_tracks_count,
+        "#{get_text(next_tracks_count, {"track", "tracks"})} added by",
+        {:username, "#{username}"},
+        "#{get_text(next_tracks_count, {"is", "are"})} moved to the end of the queue."
+      ]
+    ]
+  end
+
+  # ----------------------------------------------------------------------------
+  # Narrations
+  # Role: :dj
+  # Score type: :positive
+  # Outcome: :thrown
+  # ----------------------------------------------------------------------------
+
+  def get_finished_round_narrations(%Message.Video{
+        video: %Video{title: title},
+        action: :finished,
+        role: :dj,
+        args: {{positives, negatives}, :continue, 0}
+      }) do
+    [
+      [
+        {:positive_score, "#{positives}"},
+        "people liked",
+        {:video, title},
+        "and",
+        {:negative_score, "#{negatives}"},
+        "voted against.",
+        "You haven't added more tracks, what's your next choice?"
+      ]
+    ]
+  end
+
+  def get_finished_round_narrations(%Message.Video{
+        video: %Video{title: title},
+        action: :finished,
+        role: :dj,
+        args: {{positives, negatives}, :thrown, 0}
+      }) do
+    [
+      [
+        {:positive_score, "#{positives}"},
+        "people liked",
+        {:video, title},
+        "and got",
+        {:negative_score, "#{negatives}"},
+        "thumbs down.",
+        "You've no more videos added."
+      ]
+    ]
+  end
+
+  def get_finished_round_narrations(%Message.Video{
+        video: %Video{title: title},
+        action: :finished,
+        role: :dj,
+        args: {{positives, negatives}, :continue, next_tracks_count}
+      }) do
+    [
+      [
+        {:positive_score, "#{positives}"},
+        "people liked",
+        {:video, title},
+        "and got",
+        {:negative_score, "#{negatives}"},
+        "thumbs down.",
+        {next_tracks_count},
+        "of your tracks continue in queue."
+      ]
+    ]
+  end
+
+  def get_finished_round_narrations(%Message.Video{
+        video: %Video{title: title},
+        action: :finished,
+        role: :dj,
+        args: {{positives, negatives}, :thrown, next_tracks_count}
+      }) do
+    [
+      [
+        {:positive_score, "#{positives}"},
+        "people liked",
+        {:video, title},
+        "and got",
+        {:negative_score, "#{negatives}"},
+        "thumbs down.",
+        {next_tracks_count},
+        "of your tracks were moved to the end of the queue."
+      ]
+    ]
   end
 
   defp pick_random_narration(narrations) do

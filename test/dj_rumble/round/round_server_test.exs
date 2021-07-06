@@ -285,9 +285,7 @@ defmodule DjRumble.Round.RoundServerTest do
     defp handle_score(state, user, type) do
       response = RoundServer.handle_call({:score, user, type}, nil, state)
 
-      {:reply, new_round, %{round: round} = state} = response
-
-      assert new_round == round
+      {:reply, _new_round, state} = response
 
       state
     end
