@@ -45,7 +45,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
     test "lists all rooms", %{conn: conn, rooms: rooms} do
       {:ok, _index_live, html} = live(conn, Routes.room_index_path(conn, :index))
 
-      assert html =~ "Dj Rooms"
+      assert html =~ "DJ Rooms"
 
       for {_current_round, room, _videos} <- rooms do
         assert html =~ room.name
@@ -226,7 +226,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
       {:ok, _show_live, html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
 
       assert html =~
-               "<span>\n      Hello, <span class=\"text-green-300 font-sans\">#{user.username}</span>"
+               "<span>\n      Hello, <span class=\"text-green-300 text-3xl\">#{user.username}</span>"
     end
 
     test "create a round", %{conn: conn, room: room} do
