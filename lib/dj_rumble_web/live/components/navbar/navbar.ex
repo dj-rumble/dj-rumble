@@ -16,14 +16,14 @@ defmodule DjRumbleWeb.Live.Components.Navbar do
       <div class="
         flex flex-row-reverse
         items-end
-        text-xl
+        font-street-ruler
 
         h-24 h-40
-        sm:text-2xl  sm:h-24
-        md:text-2xl  md:h-24
-        lg:text-2xl  lg:h-24
-        xl:text-2xl  xl:h-24
-        2xl:text-2xl 2xl:h-24
+        sm:text-4xl  sm:h-24
+        md:text-4xl  md:h-24
+        lg:text-4xl  lg:h-24
+        xl:text-4xl  xl:h-24
+        4xl:text-4xl 4xl:h-24
 
         text-gray-300
         mr-3
@@ -57,7 +57,7 @@ defmodule DjRumbleWeb.Live.Components.Navbar do
 
   defp render_username(username, assigns) do
     ~L"""
-      <div class="m-2 mr-9 text-2xl font-street-ruler">
+      <div class="m-2 mr-9 text-3xl">
         <span>
           Hello, <span class="text-green-300 text-3xl"><%= username %></span>
         </span>
@@ -69,7 +69,7 @@ defmodule DjRumbleWeb.Live.Components.Navbar do
     ~L"""
       <div class="m-2">
         <%= link to: to, method: method,
-          class: "text-gray-300 text-4xl font-street-ruler text-center hover:text-red-400 hover:underline transition duration-500 ease-in-out"
+          class: "text-gray-300 text-center hover:text-red-400 hover:underline transition duration-500 ease-in-out"
         do %>
           <%= String.downcase(text) %>
         <% end %>

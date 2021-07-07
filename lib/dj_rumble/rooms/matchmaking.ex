@@ -159,11 +159,15 @@ defmodule DjRumble.Rooms.Matchmaking do
     response =
       case Process.alive?(round_pid) do
         true ->
-          %Round.InProgress{} = round = RoundServer.score(round_pid, user, type)
+          case RoundServer.score(round_pid, user, type) do
+            %Round.InProgress{} = round ->
+              :ok = send_announcement(state, :score, video, user, type, round)
 
-          :ok = send_announcement(state, :score, video, user, type, round)
+              round
 
-          round
+            :error ->
+              :error
+          end
 
         false ->
           :error
@@ -248,11 +252,13 @@ defmodule DjRumble.Rooms.Matchmaking do
         title: "Waiting for the next round"
       })
 
-    video_details = %{title: video.title}
-
     state = %{state | status: :cooldown}
 
     :ok = broadcast_lobby(state, nil, nil)
+
+    :ok = send_announcement(state, :round_finished, round)
+
+    video_details = %{title: video.title}
 
     :ok =
       Channels.broadcast(
@@ -445,7 +451,7 @@ defmodule DjRumble.Rooms.Matchmaking do
         # the current round. We count current Dj videos to predict a place at
         # the queue.
         remaining_videos =
-          get_current_dj_rounds(state.next_rounds, user)
+          get_current_rounds_by_user(state.next_rounds, user)
           |> length()
 
         :ok =
@@ -469,6 +475,21 @@ defmodule DjRumble.Rooms.Matchmaking do
             {:scheduled, :spectator, remaining_videos}
           )
     end
+  end
+
+  defp send_announcement(
+         state,
+         :round_finished,
+         %Round.Finished{score: score, outcome: outcome}
+       ) do
+    {_ref, {_pid, %Video{} = video, _time, %User{} = user}} = state.current_round
+
+    next_rounds_count =
+      get_current_rounds_by_user(state.next_rounds, user)
+      |> length()
+
+    args = {:finished, :spectator, {score, outcome, next_rounds_count}}
+    ChatServer.new_finished_video_message(state.chat_server, video, user, args)
   end
 
   defp send_announcement(
@@ -497,7 +518,7 @@ defmodule DjRumble.Rooms.Matchmaking do
       )
   end
 
-  defp get_current_dj_rounds(rounds, %User{} = user) do
+  defp get_current_rounds_by_user(rounds, %User{} = user) do
     Enum.filter(rounds, fn {_ref, {_pid, _current_video, _time, round_user}} ->
       user == round_user
     end)

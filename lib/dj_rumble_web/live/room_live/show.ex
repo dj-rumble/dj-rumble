@@ -110,7 +110,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
   end
 
   @impl true
-  def handle_event("receive_video_time", time, socket) do
+  def handle_event("receive_video_time", %{"duration" => time}, socket) do
     Logger.info(fn -> "Received time: '#{time}' from yt client" end)
 
     :ok =
@@ -329,9 +329,12 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Args:** `%{videoId: String.t(), time: non_neg_integer()}`
   """
   def handle_playback_details_request(video_details, socket) do
+    # coveralls-ignore-start
     Logger.info(fn ->
       "[Pid #{inspect(self())}] receives playback details request for video time."
     end)
+
+    # coveralls-ignore-stop
 
     {:noreply,
      socket
