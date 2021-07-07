@@ -1,69 +1,82 @@
-<div class="pr-1 m-2 rounded-lg">
-  <%= for {{video, username, classes} = video_user, index} <- Enum.with_index(@videos_users) do %>
+<div class="h-full w-full rounded-lg px-2 pt-1">
+
+  <%= if @videos_users == [] do %>
+
     <div class="
-      grid grid-cols-8 gap-2 separator
-      rounded-lg my-2 p-1
-      <%= get_card_class(index) %>
-      shadow-card queued <%= classes %>
+      flex items-center justify-center h-full
+      font-street-ruler text-white text-4xl
     ">
-      <div class="
-        col-span-2
-        sm:col-span-1
-        md:col-span-1
-        lg:col-span-1
-        xl:col-span-1
-        2xl:col-span-1
-
-        align-center self-center
-        w-3/4
-      ">
-        <%= img_tag(video.img_url, class: "rounded-l-md") %>
-      </div>
-      <div class="
-        col-span-4     grid-rows-2
-        sm:col-span-6  sm:grid-rows-2
-        md:col-span-6  md:grid-rows-2
-        lg:col-span-6  lg:grid-rows-2
-        xl:col-span-6  xl:grid-rows-2
-        2xl:col-span-6 2xl:grid-rows-2
-
-        self-center pl-1
-        grid
-      ">
-        <div class="
-          row-span-3
-          text-left text-gray-400 text-xl
-        ">
-          <p class="font-bold m-0"><%= video.title %>, added by <span class="font-normal text-gray-300 font-bold"><%= username %></span></p>
-        </div>
-        <div class="
-          row-span-2
-          text-left text-gray-400 text-lg
-        ">
-          <p class="
-            m-0
-            hidden
-            sm:block
-            md:block
-            lg:block
-            xl:block
-            2xl:block
-          "><%= video.description %></p>
-        </div>
-      </div>
-      <div class="
-        col-span-2
-        sm:col-span-1
-        md:col-span-1
-        lg:col-span-1
-        xl:col-span-1
-        2xl:col-span-1
-
-        justify-self-center
-        text-center text-green-600 text-lg
-      ">
-        <%= get_notice_by_video_position(video_user, index, @socket) %>
-      </div>
+      Hurry up, be the first one to add a new video!
     </div>
+
+  <% else %>
+
+    <%= for {{video, username, classes} = video_user, index} <- Enum.with_index(@videos_users) do %>
+      <div class="
+        grid grid-cols-8 gap-2 separator
+        rounded-lg p-1 pr-1 my-2
+        <%= get_card_class(index) %>
+        shadow-card queued <%= classes %>
+      ">
+        <div class="
+          col-span-2
+          sm:col-span-1
+          md:col-span-1
+          lg:col-span-1
+          xl:col-span-1
+          2xl:col-span-1
+
+          align-center self-center
+          w-3/4
+        ">
+          <%= img_tag(video.img_url, class: "rounded-l-md") %>
+        </div>
+        <div class="
+          col-span-4     grid-rows-2
+          sm:col-span-6  sm:grid-rows-2
+          md:col-span-6  md:grid-rows-2
+          lg:col-span-6  lg:grid-rows-2
+          xl:col-span-6  xl:grid-rows-2
+          2xl:col-span-6 2xl:grid-rows-2
+
+          self-center pl-1
+          grid
+        ">
+          <div class="
+            row-span-3
+            text-left text-gray-400 text-xl
+          ">
+            <p class="font-bold m-0"><%= video.title %>, added by <span class="font-normal text-gray-300 font-bold"><%= username %></span></p>
+          </div>
+          <div class="
+            row-span-2
+            text-left text-gray-400 text-lg
+          ">
+            <p class="
+              m-0
+              hidden
+              sm:block
+              md:block
+              lg:block
+              xl:block
+              2xl:block
+            "><%= video.description %></p>
+          </div>
+        </div>
+        <div class="
+          col-span-2
+          sm:col-span-1
+          md:col-span-1
+          lg:col-span-1
+          xl:col-span-1
+          2xl:col-span-1
+
+          justify-self-center
+          text-center text-green-600 text-lg
+        ">
+          <%= get_notice_by_video_position(video_user, index, @socket) %>
+        </div>
+      </div>
+    <% end %>
   <% end %>
 </div>
