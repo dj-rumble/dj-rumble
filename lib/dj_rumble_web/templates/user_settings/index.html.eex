@@ -1,14 +1,28 @@
-<div class="flex flex-row-reverse text-gray-300 hover:text-green-300">
+<div class="
+  flex flex-row-reverse
+  items-end
+  font-street-ruler
+
+  h-24 h-40
+  sm:text-4xl  sm:h-24
+  md:text-4xl  md:h-24
+  lg:text-4xl  lg:h-24
+  xl:text-4xl  xl:h-24
+  4xl:text-4xl 4xl:h-24
+
+  text-gray-300
+  mr-3
+">
   <div class="m-2">
     <%= link to: Routes.user_session_path(@conn, :delete), method: :delete,
-      class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
+      class: "text-gray-300 text-center hover:text-red-400 hover:underline transition duration-500 ease-in-out"
     do %>
       Log out
     <% end %>
   </div>
   <div class="m-2">
     <%= link to: Routes.room_index_path(@conn, :index),
-      class: "text-gray-300 hover:text-green-300 transition duration-500 ease-in-out"
+      class: "text-gray-300 text-center hover:text-red-400 hover:underline transition duration-500 ease-in-out"
     do %>
       Home
     <% end %>
