@@ -57,7 +57,7 @@ defmodule DjRumbleWeb.Live.Components.Navbar do
 
   defp render_username(username, assigns) do
     ~L"""
-      <div class="m-2 mr-9 text-2xl font-street-ruler">
+      <div class="m-2 mr-7 text-3xl">
         <span>
           Hello, <span class="text-green-300 text-3xl"><%= username %></span>
         </span>
@@ -69,9 +69,9 @@ defmodule DjRumbleWeb.Live.Components.Navbar do
     ~L"""
       <div class="m-2">
         <%= link to: to, method: method,
-          class: "text-gray-300 text-4xl font-street-ruler text-center hover:text-red-400 hover:underline transition duration-500 ease-in-out"
+          class: "text-gray-300 text-3xl font-sans text-center hover:text-red-400 hover:underline transition duration-500 ease-in-out"
         do %>
-          <%= String.downcase(text) %>
+          <%= text %>
         <% end %>
       </div>
     """
