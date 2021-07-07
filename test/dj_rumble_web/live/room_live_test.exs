@@ -160,6 +160,11 @@ defmodule DjRumbleWeb.RoomLiveTest do
 
     @new_message_form_id "#new-message"
 
+    @player_hook_id "#player-syncing-data"
+
+    @positive_score_button "#djrumble-score-positive-button"
+    @negative_score_button "#djrumble-score-negative-button"
+
     defp authenticated_conn(conn) do
       user = user_fixture()
       conn = log_in_user(conn, user)
@@ -243,21 +248,50 @@ defmodule DjRumbleWeb.RoomLiveTest do
       :ok = add_video(view)
     end
 
+    @tag :wip
     test "receives a chat message", %{conn: conn, room: room} do
       %{user: user, conn: conn} = authenticated_conn(conn)
 
+      # Establishes a connection
+      conn = get(conn, "/rooms/#{room.slug}")
       {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
 
       message = "Hello there!"
       :ok = type_chat_message(view, message)
 
-      # Establishes a connection
-      _conn = get(conn, "/rooms/#{room.slug}")
-
       assert render(view) =~
                "<span class=\"text-xl font-bold text-gray-300\">#{user.username}:</span>"
 
       assert render(view) =~ "<span class=\"italic text-xl text-gray-300 \">#{message}</span>"
+    end
+
+    defp do_start_a_round(view, video_duration) do
+      # Adds a video to the queue
+      :ok = search_video(view, "some video")
+      :ok = add_video(view)
+
+      view
+      |> element(@player_hook_id)
+      |> render_hook(:player_is_ready, %{})
+
+      view
+      |> element(@player_hook_id)
+      |> render_hook(:receive_video_time, %{duration: video_duration})
+
+      # video = video_fixture()
+      # user = user_fixture()
+
+      # args = %{
+      #   round: %DjRumble.Rounds.Round.InProgress{time: 30},
+      #   video_details: %{videoId: video.video_id, time: 0},
+      #   added_by: user,
+      #   video: video
+      # }
+
+      # send(view.pid, {:round_started, args})
+
+      # {:ok, %{round_started_args: args}}
+      :ok
     end
 
     test "a player connects, adds a video and a round is started", %{conn: conn, room: room} do
@@ -269,24 +303,13 @@ defmodule DjRumbleWeb.RoomLiveTest do
 
       :erlang.trace(view_pid, true, [:receive])
 
-      # Adds a video to the queue
-      :ok = search_video(view, "some video")
-      :ok = add_video(view)
+      video_duration = 30
 
-      view
-      |> element("#player-syncing-data")
-      |> render_hook(:player_is_ready, %{})
+      :ok = do_start_a_round(view, video_duration)
 
       assert_receive(
         {:trace, ^view_pid, :receive, {:request_playback_details, %{time: 0, videoId: _video_id}}}
       )
-
-      # Send some duration for a video
-      duration = 30
-
-      view
-      |> element("#player-syncing-data")
-      |> render_hook(:receive_video_time, %{duration: duration})
 
       assert_receive({
         :trace,
@@ -298,7 +321,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
             "cid" => nil,
             "event" => "receive_video_time",
             "type" => "hook",
-            "value" => %{"duration" => ^duration}
+            "value" => %{"duration" => ^video_duration}
           }
         }
       })
@@ -321,7 +344,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
                log: %DjRumble.Rounds.Log{actions: [], narrations: []},
                outcome: :continue,
                score: {0, 0},
-               time: ^duration
+               time: ^video_duration
              },
              video: %DjRumble.Rooms.Video{},
              video_details: %{time: 0, videoId: _video_id}
@@ -329,6 +352,192 @@ defmodule DjRumbleWeb.RoomLiveTest do
         },
         3000
       )
+    end
+
+    @tag :wip
+    test "a player receive some playback details for a video", %{conn: conn, room: room} do
+      conn = get(conn, "/rooms/#{room.slug}")
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+
+      %{pid: view_pid} = view
+
+      :erlang.trace(view_pid, true, [:receive])
+
+      video = video_fixture()
+      round = %DjRumble.Rounds.Round.InProgress{time: 20}
+      video_details = %{time: 5, videoId: video.video_id}
+      user = user_fixture()
+
+      args = %{
+        round: round,
+        video: video,
+        video_details: video_details,
+        added_by: user
+      }
+
+      send(view_pid, {:receive_playback_details, args})
+
+      :ok = Process.sleep(300)
+
+      assert page_title(view) =~ video.title
+    end
+
+    @tag :wip
+    test "a message is received when there are no more rounds", %{conn: conn, room: room} do
+      conn = get(conn, "/rooms/#{room.slug}")
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+
+      %{pid: view_pid} = view
+
+      :erlang.trace(view_pid, true, [:receive])
+
+      send(view_pid, :no_more_rounds)
+
+      assert_receive({:trace, ^view_pid, :receive, :no_more_rounds})
+    end
+
+    @tag :wip
+    test "a message is received when a round is finished with a :continue outcome", %{
+      conn: conn,
+      room: room
+    } do
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+
+      %{pid: view_pid} = view
+
+      :erlang.trace(view_pid, true, [:receive])
+
+      round = %DjRumble.Rounds.Round.Finished{outcome: :continue, score: {1, 0}}
+      video = video_fixture()
+      video_details = %{title: video.title}
+
+      send(
+        view_pid,
+        {:round_finished, %{round: round, video: video, video_details: video_details}}
+      )
+
+      short_title = String.slice(video_details.title, 0, 15)
+
+      assert render(view) =~ "#{short_title}... scored 1 points"
+    end
+
+    @tag :wip
+    test "a message is received when a round is finished with a :thrown outcome", %{
+      conn: conn,
+      room: room
+    } do
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+
+      %{pid: view_pid} = view
+
+      :erlang.trace(view_pid, true, [:receive])
+
+      round = %DjRumble.Rounds.Round.Finished{outcome: :thrown, score: {0, 3}}
+      video = video_fixture()
+      video_details = %{title: video.title}
+
+      send(
+        view_pid,
+        {:round_finished, %{round: round, video: video, video_details: video_details}}
+      )
+
+      short_title = String.slice(video_details.title, 0, 15)
+
+      :ok = Process.sleep(900)
+
+      assert render(view) =~ "#{short_title}... scored -3 points"
+    end
+
+    @tag :wip
+    test "a chat message is received", %{conn: conn, room: room} do
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+
+      %{pid: view_pid} = view
+
+      :erlang.trace(view_pid, true, [:receive])
+
+      user = user_fixture()
+      message_string = "some message"
+      timestamp = "13:51:48"
+
+      message = %DjRumble.Chats.Message.User{
+        from: user,
+        message: message_string,
+        timestamp: timestamp
+      }
+
+      send(view_pid, {:receive_new_message, message})
+
+      assert_receive({
+        :trace,
+        ^view_pid,
+        :receive,
+        {:receive_new_message, ^message}
+      })
+
+      assert_push_event(view, "receive_new_message", %{})
+    end
+
+    @tag :wip
+    test "a score message is received when a positive vote is triggered", %{
+      conn: conn,
+      room: room
+    } do
+      %{conn: conn} = authenticated_conn(conn)
+
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+
+      %{pid: view_pid} = view
+
+      :erlang.trace(view_pid, true, [:receive])
+
+      video_duration = 30
+      :ok = do_start_a_round(view, video_duration)
+
+      :ok = Process.sleep(4500)
+
+      :ok = vote_video(view, :positive)
+
+      assert render(view) =~ "<span class=\"text-gray-400 text-5xl font-street-ruler\">1</span>"
+    end
+
+    @tag :wip
+    test "a score message is received when a negative vote is triggered", %{
+      conn: conn,
+      room: room
+    } do
+      %{conn: conn} = authenticated_conn(conn)
+
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+
+      %{pid: view_pid} = view
+
+      :erlang.trace(view_pid, true, [:receive])
+
+      video_duration = 30
+      :ok = do_start_a_round(view, video_duration)
+
+      :ok = Process.sleep(4500)
+
+      :ok = vote_video(view, :negative)
+
+      assert render(view) =~ "<span class=\"text-gray-400 text-5xl font-street-ruler\">-1</span>"
+    end
+
+    defp vote_video(view, :positive) do
+      view
+      |> element(@positive_score_button)
+      |> render_click()
+
+      :ok
+    end
+
+    defp vote_video(view, :negative) do
+      view
+      |> element(@negative_score_button)
+      |> render_click()
+
+      :ok
     end
   end
 end
