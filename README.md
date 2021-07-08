@@ -1,5 +1,7 @@
 # Dj Rumble
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/1ca6813076aa41dd8dcb69375a714fe9)](https://app.codacy.com/gh/dj-rumble/dj-rumble?utm_source=github.com&utm_medium=referral&utm_content=dj-rumble/dj-rumble&utm_campaign=Badge_Grade_Settings)
+
 <p align="center">
   <a
     href="https://dj-rumble.herokuapp.com/"
