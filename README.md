@@ -37,6 +37,9 @@
       alt="Build Status"
     >
   </a>
+</p>
+
+<p align="center" style="margin-top: 14px;">
   <a href="https://www.codacy.com/gh/dj-rumble/dj-rumble/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dj-rumble/dj-rumble&amp;utm_campaign=Badge_Grade"
   >
     <img
@@ -50,6 +53,9 @@
       alt='Coverage Status'
     />
   </a>
+</p>
+
+<p align="center" style="margin-top: 14px;">
   <a
     href="https://github.com/dj-rumble/dj-rumble/blob/main/LICENSE"
   >
