@@ -98,7 +98,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
       )
     end
 
-    @tag :wip
     test "renders users count", %{conn: conn, rooms: rooms} do
       _show_conns =
         for {_current_round, %{slug: slug} = _room, _videos} <- rooms do
@@ -213,6 +212,22 @@ defmodule DjRumbleWeb.RoomLiveTest do
       :ok
     end
 
+    defp vote_video(view, :positive) do
+      view
+      |> element(@positive_score_button)
+      |> render_click()
+
+      :ok
+    end
+
+    defp vote_video(view, :negative) do
+      view
+      |> element(@negative_score_button)
+      |> render_click()
+
+      :ok
+    end
+
     setup(%{conn: conn}) do
       room = room_fixture(%{}, %{preload: true})
       :ok = start_room_server(room)
@@ -248,7 +263,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
       :ok = add_video(view)
     end
 
-    @tag :wip
     test "receives a chat message", %{conn: conn, room: room} do
       %{user: user, conn: conn} = authenticated_conn(conn)
 
@@ -280,19 +294,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
       |> element(@player_hook_id)
       |> render_hook(:receive_video_time, %{duration: video_duration})
 
-      # video = video_fixture()
-      # user = user_fixture()
-
-      # args = %{
-      #   round: %DjRumble.Rounds.Round.InProgress{time: 30},
-      #   video_details: %{videoId: video.video_id, time: 0},
-      #   added_by: user,
-      #   video: video
-      # }
-
-      # send(view.pid, {:round_started, args})
-
-      # {:ok, %{round_started_args: args}}
       :ok
     end
 
@@ -356,7 +357,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
       )
     end
 
-    @tag :wip
     test "a player receive some playback details for a video", %{conn: conn, room: room} do
       conn = get(conn, "/rooms/#{room.slug}")
       {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
@@ -384,7 +384,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
       assert page_title(view) =~ video.title
     end
 
-    @tag :wip
     test "a message is received when there are no more rounds", %{conn: conn, room: room} do
       conn = get(conn, "/rooms/#{room.slug}")
       {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
@@ -398,7 +397,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
       assert_receive({:trace, ^view_pid, :receive, :no_more_rounds})
     end
 
-    @tag :wip
     test "a message is received when a round is finished with a :continue outcome", %{
       conn: conn,
       room: room
@@ -423,7 +421,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
       assert render(view) =~ "#{short_title}... scored 1 points"
     end
 
-    @tag :wip
     test "a message is received when a round is finished with a :thrown outcome", %{
       conn: conn,
       room: room
@@ -450,7 +447,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
       assert render(view) =~ "#{short_title}... scored -3 points"
     end
 
-    @tag :wip
     test "a chat message is received", %{conn: conn, room: room} do
       {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
 
@@ -480,7 +476,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
       assert_push_event(view, "receive_new_message", %{})
     end
 
-    @tag :wip
     test "a score message is received when a positive vote is triggered", %{
       conn: conn,
       room: room
@@ -503,7 +498,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
       assert render(view) =~ "<span class=\"text-gray-400 text-5xl font-street-ruler\">1</span>"
     end
 
-    @tag :wip
     test "a score message is received when a negative vote is triggered", %{
       conn: conn,
       room: room
@@ -524,22 +518,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
       :ok = vote_video(view, :negative)
 
       assert render(view) =~ "<span class=\"text-gray-400 text-5xl font-street-ruler\">-1</span>"
-    end
-
-    defp vote_video(view, :positive) do
-      view
-      |> element(@positive_score_button)
-      |> render_click()
-
-      :ok
-    end
-
-    defp vote_video(view, :negative) do
-      view
-      |> element(@negative_score_button)
-      |> render_click()
-
-      :ok
     end
   end
 end
