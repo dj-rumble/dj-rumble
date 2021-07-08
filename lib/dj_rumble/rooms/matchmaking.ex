@@ -81,14 +81,6 @@ defmodule DjRumble.Rooms.Matchmaking do
       | next_rounds: state.next_rounds ++ [schedule_round(video, state.room, user)]
     }
 
-    case state.status do
-      :idle ->
-        Process.send_after(self(), :prepare_next_round, 500)
-
-      _status ->
-        nil
-    end
-
     :ok = send_announcement(state, :round_scheduled, video, user)
 
     Logger.info(fn ->
