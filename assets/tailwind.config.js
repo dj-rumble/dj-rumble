@@ -19,7 +19,9 @@ module.exports = {
         'inner-card-xl':
           'inset 0px 0px 10px #323637, inset 4px 0px 10px #080a0a',
         'inner-input':
-          'inset -4px -4px 10px #323637, inset 4px 4px 10px #080a0a'
+          'inset -4px -4px 10px #323637, inset 4px 4px 10px #080a0a',
+        'light-card':
+          '0px 0px 0px #000000, 4px 4px 4px #666'
       },
       gridAutoRows: {
         'custom':

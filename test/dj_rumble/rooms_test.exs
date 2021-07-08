@@ -206,7 +206,7 @@ defmodule DjRumble.RoomsTest do
 
     test "update_room_video/2 with valid data updates the room_video" do
       room_video = room_video_fixture()
-      room = room_fixture()
+      room = room_fixture(%{slug: "some unique slug"})
       video = video_fixture()
 
       assert {:ok, %RoomVideo{} = _room_video} =

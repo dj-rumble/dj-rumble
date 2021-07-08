@@ -91,6 +91,7 @@ defmodule DjRumbleWeb.Live.Components.PlayerControls.ScorePanel do
       <div id="<%= id %>">
         <div class="group relative w-full flex justify-center">
           <a
+            id="<%= id %>-button"
             phx-click="<%= event %>"
             phx-value-score="<%= event_value %>"
             phx-target="<%= event_target %>"

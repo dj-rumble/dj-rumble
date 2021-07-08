@@ -5,6 +5,7 @@ defmodule DjRumbleWeb.RoomLive.FormComponent do
   use DjRumbleWeb, :live_component
 
   alias DjRumble.Rooms
+  alias DjRumble.Rooms.RoomSupervisor
 
   @impl true
   def update(%{room: room} = assigns, socket) do
@@ -30,26 +31,15 @@ defmodule DjRumbleWeb.RoomLive.FormComponent do
     save_room(socket, socket.assigns.action, room_params)
   end
 
-  defp save_room(socket, :edit, room_params) do
-    case Rooms.update_room(socket.assigns.room, room_params) do
-      {:ok, _room} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Room updated successfully")
-         |> push_redirect(to: socket.assigns.return_to)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :changeset, changeset)}
-    end
-  end
-
   defp save_room(socket, :new, room_params) do
     case Rooms.create_room(room_params) do
-      {:ok, _room} ->
+      {:ok, room} ->
+        {:ok, _pid} = RoomSupervisor.start_room_server(RoomSupervisor, room)
+
         {:noreply,
          socket
          |> put_flash(:info, "Room created successfully")
-         |> push_redirect(to: socket.assigns.return_to)}
+         |> push_redirect(to: Routes.room_show_path(socket, :show, room.slug))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
