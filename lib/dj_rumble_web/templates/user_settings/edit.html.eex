@@ -47,7 +47,7 @@
     [class: "flex flex-col bg-gray-800 rounded-lg max-w-1/4 p-4 m-6 shadow-card"],
   fn f -> %>
     <div class="flex items-start">
-      <span class="rounded text-white p-2 leading-none flex items-center bg-green-500 w-full font-black">
+      <span class="rounded text-white p-2 leading-none flex items-center bg-indigo-500 w-full font-black">
         Change Username
       </span>
     </div>
@@ -78,8 +78,9 @@
     <div class="mt-auto flex items-center">
       <%= submit "Change username",
         class: "
-          border-gray-700 bg-gray-700 w-full shadow-md
-          transition duration-500 ease-in-out border-gray-700 bg-gray-700 hover:bg-green-500
+          border-indigo-900 bg-indigo-700
+          w-full shadow-md
+          transition duration-500 ease-in-out hover:bg-pink-600 hover:border-pink-900
         "
       %>
     </div>
@@ -89,7 +90,7 @@
     [class: "flex flex-col bg-gray-800 rounded-lg max-w-1/4 p-4 m-6 shadow-card"],
   fn f -> %>
     <div class="flex items-start">
-      <span class="rounded text-white p-2 leading-none flex items-center bg-green-500 w-full font-black">
+      <span class="rounded text-white p-2 leading-none flex items-center bg-indigo-500 w-full font-black">
         Change Email
       </span>
     </div>
@@ -119,8 +120,9 @@
 
     <div class="mt-auto flex items-center">
       <%= submit "Change email", class: "
-        border-gray-700 bg-gray-700 w-full shadow-md
-        transition duration-500 ease-in-out hover:bg-green-500
+          border-indigo-900 bg-indigo-700
+          w-full shadow-md
+          transition duration-500 ease-in-out hover:bg-pink-600 hover:border-pink-900
       " %>
     </div>
   <% end %>
@@ -129,7 +131,7 @@
     [class: "flex flex-col bg-gray-800 rounded-lg max-w-1/4 p-4 m-6 shadow-card"],
   fn f -> %>
     <div class="flex items-start">
-      <span class="rounded text-white p-2 leading-none flex items-center bg-green-500 w-full font-black">
+      <span class="rounded text-white p-2 leading-none flex items-center bg-indigo-500 w-full font-black">
         Change Password
       </span>
     </div>
@@ -165,8 +167,9 @@
 
     <div class="mt-auto flex items-center">
       <%= submit "Change password", class: "
-        border-gray-700 bg-gray-700 w-full shadow-md
-        transition duration-500 ease-in-out hover:bg-green-500
+          border-indigo-900 bg-indigo-700
+          w-full shadow-md
+          transition duration-500 ease-in-out hover:bg-pink-600 hover:border-pink-900
       " %>
     </div>
   <% end %>
