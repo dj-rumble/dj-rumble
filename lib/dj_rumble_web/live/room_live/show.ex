@@ -135,20 +135,6 @@ defmodule DjRumbleWeb.RoomLive.Show do
   end
 
   @impl true
-  def handle_event("open_search_modal", _, socket) do
-    {:noreply,
-     socket
-     |> assign(:show_search_modal, true)}
-  end
-
-  @impl true
-  def handle_event("close_search_modal", _, socket) do
-    {:noreply,
-     socket
-     |> assign(:show_search_modal, false)}
-  end
-
-  @impl true
   def handle_info(
         %{event: "presence_diff", payload: _payload},
         %{assigns: %{room: %{slug: slug}}} = socket

@@ -343,24 +343,6 @@ defmodule DjRumble.Rooms do
   end
 
   @doc """
-  Returns the list of users_rooms matching the given params.
-
-  ## Examples
-
-      iex> list_users_rooms()
-      [%DjRumble.Rooms.UserRoom{}]
-
-  """
-  def list_users_rooms_by(user_id, is_owner) do
-    from(ur in UserRoom,
-      where:
-        ur.user_id == ^user_id and
-          ur.is_owner == ^is_owner
-    )
-    |> Repo.all()
-  end
-
-  @doc """
   Gets a single user_room.
 
   Raises `Ecto.NoResultsError` if the User room does not exist.
@@ -375,45 +357,6 @@ defmodule DjRumble.Rooms do
 
   """
   def get_user_room!(id), do: Repo.get!(UserRoom, id)
-
-  @doc """
-  Creates a user_room.
-
-  ## Examples
-
-      iex> create_user_room(%{user_id: 1})
-      {:ok, %DjRumble.Rooms.UserRoom{user_id: 1}
-
-      iex> create_user_room(%{is_owner: "123"})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_user_room(attrs \\ %{}) do
-    %UserRoom{}
-    |> UserRoom.changeset(attrs)
-    |> Repo.insert(
-      on_conflict: {:replace, [:group_id]},
-      conflict_target: [:user_id, :room_id]
-    )
-  end
-
-  @doc """
-  Updates a user_room.
-
-  ## Examples
-
-      iex> update_user_room(%DjRumble.Rooms.UserRoom{}, %{user_id: 1})
-      {:ok, %DjRumble.Rooms.UserRoom{user_id: 1}}
-
-      iex> update_user_room(DjRumble.Rooms.UserRoom{}, %{user_id: "1"})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_user_room(%UserRoom{} = user_room, attrs) do
-    user_room
-    |> UserRoom.changeset(attrs)
-    |> Repo.update()
-  end
 
   @doc """
   Deletes a user_room.

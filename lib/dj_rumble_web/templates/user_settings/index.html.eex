@@ -35,9 +35,9 @@
       flex flex-col flex-1 items-center sm:flex-initial
       mx-8 mb-8 mb-8 md:mb-8
       border-r-8 rounded-r-md rounded-l-lg
-      bg-gray-800 text-white hover:text-green-300
+      bg-gray-800 text-white hover:text-pink-400
       shadow-card
-    ", style: "border-right-color: #34D399" do %>
+    ", style: "border-right-color: #F472B6" do %>
     <div class="
       flex flex-col flex-1 items-center
       p-8 mb-0
