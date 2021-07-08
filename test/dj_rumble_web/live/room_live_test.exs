@@ -10,9 +10,8 @@ defmodule DjRumbleWeb.RoomLiveTest do
 
   alias DjRumble.Rooms.RoomSupervisor
 
-  # @create_attrs %{name: "some name", slug: "some slug"}
-  # @update_attrs %{name: "some updated name", slug: "some updated slug"}
-  # @invalid_attrs %{name: nil, slug: nil}
+  @create_attrs %{name: "some name", slug: "some slug"}
+  @invalid_attrs %{name: nil, slug: nil}
 
   defp start_room_server(room) do
     {:ok, pid} = RoomSupervisor.start_room_server(RoomSupervisor, room)
@@ -26,6 +25,8 @@ defmodule DjRumbleWeb.RoomLiveTest do
   end
 
   describe "Index" do
+    @create_room_button_id "#djrumble-create-room-modal-button"
+
     setup do
       servers_amount = 1
       room_servers = start_room_servers(servers_amount)
@@ -128,27 +129,33 @@ defmodule DjRumbleWeb.RoomLiveTest do
       assert_receive({:trace, ^view_pid, :receive, :fetch_users_count}, 2000)
     end
 
-    # test "saves new room", %{conn: conn} do
-    #   {:ok, index_live, _html} = live(conn, Routes.room_index_path(conn, :index))
+    test "saves new room", %{conn: conn} do
+      {:ok, index_live, _html} = live(conn, Routes.room_index_path(conn, :index))
 
-    #   assert index_live |> element("a", "New Room") |> render_click() =~
-    #            "New Room"
+      assert index_live |> element(@create_room_button_id) |> render_click() =~
+               "New Room"
 
-    #   assert_patch(index_live, Routes.room_index_path(conn, :new))
+      assert_patch(index_live, Routes.room_index_path(conn, :new))
 
-    #   assert index_live
-    #          |> form("#room-form", room: @invalid_attrs)
-    #          |> render_change() =~ "can&#39;t be blank"
+      assert index_live
+             |> form("#room-form", room: @invalid_attrs)
+             |> render_change() =~ "can&#39;t be blank"
 
-    #   {:ok, _, html} =
-    #     index_live
-    #     |> form("#room-form", room: @create_attrs)
-    #     |> render_submit()
-    #     |> follow_redirect(conn, Routes.room_index_path(conn, :index))
+      {:ok, _, html} =
+        index_live
+        |> form("#room-form", room: @create_attrs)
+        |> render_submit()
+        |> follow_redirect(conn, Routes.room_show_path(conn, :show, get_room_slug(@create_attrs)))
 
-    #   assert html =~ "Room created successfully"
-    #   assert html =~ "some name"
-    # end
+      assert html =~ "Room created successfully"
+      assert html =~ "some name"
+    end
+
+    defp get_room_slug(%{slug: slug}) do
+      slug
+      |> String.downcase()
+      |> String.replace(" ", "-")
+    end
   end
 
   describe "Show" do
