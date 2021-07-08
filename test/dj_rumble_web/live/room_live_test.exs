@@ -259,6 +259,8 @@ defmodule DjRumbleWeb.RoomLiveTest do
       message = "Hello there!"
       :ok = type_chat_message(view, message)
 
+      :ok = Process.sleep(300)
+
       assert render(view) =~
                "<span class=\"text-xl font-bold text-gray-300\">#{user.username}:</span>"
 

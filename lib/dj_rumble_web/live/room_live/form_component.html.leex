@@ -1,18 +1,32 @@
-<h2><%= @title %></h2>
+<h2 class="font-street-ruler text-5xl text-gray-300"><%= @title %></h2>
 
 <%= f = form_for @changeset, "#",
   id: "room-form",
   phx_target: @myself,
   phx_change: "validate",
-  phx_submit: "save" %>
+  phx_submit: "save",
+  class: "text-gray-300 px-4 pt-2 mb-0"
+%>
 
   <%= label f, :slug %>
-  <%= text_input f, :slug %>
+  <%=
+    text_input f, :slug,
+    class: "border-0 shadow-inner-input",
+    placeholder: "Type a url slug for your room"
+  %>
   <%= error_tag f, :slug %>
 
   <%= label f, :name %>
-  <%= text_input f, :name %>
+  <%=
+    text_input f, :name,
+    class: "border-0 shadow-inner-input",
+    placeholder: "Some awesome title"
+  %>
   <%= error_tag f, :name %>
 
-  <%= submit "Save", phx_disable_with: "Saving..." %>
+  <%=
+    submit "Save",
+    phx_disable_with: "Saving...",
+    class: "border-indigo-900 bg-indigo-800 w-full shadow-md transition duration-500 ease-in-out hover:bg-pink-600 hover:border-pink-900"
+  %>
 </form>

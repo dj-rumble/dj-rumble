@@ -28,6 +28,23 @@ defmodule DjRumbleWeb.RoomLive.Index do
   end
 
   @impl true
+  def handle_event("close_new_room_modal", _, socket) do
+    {:noreply, push_patch(socket, to: Routes.room_index_path(socket, :index))}
+  end
+
+  @impl true
+  def handle_event("new_live_patch", _params, socket) do
+    {:noreply, push_patch(socket, to: Routes.room_index_path(socket, :new))}
+  end
+
+  @impl true
+  def handle_event("redirect_room", %{"slug" => slug}, socket) do
+    {:noreply,
+     socket
+     |> redirect(to: Routes.room_show_path(socket, :show, slug))}
+  end
+
+  @impl true
   def handle_info({:receive_current_player, params}, socket),
     do: handle_video_is_playing(params, socket)
 
@@ -73,13 +90,6 @@ defmodule DjRumbleWeb.RoomLive.Index do
     socket
     |> assign(:page_title, "Rooms")
     |> assign(:room, nil)
-  end
-
-  @impl true
-  def handle_event("redirect_room", %{"slug" => slug}, socket) do
-    {:noreply,
-     socket
-     |> redirect(to: Routes.room_show_path(socket, :show, slug))}
   end
 
   defp assign_rooms(socket, rooms) do

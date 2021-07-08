@@ -1,0 +1,26 @@
+<div class="group relative w-min">
+
+  <button
+    id="<%= @id %>"
+    phx-click="new_live_patch"
+    class="
+      flex justify-center	items-center
+      bg-indigo-500 hover:bg-pink-500 hover:border-pink-900
+      w-24 h-24
+      text-white border-b-4 border-indigo-700
+      hover:shadow-outter-button
+      transition duration-500
+      transform hover:scale-110
+      rounded-full
+      m-0
+    ">
+    <svg
+      class="h-8 w-8 fill-current text-white" viewBox="0 0 24 24"
+      style="min-height: 2rem; min-width: 2rem"
+    >
+      <path d="M24 10h-10v-10h-4v10h-10v4h10v10h4v-10h10z"/>
+    </svg>
+  </button>
+
+  <%= render_tooltip(text: "Create a new Room", extra_classes: "text-xl") %>
+</div>
