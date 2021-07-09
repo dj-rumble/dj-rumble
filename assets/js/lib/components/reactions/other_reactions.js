@@ -21,7 +21,7 @@ const showDesertRollingPlant = (stopRain) => {
   const desertGhostContainer = document.getElementById('desert-ghost-container')
   addClasslists(
     desertGhostContainer,
-    ['absolute', 'bottom-96', 'w-full', 'z-50']
+    ['absolute', 'bottom-96', 'w-11/12', 'z-999']
   )
 
   const tumbleweed = document.createElement('div')

@@ -28,10 +28,7 @@ export const dropTomatoes = () => {
   const confetti = new ConfettiGenerator(confettiSettings);
   confetti.render();
 
-  setTimeout(() => {
-    teardownContainer(canvas)
-    confetti.clear()
-  }, 8000)
+  teardownContainer(canvas, 4500)
 }
 
 export const dropOneTomato = () => {
@@ -56,9 +53,11 @@ export const dropOneTomato = () => {
       start_from_edge: true,
       target: canvas
     }
+
   const confetti = new ConfettiGenerator(confettiSettings);
   confetti.render();
-  teardownContainer(canvas, 2500)
+
+  teardownContainer(canvas, 4500)
 }
 
 export const dropTomatoesWithSprinkler = () => {

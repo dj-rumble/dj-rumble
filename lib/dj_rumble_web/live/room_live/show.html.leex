@@ -1,7 +1,7 @@
 <div id="ui-feedback-data" phx-hook="UiFeedback">
   <%= if connected?(@socket) do %>
 
-    <canvas id="animations-canvas" class="absolute" phx-update="ignore"></canvas>
+    <canvas id="animations-canvas" class="absolute z-999" phx-update="ignore"></canvas>
 
     <!-- Main Grid Starts -->
     <div id="desert-ghost-container" phx-update="ignore">
@@ -208,7 +208,7 @@
 
       <!-- Layout Grid Ends -->
 
-      <div class="absolute top-0 left-0 right-0 pr-4 h-0">
+      <div class="absolute z-999 top-0 left-0 right-0 pr-4 h-0">
 
         <%= live_component DjRumbleWeb.Live.Components.Searchbox,
           id: "djrumble-searchbox-modal",
