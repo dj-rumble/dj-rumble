@@ -1,7 +1,7 @@
 <div id="ui-feedback-data" phx-hook="UiFeedback">
   <%= if connected?(@socket) do %>
 
-    <canvas id="animations-canvas" class="absolute" phx-update="ignore"></canvas>
+    <canvas id="animations-canvas" class="absolute z-999" phx-update="ignore"></canvas>
 
     <!-- Main Grid Starts -->
     <div id="desert-ghost-container" phx-update="ignore">
