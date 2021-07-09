@@ -67,7 +67,6 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:joined, false)
              |> assign(:live_score, 0)
              |> assign(:matchmaking_server, matchmaking_server)
-             |> assign(:messages, [])
              |> assign(:room, room)
              |> assign(:room_server, room_server)
              |> assign(:round_info, "")
@@ -136,20 +135,6 @@ defmodule DjRumbleWeb.RoomLive.Show do
   end
 
   @impl true
-  def handle_event("open_search_modal", _, socket) do
-    {:noreply,
-     socket
-     |> assign(:show_search_modal, true)}
-  end
-
-  @impl true
-  def handle_event("close_search_modal", _, socket) do
-    {:noreply,
-     socket
-     |> assign(:show_search_modal, false)}
-  end
-
-  @impl true
   def handle_info(
         %{event: "presence_diff", payload: _payload},
         %{assigns: %{room: %{slug: slug}}} = socket
@@ -186,9 +171,6 @@ defmodule DjRumbleWeb.RoomLive.Show do
   def handle_info({:round_scheduled, params}, socket), do: handle_round_scheduled(params, socket)
 
   def handle_info({:round_finished, params}, socket), do: handle_round_finished(params, socket)
-
-  def handle_info({:receive_message, params}, socket),
-    do: handle_receive_chat_message(params, socket)
 
   def handle_info({:receive_score, params}, socket), do: handle_receive_score(params, socket)
 
@@ -466,19 +448,6 @@ defmodule DjRumbleWeb.RoomLive.Show do
     Logger.info(fn -> "No more rounds" end)
 
     {:noreply, socket}
-  end
-
-  @doc """
-  Receives a chat message
-
-  * **From:** `Broadcast
-  * **Topic:** `"room:<room_slug>"`
-  """
-  def handle_receive_chat_message(message, socket) do
-    {:noreply,
-     socket
-     |> assign(:messages, socket.assigns.messages ++ [message])
-     |> push_event("receive_new_message", %{})}
   end
 
   @doc """

@@ -37,12 +37,25 @@
       alt="Build Status"
     >
   </a>
+</p>
+
+<p align="center" style="margin-top: 14px;">
+  <a href="https://www.codacy.com/gh/dj-rumble/dj-rumble/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dj-rumble/dj-rumble&amp;utm_campaign=Badge_Grade"
+  >
+    <img
+      src="https://app.codacy.com/project/badge/Grade/40d431406d4d4daca2b06a0f965348fe"
+      alt="Code Quality Status"
+      />
+    </a>
   <a href='https://coveralls.io/github/dj-rumble/dj-rumble'>
     <img
       src='https://coveralls.io/repos/github/dj-rumble/dj-rumble/badge.svg'
       alt='Coverage Status'
     />
   </a>
+</p>
+
+<p align="center" style="margin-top: 14px;">
   <a
     href="https://github.com/dj-rumble/dj-rumble/blob/main/LICENSE"
   >

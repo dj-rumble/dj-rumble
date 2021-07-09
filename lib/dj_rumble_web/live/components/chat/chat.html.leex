@@ -1,11 +1,28 @@
 
   <div class="grid grid-rows-6 h-full transparent mt-1">
 
+    <div class="
+      flex justify-center items-center
+      font-street-ruler
+      text-white bg-gray-800
+      rounded-t-lg
+      overflow-hidden
+    ">
+      <p class="
+        text-3xl
+        m-0
+        px-6
+        overflow-hidden whitespace-nowrap overflow-ellipsis
+      ">
+        Chat: <%= @room.name %>
+      </p>
+    </div>
+
     <div
       id="chat-data"
       phx-hook="ChatSyncing"
       class="
-        row-span-5 my-3 py-3 pl-3 pr-1
+        row-span-5 mb-3 py-3 pl-3 pr-1
         rounded-md bg-gray-800
         shadow-inner-input
       "
@@ -22,7 +39,7 @@
         <div class="items-start justify-start">
           <p class="mb-0.5">
             <span class="font-bold">
-              <span class="text-center font-normal text-blue-500">Welcome to <%= @room.name %></span>
+              <span class="text-center font-normal text-white">Welcome to <%= @room.name %></span>
             </span>
           </p>
           <%= for chat_message <- @chat_messages do %>

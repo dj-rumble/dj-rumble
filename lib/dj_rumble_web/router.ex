@@ -22,6 +22,7 @@ defmodule DjRumbleWeb.Router do
     pipe_through :browser
 
     live "/", RoomLive.Index, :index
+    live "/rooms/new", RoomLive.Index, :new
 
     live "/rooms/:slug", RoomLive.Show, :show
   end
