@@ -1,11 +1,14 @@
+import { prepareContainer, teardownContainer } from '../../element-utils'
+import { CANVAS_ID } from '../../constants/elements'
 import ConfettiGenerator from "confetti-js";
 import sprinkler from 'sprinkler';
 
 
 export const dropTomatoes = () => {
-  let canvas = document.getElementById('animations-canvas');
+  const canvas = document.getElementById(CANVAS_ID);
+  prepareContainer(canvas)
 
-  let confettiSettings =
+  const confettiSettings =
     {
       clock: 200,
       max: 15,
@@ -22,18 +25,20 @@ export const dropTomatoes = () => {
       start_from_edge: true,
       target: canvas
     };
-  let confetti = new ConfettiGenerator(confettiSettings);
+  const confetti = new ConfettiGenerator(confettiSettings);
   confetti.render();
 
   setTimeout(() => {
+    teardownContainer(canvas)
     confetti.clear()
   }, 8000)
 }
 
 export const dropOneTomato = () => {
-  let canvas = document.getElementById('animations-canvas');
+  const canvas = document.getElementById(CANVAS_ID);
+  prepareContainer(canvas)
 
-  let confettiSettings =
+  const confettiSettings =
   {
       clock: 200,
       max: 1,
@@ -51,21 +56,23 @@ export const dropOneTomato = () => {
       start_from_edge: true,
       target: canvas
     }
-  let confetti = new ConfettiGenerator(confettiSettings);
+  const confetti = new ConfettiGenerator(confettiSettings);
   confetti.render();
+  teardownContainer(canvas, 2500)
 }
 
 export const dropTomatoesWithSprinkler = () => {
-  let canvas = document.getElementById('animations-canvas');
-  let rain = sprinkler.create(canvas)
+  const canvas = document.getElementById(CANVAS_ID);
+  prepareContainer(canvas)
+  const rain = sprinkler.create(canvas)
 
-  let images = [
+  const images = [
     '../images/tomatoes/tomato-1-m.svg',
     '../images/tomatoes/tomato-2-m.svg'
   ]
 
   // Start the animation
-  let stop = rain.start(images, {
+  const stop = rain.start(images, {
     aMax: 1, aMin: 1,
     burnInSeconds: 20,
     daMax: 0, daMin: 0,
@@ -78,5 +85,6 @@ export const dropTomatoesWithSprinkler = () => {
     zMax: 0.25, zMin: 0.1
   })
 
+  teardownContainer(canvas, 1200)
   setTimeout(stop, 4000)
 }

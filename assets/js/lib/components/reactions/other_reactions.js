@@ -1,36 +1,47 @@
+import {
+  addClasslists,
+  prepareContainer,
+  teardownContainer
+} from '../../element-utils'
+import { CANVAS_ID } from '../../constants/elements'
 import confetti from "canvas-confetti";
 import sprinkler from 'sprinkler';
 
-let randomConfettiWasUsedByMap = {}
+const randomConfettiWasUsedByMap = {}
 
 export const showLonelyAtmosphere = () => {
   setTimeout(() => {
-    let stopRain = startRain()
+    const stopRain = startRain()
 
     showDesertRollingPlant(stopRain)
   }, 1000)
 }
 
-export const showDesertRollingPlant = (stopRain) => {
-    let desertContainer = document.getElementById('desert-container')
+const showDesertRollingPlant = (stopRain) => {
+  const desertGhostContainer = document.getElementById('desert-ghost-container')
+  addClasslists(
+    desertGhostContainer,
+    ['absolute', 'bottom-96', 'w-full', 'z-50']
+  )
 
-    const tumbleweed = document.createElement('div')
-    tumbleweed.classList.add('tumbleweed')
-    desertContainer.appendChild(tumbleweed)
+  const tumbleweed = document.createElement('div')
+  tumbleweed.classList.add('tumbleweed')
+  desertGhostContainer.appendChild(tumbleweed)
 
-
-    setTimeout(() => {
-      desertContainer.removeChild(tumbleweed)
-      tumbleweed.remove()
-      stopRain()
-    }, 5000)
+  setTimeout(() => {
+    desertGhostContainer.removeChild(tumbleweed)
+    tumbleweed.remove()
+    stopRain()
+  }, 5000)
 }
 
-export const startRain = () => {
-  let canvas = document.getElementById('animations-canvas');
-  let s = sprinkler.create(canvas)
+const startRain = () => {
+  const canvas = document.getElementById(CANVAS_ID);
+  prepareContainer(canvas)
 
-  let stopRain = s.start(['../images/droplet.png'], {
+  const _sprinkler = sprinkler.create(canvas)
+
+  const stopRain = _sprinkler.start(['../images/droplet.png'], {
     aMax: 1, aMin: 1,
     angle: Math.PI / 12,
     daMax: 0, daMin: 0,
@@ -41,15 +52,17 @@ export const startRain = () => {
     zMax: 0.5, zMin: 0.5
   })
 
+  teardownContainer(canvas)
+
   return stopRain
 }
 
 export const randomSpaceXRocket = () => {
-  let canvas = document.getElementById('animations-canvas');
+  const canvas = document.getElementById(CANVAS_ID);
+  prepareContainer(canvas)
+  const _sprinkler = sprinkler.create(canvas)
 
-  let s = sprinkler.create(canvas)
-
-  let opts = {
+  const opts = {
     angle: 7 * Math.PI / 6,
     burnInSeconds: 20,
     ddxMax: 0, ddxMin: 0,
@@ -73,7 +86,7 @@ export const randomSpaceXRocket = () => {
     zMax: 0.5, zMin: 0.5
   }
 
-  s.start({
+  _sprinkler.start({
     '../images/spacex-rockets/falcon9-v10.png': 5 // 5 v1.0
   }, Object.assign({}, opts, {
     imagesInSecond: opts.imagesInSecond * 5 / 78,
@@ -82,12 +95,13 @@ export const randomSpaceXRocket = () => {
     })
   }))
 
+  teardownContainer(canvas)
 }
 
 export const randomConfetti = (username) => {
   if (!randomConfettiWasUsedBy(username)) {
     randomConfettiWasUsedByMap[username] = true
-    let cooldown = 3 * 1000;
+    const cooldown = 3000;
 
     (function frame() {
       confetti({

@@ -1,3 +1,5 @@
+import { prepareContainer, teardownContainer } from '../../element-utils'
+import { CANVAS_ID } from '../../constants/elements'
 import confetti from "canvas-confetti";
 import sprinkler from 'sprinkler';
 
@@ -6,8 +8,8 @@ let confettiAlreadyFalling = false
 export const dropConfetti = () => {
   if (!confettiAlreadyFalling) {
     confettiAlreadyFalling = true
-    let duration = 3 * 1000;
-    let animationEnd = Date.now() + duration;
+    const duration = 3 * 1000;
+    const animationEnd = Date.now() + duration;
     // let skew = 1;
     (function frame() {
       let timeLeft = animationEnd - Date.now();
@@ -47,11 +49,12 @@ export const dropConfetti = () => {
 }
 
 export const randomShootingStars = () => {
-  let canvas = document.getElementById('animations-canvas');
+  const canvas = document.getElementById(CANVAS_ID);
+  prepareContainer(canvas)
 
-  let s = sprinkler.create(canvas)
+  const _sprinkler = sprinkler.create(canvas)
 
-  let opts = {
+  const opts = {
     aMax: 0.7, aMin: 0.9,
     angle: -7 * Math.PI / 6,
     ddxMax: -10, ddxMin: 10,
@@ -74,7 +77,7 @@ export const randomShootingStars = () => {
     zMax: 0.15, zMin: 0.2
   }
 
-  let stop = s.start({
+  const stop = _sprinkler.start({
     '../images/star.svg': 5 // 5 v1.0
   }, Object.assign({}, opts, {
     imagesInSecond: opts.imagesInSecond * 5 / 30,
@@ -83,6 +86,7 @@ export const randomShootingStars = () => {
     })
   }))
 
+  teardownContainer(canvas, 2500)
   setTimeout(stop, 2500)
 }
 
