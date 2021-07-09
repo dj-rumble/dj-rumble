@@ -32,7 +32,6 @@
 .phx-modal {
   opacity: 1!important;
   position: fixed;
-  z-index: 1;
   left: 0;
   top: 0;
   width: 100%;
@@ -394,3 +393,25 @@ svg.search-control-add-asset.show-check-button .search-control-add-asset-check-l
 }
 
 /* Animations End */
+
+/* Z Positions Start */
+.below-of-animation {
+  z-index: 0;
+}
+
+.animations-canvas {
+  position: absolute;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+}
+
+.above-of-animation {
+  z-index: 10;
+}
+
+.above-of-everything {
+  z-index: 20;
+}
+
+/* Z Positions End */
