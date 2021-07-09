@@ -22,7 +22,7 @@ $hover-lower-moz-background: linear-gradient(to bottom, $track-progress-hover-co
 // Webkit cannot style progress so we fake it with a long shadow
 // on the thumb element
 @function webkit-slider-thumb-shadow($i: 1) {
-  $val: #{$i}px 0 0 -#{($thumb-height - $track-height) / 2} #{$track-progress-color};
+  $val: #{$i}px 0 0 -#{math.div($thumb-height - $track-height, 2)} #{$track-progress-color};
   @if $i == 1 {
     @for $k from 2 through 3000 {
       $val: #{$val}, webkit-slider-thumb-shadow($k);
