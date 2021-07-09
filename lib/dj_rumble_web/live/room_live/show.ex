@@ -424,6 +424,23 @@ defmodule DjRumbleWeb.RoomLive.Show do
   end
 
   def handle_round_finished(
+        %{round: %Round.Finished{score: {0, 0}} = round, video_details: video_details} =
+          current_round,
+        socket
+      ) do
+    Logger.info(fn -> "Round Finished: #{inspect(round)}" end)
+
+    short_title = String.slice(video_details.title, 0, 15)
+
+    {:noreply,
+     socket
+     |> assign_scoring(:disable)
+     |> assign(:current_round, current_round)
+     |> assign(:round_info, "#{short_title}... scored #{get_score(round.score)} points")
+     |> push_event("show_desert_rolling_plant", %{})}
+  end
+
+  def handle_round_finished(
         %{round: %Round.Finished{} = round, video_details: video_details} = current_round,
         socket
       ) do
@@ -435,7 +452,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
      socket
      |> assign_scoring(:disable)
      |> assign(:current_round, current_round)
-     |> assign(:round_info, "#{short_title}... scored #{get_score(round.score)} points")}
+     |> assign(:round_info, "#{short_title}... scored #{get_score(round.score)} points")
+     |> push_event("drop_tomatoes", %{})}
   end
 
   @doc """
