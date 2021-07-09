@@ -7,7 +7,7 @@ defmodule DjRumbleWeb.ModalComponent do
   @impl true
   def render(assigns) do
     ~L"""
-    <div id="<%= @id %>" class="phx-modal"
+    <div id="<%= @id %>" class="phx-modal z-50"
       phx-capture-click="close_new_room_modal"
       phx-window-keydown="close_new_room_modal"
       phx-key="escape"
