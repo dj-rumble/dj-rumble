@@ -20,6 +20,7 @@ import ChatSyncing from "./lib/hooks/chat-syncing"
 import {LiveSocket} from "phoenix_live_view"
 import LoadYTIframeAPI from './deps/yt-iframe-api'
 import ModalInteracting from "./lib/hooks/modal-interacting"
+import NotificationsHandling from "./lib/hooks/notifications-handling"
 import PlayerSyncing from "./lib/hooks/player-syncing"
 import {Socket} from "phoenix"
 import UiFeedback from "./lib/hooks/ui-feedback"
@@ -42,6 +43,7 @@ function initLiveview() {
   const hooks = {
     ChatSyncing: ChatSyncing(),
     ModalInteracting: ModalInteracting(),
+    NotificationsHandling: NotificationsHandling(),
     PlayerSyncing: PlayerSyncing(initPlayer),
     UiFeedback: UiFeedback()
   }
