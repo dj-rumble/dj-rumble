@@ -241,7 +241,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     # coveralls-ignore-stop
 
-    # :ok = Gladiators.register_battle_result({Gladiators.get_gladiator(left.id), Gladiators.get_gladiator(right.id)}, battle.outcome)
+    # TODO: Register round result
 
     Process.demonitor(ref)
 
@@ -314,7 +314,7 @@ defmodule DjRumble.Rooms.Matchmaking do
 
     # coveralls-ignore-stop
 
-    # :ok = Gladiators.register_battle_result({Gladiators.get_gladiator(left.id), Gladiators.get_gladiator(right.id)}, :draw)
+    # TODO: Register round result
 
     state = %{
       state
@@ -389,27 +389,8 @@ defmodule DjRumble.Rooms.Matchmaking do
   defp start_next_round(state) do
     # Do something with the current round? YES, check if exists
 
-    # Enum.each(state.current_rounds, fn {ref, {pid, {left, right}}} ->
     Logger.info(fn -> "Starting round" end)
 
-    #   battle =
-    #     case BattleServer.get_battle(pid) do
-    #       %Battle.Finished{} = battle -> %{battle | outcome: :draw}
-    #
-    #       %Battle.InProgress{} = battle ->
-    #         %Battle.Finished{
-    #           id: battle.id,
-    #           fighters: battle.fighters,
-    #           outcome: :draw,
-    #           log: battle.log
-    #         }
-    #     end
-    #
-    #   :ok =
-    #     Gladiators.register_battle_result(
-    #       {Gladiators.get_gladiator(left.id), Gladiators.get_gladiator(right.id)},
-    #       battle.outcome
-    #     )
     {_ref, {pid, video, _time, user}} = state.current_round
 
     # Worths to check if its dead, if not, use the next function:
