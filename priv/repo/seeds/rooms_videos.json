@@ -1579,5 +1579,59 @@
         "updated_at": "2015-05-29 00:06:17"
       }
     ]
+  },
+  {
+    "room": {
+      "name": "Only Metal ⚡️",
+      "slug": "only-metal",
+      "inserted_at": "2020-12-21 13:58:55",
+      "updated_at": "2020-12-21 20:02:31"
+    },
+    "videos": []
+  },
+  {
+    "room": {
+      "name": "Disco/Soul dance floor 💃",
+      "slug": "disco-soul-dance-floor",
+      "inserted_at": "2020-12-21 13:58:55",
+      "updated_at": "2020-12-21 20:02:31"
+    },
+    "videos": []
+  },
+  {
+    "room": {
+      "name": "Freestyle Room: anything goes!",
+      "slug": "freestyle-room-anything-goes",
+      "inserted_at": "2020-12-21 13:58:55",
+      "updated_at": "2020-12-21 20:02:31"
+    },
+    "videos": []
+  },
+  {
+    "room": {
+      "name": "Punk's not dead! ☠️",
+      "slug": "punk-not-dead",
+      "inserted_at": "2020-12-21 13:58:55",
+      "updated_at": "2020-12-21 20:02:31"
+    },
+    "videos": []
+  },
+  {
+    "room": {
+      "name": "Blues legends 🎷",
+      "slug": "blues-legends",
+      "inserted_at": "2020-12-21 13:58:55",
+      "updated_at": "2020-12-21 20:02:31"
+    },
+    "videos": []
+  },
+  {
+    "room": {
+      "name": "70's revival pill 🎸",
+      "slug": "70-s-revival-pill",
+      "inserted_at": "2020-12-21 13:58:55",
+      "updated_at": "2020-12-21 20:02:31"
+    },
+    "videos": []
   }
 ]
