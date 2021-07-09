@@ -7,5 +7,7 @@
     phx-click="lv:clear-flash"
     phx-value-key="error"><%= live_flash(@flash, :error) %></p>
 
-  <%= @inner_content %>
+  <div id="notifications-handler-show-live" phx-hook="NotificationsHandling">
+    <%= @inner_content %>
+  </div>
 </main>

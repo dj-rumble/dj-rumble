@@ -378,7 +378,8 @@ defmodule DjRumbleWeb.RoomLive.Show do
      |> assign(:current_round, current_round)
      |> assign_scoring(:check_user)
      |> assign_live_score(round)
-     |> push_event("receive_player_state", video_details)}
+     |> push_event("receive_player_state", video_details)
+     |> push_event("receive_notification", DjRumble.Notifications.create(video))}
   end
 
   @doc """
