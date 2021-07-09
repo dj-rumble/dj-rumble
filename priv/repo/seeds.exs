@@ -13,8 +13,6 @@ require Logger
 
 try do
   seeds = [
-    "rooms",
-    "videos",
     "users",
     "rooms_videos"
   ]
