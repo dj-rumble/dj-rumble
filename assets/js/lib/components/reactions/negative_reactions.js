@@ -85,6 +85,6 @@ export const dropTomatoesWithSprinkler = () => {
     zMax: 0.25, zMin: 0.1
   })
 
-  teardownContainer(canvas, 1200)
+  teardownContainer(canvas, 4000)
   setTimeout(stop, 4000)
 }
