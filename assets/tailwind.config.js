@@ -108,6 +108,15 @@ module.exports = {
     fontFamily: {
       'sans': ['Helvetica', 'Arial', 'sans-serif'],
       'street-ruler': ['Street Ruler']
+    },
+    zIndex: {
+      '100': 100,
+      '50': 50,
+      '60': 60,
+      '70': 70,
+      '80': 80,
+      '90': 90,
+      '999': 999
     }
   },
   variants: {

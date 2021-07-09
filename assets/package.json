@@ -14,9 +14,11 @@
   "dependencies": {
     "alpinejs": "^2.7.3",
     "canvas-confetti": "^1.4.0",
+    "confetti-js": "0.0.18",
     "phoenix": "file:../deps/phoenix",
     "phoenix_html": "file:../deps/phoenix_html",
     "phoenix_live_view": "file:../deps/phoenix_live_view",
+    "sprinkler": "^1.12.1",
     "topbar": "^0.1.4"
   },
   "devDependencies": {
@@ -29,13 +31,12 @@
     "eslint": "^7.25.0",
     "eslint-plugin-react": "^7.23.2",
     "file-loader": "^6.2.0",
-    "hard-source-webpack-plugin": "^0.13.1",
-    "mini-css-extract-plugin": "^0.9.0",
-    "node-sass": "^4.13.1",
+    "mini-css-extract-plugin": "^1.3.1",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "postcss": "^8.2.10",
     "postcss-import": "^14.0.1",
     "postcss-loader": "^4.2.0",
+    "sass": "^1.27.0",
     "sass-loader": "^8.0.2",
     "tailwindcss": "^2.1.1",
     "terser-webpack-plugin": "^2.3.2",

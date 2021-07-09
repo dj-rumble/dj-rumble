@@ -1,3 +1,4 @@
+@use "sass:math";
 /**
  * Progressive range input
  */
@@ -77,7 +78,7 @@ $hover-lower-moz-background: linear-gradient(to bottom, $track-progress-hover-co
   border-radius: 100%;
   border: 0;
   top: 50%;
-  margin-top: (-$thumb-height/2);
+  margin-top: math.div(-$thumb-height, 2);
   box-shadow: webkit-slider-thumb-shadow();
   transition: background-color 150ms;
 }

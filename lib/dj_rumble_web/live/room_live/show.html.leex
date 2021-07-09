@@ -1,7 +1,11 @@
-<div id="ui-feedback-data" phx-hook="UiFeedback" style="">
+<div id="ui-feedback-data" phx-hook="UiFeedback">
   <%= if connected?(@socket) do %>
 
+    <canvas id="animations-canvas" class="absolute" phx-update="ignore"></canvas>
+
     <!-- Main Grid Starts -->
+    <div id="desert-ghost-container" phx-update="ignore">
+    </div>
 
     <div class="
       grid      grid-flow-row     h-screen     max-h-screen     min-h-screen
@@ -44,7 +48,9 @@
 
         <!-- Grid :: Video Player Starts -->
 
-        <div class="
+        <div
+          id="djrumble-video-player-container"
+          class="
           col-start-1     col-end-13    row-start-1     row-end-4
           sm:col-start-1  sm:col-end-9  sm:row-start-1  sm:row-end-3
           md:col-start-1  md:col-end-9  md:row-start-1  md:row-end-4
@@ -219,9 +225,6 @@
           state: @register_modal_state,
           user: @user
         %>
-
-        <canvas class="w-0" id="confetti-canvas"></canvas>
-
       </div>
     </div>
 
