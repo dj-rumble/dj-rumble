@@ -49,8 +49,4 @@ defmodule DjRumbleWeb.Channels do
   def broadcast(type, slug, message) do
     Phoenix.PubSub.broadcast(DjRumble.PubSub, get_topic(type, slug), message)
   end
-
-  def broadcast_from(pid, type, slug, message) do
-    Phoenix.PubSub.broadcast_from(DjRumble.PubSub, pid, get_topic(type, slug), message)
-  end
 end

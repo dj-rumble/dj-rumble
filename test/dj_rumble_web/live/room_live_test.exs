@@ -171,6 +171,8 @@ defmodule DjRumbleWeb.RoomLiveTest do
     @positive_score_button "#djrumble-score-positive-button"
     @negative_score_button "#djrumble-score-negative-button"
 
+    @confetti_button_id "#djrumble-confetti-button"
+
     defp authenticated_conn(conn) do
       user = user_fixture()
       conn = log_in_user(conn, user)
@@ -265,7 +267,12 @@ defmodule DjRumbleWeb.RoomLiveTest do
       # Simulates a search video interaction
       search_query = "some video search"
       :ok = search_video(view, search_query)
+      # Adds a video to the queue
+      :ok = add_video(view)
 
+      # Simulates a search video interaction
+      search_query = "some video search"
+      :ok = search_video(view, search_query)
       # Adds a video to the queue
       :ok = add_video(view)
     end
@@ -304,6 +311,35 @@ defmodule DjRumbleWeb.RoomLiveTest do
       :ok
     end
 
+    defp send_round_finished_event(pid, round, user, video) do
+      args = %{
+        round: round,
+        video: video,
+        video_details: %{title: video.title},
+        user: user
+      }
+
+      send(pid, {:round_finished, args})
+    end
+
+    defp create_round(:finished, score, outcome) do
+      %DjRumble.Rounds.Round.Finished{
+        elapsed_time: 5,
+        outcome: outcome,
+        score: score,
+        time: 30
+      }
+    end
+
+    defp create_round(:in_progress, score, outcome) do
+      %DjRumble.Rounds.Round.InProgress{
+        elapsed_time: 5,
+        outcome: outcome,
+        score: score,
+        time: 30
+      }
+    end
+
     test "a player connects, adds a video and a round is started", %{conn: conn, room: room} do
       %{user: user, conn: conn} = authenticated_conn(conn)
 
@@ -316,6 +352,10 @@ defmodule DjRumbleWeb.RoomLiveTest do
       video_duration = 30
 
       :ok = do_start_a_round(view, video_duration)
+
+      round = create_round(:in_progress, :continue, {1, 0})
+
+      send(view_pid, {:outcome_changed, %{round: round}})
 
       assert_receive(
         {:trace, ^view_pid, :receive, {:request_playback_details, %{time: 0, videoId: _video_id}}}
@@ -362,6 +402,63 @@ defmodule DjRumbleWeb.RoomLiveTest do
         },
         3000
       )
+
+      assert_push_event(view, "receive_notification", %{})
+    end
+
+    test "a round is finished and some confetti is dropped", %{conn: conn, room: room} do
+      conn = get(conn, "/rooms/#{room.slug}")
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+
+      %{pid: view_pid} = view
+
+      video = video_fixture()
+      round = create_round(:finished, {1, 0}, :continue)
+      user = user_fixture()
+
+      send_round_finished_event(view_pid, round, user, video)
+
+      assert_push_event(view, "drop_confetti", %{})
+    end
+
+    test "a round is finished and a dessert plant is rolling", %{conn: conn, room: room} do
+      conn = get(conn, "/rooms/#{room.slug}")
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+
+      %{pid: view_pid} = view
+
+      video = video_fixture()
+      round = create_round(:finished, {0, 0}, :thrown)
+      user = user_fixture()
+
+      send_round_finished_event(view_pid, round, user, video)
+
+      assert_push_event(view, "show_desert_rolling_plant", %{})
+    end
+
+    test "a player throws some confetti", %{conn: conn, room: room} do
+      conn = get(conn, "/rooms/#{room.slug}")
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+
+      element(view, @confetti_button_id)
+      |> render_click()
+
+      assert_push_event(view, "throw_confetti_interaction", %{user: _})
+    end
+
+    test "a round is finished and a some tomatoes are dropped", %{conn: conn, room: room} do
+      conn = get(conn, "/rooms/#{room.slug}")
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+
+      %{pid: view_pid} = view
+
+      video = video_fixture()
+      round = create_round(:finished, {0, 1}, :thrown)
+      user = user_fixture()
+
+      send_round_finished_event(view_pid, round, user, video)
+
+      assert_push_event(view, "drop_tomatoes", %{})
     end
 
     test "a player receive some playback details for a video", %{conn: conn, room: room} do
