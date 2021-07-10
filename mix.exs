@@ -5,7 +5,7 @@ defmodule DjRumble.MixProject do
     [
       app: :dj_rumble,
       dialyzer: [plt_add_deps: :transitive],
-      version: "0.1.0",
+      version: "0.4.0",
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
