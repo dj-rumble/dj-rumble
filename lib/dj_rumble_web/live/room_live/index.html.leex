@@ -1,4 +1,10 @@
-<div id="ui-feedback-data" phx-hook="UiFeedback">
+<div
+  id="ui-feedback-data"
+  phx-hook="UiFeedback"
+  class="
+    grid grid-flow-row h-screen max-h-screen min-h-screen
+  "
+>
   <%= if connected?(@socket) do %>
 
     <%= live_component DjRumbleWeb.Live.Components.Navbar,
@@ -7,65 +13,84 @@
       homepage: false
     %>
 
-    <h3 class="text-gray-50 p-4 m-4 ml-9 text-7xl font-street-ruler">DJ Rooms</h3>
+    <div class="">
 
-    <%= if @live_action in [:new, :edit] do %>
-      <%= live_modal @socket, DjRumbleWeb.RoomLive.FormComponent,
-        id: @room.id || :new,
-        title: @page_title,
-        action: @live_action,
-        room: @room,
-        return_to: Routes.room_index_path(@socket, :index) %>
-    <% end %>
+      <h3 class="text-gray-50 p-4 m-4 ml-9 text-6xl font-street-ruler">DJ Rooms</h3>
 
-    <div
-      class="text-gray-50"
-    >
-      <%= if @rooms != [] do %>
-
-      <div class="mb-4">
-        <div class="
-          grid grid-cols-2 grid-flow-row auto-rows-max gap-6
-          sm:grid-cols-3 sm:gap-6
-          md:grid-cols-4
-          lg:grid-cols-5
-          xl:grid-cols-6
-          2xl:grid-cols-8
-
-          px-1 m-2
-          sm:px-2
-          md:px-4
-          lg:px-10
-          xl:px-10
-          2xl:px-10
-        ">
-        <%= for {current_round, room, status, videos} <- @rooms do %>
-          <%= live_component DjRumbleWeb.Live.Components.RoomCard,
-            id: "dj-rumble-room-card-#{room.slug}",
-            current_round: current_round,
-            room: room,
-            status: status,
-            videos: videos
-          do %>
-
-            <%= live_component DjRumbleWeb.Live.Components.UsersCounter,
-              id: "dj-rumble-users-counter-#{room.slug}",
-              users_count: @users_count[room.slug]
-            %>
-          <% end %>
-        <% end %>
-        </div>
-      </div>
-
-      <% else %>
-        <p><span>Go ahead, create the first room!</span></p>
+      <%= if @live_action in [:new, :edit] do %>
+        <%= live_modal @socket, DjRumbleWeb.RoomLive.FormComponent,
+          id: @room.id || :new,
+          title: @page_title,
+          action: @live_action,
+          room: @room,
+          return_to: Routes.room_index_path(@socket, :index) %>
       <% end %>
+    </div>
+
+    <div class="overflow-scroll mb-16">
+      <div class="
+        text-gray-50
+
+        mx-0
+        sm:mx-4
+        md:mx-10
+        lg:mx-20
+        xl:mx-30
+        2xl:mx-40
+      ">
+        <%= if @rooms != [] do %>
+
+        <div class="mb-4">
+          <div class="
+            grid grid-cols-2 grid-flow-row auto-rows-max gap-6
+            sm:grid-cols-3 sm:gap-6
+            md:grid-cols-4
+            lg:grid-cols-5
+            xl:grid-cols-6
+            2xl:grid-cols-8
+
+            px-1 m-2
+            sm:px-2
+            md:px-4
+            lg:px-10
+            xl:px-10
+            2xl:px-10
+          ">
+          <%= for {current_round, room, status, videos} <- @rooms do %>
+            <%= live_component DjRumbleWeb.Live.Components.RoomCard,
+              id: "dj-rumble-room-card-#{room.slug}",
+              current_round: current_round,
+              room: room,
+              status: status,
+              videos: videos
+            do %>
+
+              <%= live_component DjRumbleWeb.Live.Components.UsersCounter,
+                id: "dj-rumble-users-counter-#{room.slug}",
+                users_count: @users_count[room.slug]
+              %>
+            <% end %>
+          <% end %>
+          </div>
+        </div>
+
+        <% else %>
+          <p><span>Go ahead, create the first room!</span></p>
+        <% end %>
+      </div>
     </div>
 
   <% end %>
 </div>
 
-<div class="fixed right-5 bottom-5">
+<div class="bg-black w-full rounded-t-sm fixed bottom-0 flex z-20 h-12">
+  <div class="justify-start text-center w-full">
+  <p class="flex p-0 justify-center items-center h-full text-gray-200">
+    DjRumble | 2021 - <%= DateTime.utc_now |> Map.fetch!(:year) %>
+  </p>
+</div>
+
+<div class="fixed right-8 bottom-8">
   <%= live_component DjRumbleWeb.Live.Components.CreateRoomFab,
     id: "djrumble-create-room-modal-button"
   %>
