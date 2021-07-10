@@ -284,9 +284,9 @@ defmodule DjRumbleWeb.RoomLiveTest do
       :ok = Process.sleep(300)
 
       assert render(view) =~
-               "<span class=\"text-xl font-bold text-gray-300\">#{user.username}:</span>"
+               "<span class=\"text-2xl font-bold text-gray-300\">#{user.username}:</span>"
 
-      assert render(view) =~ "<span class=\"italic text-xl text-gray-300 \">#{message}</span>"
+      assert render(view) =~ "<span class=\"italic text-2xl text-gray-300 \">#{message}</span>"
     end
 
     defp do_start_a_round(view, video_duration) do

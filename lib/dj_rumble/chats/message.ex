@@ -677,10 +677,14 @@ defmodule DjRumble.Chats.Message do
         default,
         [
           username,
-          "waited 'til the end to show some compasion.",
+          "waited 'til the end to show some support.",
           {:light_video, title},
-          "took a total of votes of",
+          "receives",
           {:negative_score, "#{negatives}"},
+          "negative #{get_text(negatives, {"vote", "votes"})}",
+          "and",
+          {:positive_score, "#{positives}"},
+          "positive #{get_text(positives, {"vote", "votes"})}",
           "."
         ]
       ]

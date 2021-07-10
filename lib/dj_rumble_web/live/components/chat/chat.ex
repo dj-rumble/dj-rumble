@@ -61,7 +61,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
       end
 
     ~E"""
-    <span class="text-sm monospace font-bold <%= highlight_style %>">
+    <span class="text-lg monospace font-bold <%= highlight_style %>">
       [<%= timestamp %>]
     </span>
     """
@@ -69,19 +69,19 @@ defmodule DjRumbleWeb.Live.Components.Chat do
 
   defp render_username(username) do
     ~E"""
-    <span class="text-xl font-bold text-gray-300"><%= username %>:</span>
+    <span class="text-2xl font-bold text-gray-300"><%= username %>:</span>
     """
   end
 
   defp render_text(message, extra_classes \\ "") do
     ~E"""
-    <span class="italic text-xl text-gray-300 <%= extra_classes %>"><%= message %></span>
+    <span class="italic text-2xl text-gray-300 <%= extra_classes %>"><%= message %></span>
     """
   end
 
   def render_message(%Message.User{from: user, message: message, timestamp: timestamp}) do
     ~E"""
-    <p class="mb-0.5 text-lg text-left animated fadeIn px-2">
+    <p class="mb-0.5 text-2xl text-left animated fadeIn px-2">
       <%= render_timestamp(timestamp) %>
       <%= render_username(user.username) %>
       <%= render_text(message) %>
@@ -106,17 +106,17 @@ defmodule DjRumbleWeb.Live.Components.Chat do
   end
 
   def render_message(%Message.Video{action: action} = message) do
-    container_classes = get_classes_by_action(action)
+    message_classes = get_classes_by_action(action)
 
     ~E"""
     <p class="
       mb-0.5 my-2 pt-6 px-2
       border-t-2 border-gray-900 border-opacity-5
       font-normal text-left
-      animated fadeIn <%= container_classes %>
+      animated fadeIn
     ">
     <%= render_prompt(">", "text-xl text-gray-300") %>
-    <%= narrate_message(Message.narrate(message), "not-italic animate-pulse") %>
+    <%= narrate_message(Message.narrate(message), "not-italic #{message_classes}") %>
     </p>
     """
   end
@@ -140,7 +140,7 @@ defmodule DjRumbleWeb.Live.Components.Chat do
     end)
   end
 
-  defp get_classes_by_action(:playing), do: ""
+  defp get_classes_by_action(:playing), do: "animate-pulse"
   defp get_classes_by_action(:finished), do: ""
   defp get_classes_by_action(_), do: ""
 
