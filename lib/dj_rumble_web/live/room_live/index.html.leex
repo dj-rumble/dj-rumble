@@ -2,18 +2,22 @@
   id="ui-feedback-data"
   phx-hook="UiFeedback"
   class="
-    grid grid-flow-row h-screen max-h-screen min-h-screen
+    grid grid-rows-11 h-screen max-h-screen min-h-screen
   "
 >
   <%= if connected?(@socket) do %>
 
-    <%= live_component DjRumbleWeb.Live.Components.Navbar,
-      visitor: @visitor,
-      username: @user.username,
-      homepage: false
-    %>
+    <div class="row-start-1 row-end-2">
 
-    <div class="">
+      <%= live_component DjRumbleWeb.Live.Components.Navbar,
+        visitor: @visitor,
+        username: @user.username,
+        homepage: false
+      %>
+
+    </div>
+
+    <div class="row-start-2 row-end-3">
 
       <h3 class="text-gray-50 p-4 m-4 ml-9 text-6xl font-street-ruler">DJ Rooms</h3>
 
@@ -27,7 +31,7 @@
       <% end %>
     </div>
 
-    <div class="overflow-scroll mb-16">
+    <div class="row-start-3 row-end-12 overflow-scroll mb-16">
       <div class="
         text-gray-50
 
