@@ -160,7 +160,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
 
   describe "Show" do
     @search_video_open_modal_button_id "#djrumble-searchbox-modal-button-1"
-    @search_video_close_modal_button_class ".modal-close-icon"
     @search_form_id "#search-form"
     @video_search_received_event_name "receive_search_completed_signal"
 
@@ -203,11 +202,6 @@ defmodule DjRumbleWeb.RoomLiveTest do
     defp add_video(view) do
       view
       |> element("#search-element-button-1")
-      |> render_click()
-
-      # Closes the modal window
-      view
-      |> element(@search_video_close_modal_button_class)
       |> render_click()
 
       :ok
@@ -290,9 +284,9 @@ defmodule DjRumbleWeb.RoomLiveTest do
       :ok = Process.sleep(300)
 
       assert render(view) =~
-               "<span class=\"text-xl font-bold text-gray-300\">#{user.username}:</span>"
+               "<span class=\"text-2xl font-bold text-gray-300\">#{user.username}:</span>"
 
-      assert render(view) =~ "<span class=\"italic text-xl text-gray-300 \">#{message}</span>"
+      assert render(view) =~ "<span class=\"italic text-2xl text-gray-300 \">#{message}</span>"
     end
 
     defp do_start_a_round(view, video_duration) do

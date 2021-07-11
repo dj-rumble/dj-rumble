@@ -10,6 +10,7 @@ defmodule DjRumbleWeb.RoomLive.Index do
   alias DjRumbleWeb.Presence
 
   @users_count_tick_rate :timer.seconds(2)
+  @fetch_live_rooms_tick_rate :timer.seconds(2)
 
   @impl true
   def mount(params, session, socket) do
@@ -20,6 +21,7 @@ defmodule DjRumbleWeb.RoomLive.Index do
     :ok = subscribe_to_room_topics(rooms)
 
     schedule_next_users_count_tick()
+    schedule_next_fetch_live_rooms_tick()
 
     {:ok,
      socket
@@ -47,6 +49,10 @@ defmodule DjRumbleWeb.RoomLive.Index do
   @impl true
   def handle_info({:receive_current_player, params}, socket),
     do: handle_video_is_playing(params, socket)
+
+  @impl true
+  def handle_info(:fetch_live_rooms, socket),
+    do: handle_fetch_live_rooms(socket)
 
   @impl true
   def handle_info(:fetch_users_count, socket), do: handle_fetch_users_count(socket)
@@ -78,6 +84,20 @@ defmodule DjRumbleWeb.RoomLive.Index do
     {:noreply,
      socket
      |> assign_users_count(socket.assigns.users_count)}
+  end
+
+  defp handle_fetch_live_rooms(socket) do
+    schedule_next_fetch_live_rooms_tick()
+
+    rooms = initialise_rooms()
+
+    :ok = subscribe_to_room_topics(rooms)
+
+    # Process.send(self(), :fetch_users_count, [])
+
+    {:noreply,
+     socket
+     |> assign_rooms(rooms)}
   end
 
   defp apply_action(socket, :new, _params) do
@@ -113,6 +133,7 @@ defmodule DjRumbleWeb.RoomLive.Index do
   defp subscribe_to_room_topics(rooms) do
     :ok =
       Enum.each(rooms, fn {_, room, _, _} ->
+        :ok = Channels.unsubscribe(:lobby, room.slug)
         :ok = Channels.subscribe(:lobby, room.slug)
       end)
   end
@@ -133,6 +154,20 @@ defmodule DjRumbleWeb.RoomLive.Index do
     Presence.list(DjRumbleWeb.Channels.get_topic(:room, slug))
     |> Enum.map(fn {uuid, %{metas: metas}} -> %{uuid: uuid, metas: metas} end)
     |> length()
+  end
+
+  defp get_users_count_by_room(users_count, slug) do
+    case users_count[slug] do
+      nil ->
+        0
+
+      count ->
+        count
+    end
+  end
+
+  defp schedule_next_fetch_live_rooms_tick do
+    Process.send_after(self(), :fetch_live_rooms, @fetch_live_rooms_tick_rate)
   end
 
   defp schedule_next_users_count_tick do

@@ -154,23 +154,19 @@ defmodule DjRumble.Rooms.Matchmaking do
 
   @impl GenServer
   def handle_call({:score, user, type}, _from, state) do
-    {_ref, {round_pid, video, _time, _user}} = state.current_round
-
     response =
-      case Process.alive?(round_pid) do
-        true ->
-          case RoundServer.score(round_pid, user, type) do
-            %Round.InProgress{} = round ->
-              :ok = send_announcement(state, :score, video, user, type, round)
+      case state.current_round do
+        {_ref, {nil, _video, _time, _user}} ->
+          {:error}
 
-              round
+        {_ref, {round_pid, video, _time, _user}} ->
+          case Process.alive?(round_pid) do
+            true ->
+              score_round(state, round_pid, user, type, video)
 
-            :error ->
+            false ->
               :error
           end
-
-        false ->
-          :error
       end
 
     {:reply, response, state}
@@ -418,6 +414,18 @@ defmodule DjRumble.Rooms.Matchmaking do
       )
 
     state
+  end
+
+  defp score_round(state, round_pid, user, type, video) do
+    case RoundServer.score(round_pid, user, type) do
+      %Round.InProgress{} = round ->
+        :ok = send_announcement(state, :score, video, user, type, round)
+
+        round
+
+      :error ->
+        :error
+    end
   end
 
   defp send_announcement(state, :round_started, %Video{} = video, %User{} = user) do
