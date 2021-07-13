@@ -2085,5 +2085,59 @@
         "updated_at": "2015-05-29 00:06:17"
       }
     ]
+  },
+  {
+    "room": {
+      "name": "Series Openings",
+      "slug": "series-openings",
+      "inserted_at": "2020-12-21 13:58:55",
+      "updated_at": "2020-12-21 20:02:31"
+    },
+    "videos": [
+      {
+        "channel_title": "jamesmontalbano",
+        "description": "RIP Breaking Bad (2008-2013) Music, \"Breaking Bad (Main Title Theme) [Extended Version]\" by Dave Porter, available on the Breaking Bad (Music from the ...",
+        "img_height": "90",
+        "img_url": "https://i.ytimg.com/vi/TDFAYRtrYuk/default.jpg",
+        "img_width": "120",
+        "title": "Breaking Bad, Full Title Sequence",
+        "video_id": "TDFAYRtrYuk",
+        "inserted_at": "2018-04-04 00:43:13",
+        "updated_at": "2015-05-29 00:06:17"
+      },
+      {
+        "channel_title": "Alan Lucero",
+        "description": "Walter White appears in the Better Call Saul intro Better Call Saul: Season 1 | Episode 2 | Logo Intro Breaking Bad: Season 3 | Episode 13 | 30:50 ...",
+        "img_height": "90",
+        "img_url": "https://i.ytimg.com/vi/E1atQ8NmC0U/default.jpg",
+        "img_width": "120",
+        "title": "Walter White in Better Call Saul",
+        "video_id": "E1atQ8NmC0U",
+        "inserted_at": "2018-04-04 00:43:13",
+        "updated_at": "2015-05-29 00:06:17"
+      },
+      {
+        "channel_title": "C. Catherine",
+        "description": "Ima Robot - Greenback boogie.",
+        "img_height": "90",
+        "img_url": "https://i.ytimg.com/vi/ksURemCeSCg/default.jpg",
+        "img_width": "120",
+        "title": "Suits ~ intro",
+        "video_id": "ksURemCeSCg",
+        "inserted_at": "2018-04-04 00:43:13",
+        "updated_at": "2015-05-29 00:06:17"
+      },
+      {
+        "channel_title": "Haz",
+        "description": "Friends Opening in High Definition.",
+        "img_height": "90",
+        "img_url": "https://i.ytimg.com/vi/YKYL_zcSfzc/default.jpg",
+        "img_width": "120",
+        "title": "Friends Opening (HD)",
+        "video_id": "YKYL_zcSfzc",
+        "inserted_at": "2018-04-04 00:43:13",
+        "updated_at": "2015-05-29 00:06:17"
+      }
+    ]
   }
 ]
