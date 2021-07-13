@@ -74,7 +74,7 @@ export const randomShootingStars = () => {
       xOff: 0,
       y: 0
     },
-    zMax: 0.15, zMin: 0.2
+    zMax: 0.15, zMin: 0.25
   }
 
   const stop = _sprinkler.start({
@@ -86,8 +86,8 @@ export const randomShootingStars = () => {
     })
   }))
 
-  teardownContainer(canvas, 2500)
-  setTimeout(stop, 2500)
+  teardownContainer(canvas, 7000)
+  setTimeout(stop, 7000)
 }
 
 function randomInRange(min, max) {

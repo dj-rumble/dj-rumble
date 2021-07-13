@@ -10,7 +10,7 @@ export const dropTomatoes = () => {
 
   const confettiSettings =
     {
-      clock: 200,
+      clock: 150,
       max: 15,
       props: [
         { src: "../images/tomatoes/tomato-1-m.svg", type: "svg" },
@@ -28,7 +28,7 @@ export const dropTomatoes = () => {
   const confetti = new ConfettiGenerator(confettiSettings);
   confetti.render();
 
-  teardownContainer(canvas, 4500)
+  teardownContainer(canvas, 6000)
 }
 
 export const dropOneTomato = () => {
@@ -37,7 +37,7 @@ export const dropOneTomato = () => {
 
   const confettiSettings =
   {
-      clock: 200,
+      clock: 150,
       max: 1,
       props: [
         {
@@ -57,7 +57,7 @@ export const dropOneTomato = () => {
   const confetti = new ConfettiGenerator(confettiSettings);
   confetti.render();
 
-  teardownContainer(canvas, 4500)
+  teardownContainer(canvas, 4000)
 }
 
 export const dropTomatoesWithSprinkler = () => {
