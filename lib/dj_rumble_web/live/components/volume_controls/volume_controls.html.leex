@@ -6,10 +6,16 @@
       phx-click="player_signal_toggle_volume" phx-target="<%= @myself %>"
     >
       <%= PhoenixInlineSvg.Helpers.svg_image(
-        DjRumbleWeb.Endpoint,
-        "icons/volume/#{@volume_controls.volume_icon}",
-        class:
-          "h-9 w-9 fill-current	text-gray-400 hover:text-pink-400 cursor-pointer #{@volume_controls.volume_icon}")
+          DjRumbleWeb.Endpoint,
+          "icons/volume/#{@volume_controls.volume_icon}",
+          class: "
+            h-11 w-11
+            transition duration-400
+            fill-current text-gray-400 hover:text-pink-400
+            transform hover:scale-110
+            cursor-pointer #{@volume_controls.volume_icon}
+          "
+        )
       %>
     </a>
   </div>

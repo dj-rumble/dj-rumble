@@ -11,4 +11,11 @@ defmodule DjRumbleWeb.Live.Components.BottomPanel do
      socket
      |> assign(assigns)}
   end
+
+  @impl true
+  def handle_event("fullscreen", _params, socket) do
+    {:noreply,
+     socket
+     |> push_event("fullscreen", %{})}
+  end
 end

@@ -706,5 +706,19 @@ defmodule DjRumbleWeb.RoomLiveTest do
       assert rendered_view =~ "speaker-3"
       assert_push_event(view, "receive_unmute_signal", %{})
     end
+
+    @fullscreen_button_id "#fullscreen-button"
+
+    test "As a user I can switch the video to fullscreen mode", %{conn: conn, room: room} do
+      {:ok, view, _html} = live(conn, Routes.room_show_path(conn, :show, room.slug))
+      # Asserts The volume toggle button exists
+      assert view |> element(@fullscreen_button_id) |> has_element?()
+
+      view
+      |> element(@fullscreen_button_id)
+      |> render_click()
+
+      assert_push_event(view, "fullscreen", %{})
+    end
   end
 end
