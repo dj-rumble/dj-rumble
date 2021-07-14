@@ -23,22 +23,25 @@ defmodule DjRumbleWeb.Live.Components.VolumeControls do
   def handle_event("player_signal_toggle_volume", _params, socket) do
     %{volume_controls: volume_controls} = socket.assigns
 
-    %{is_muted: is_muted, volume_level: volume_level} = volume_controls
+    %{is_muted: is_muted, volume_before_mute: volume_before_mute, volume_level: volume_level} =
+      volume_controls
 
-    volume_level =
+    {new_volume_level, before_mute_volume_level} =
       case !is_muted do
-        true -> 0
-        false -> volume_level
+        true -> {0, volume_level}
+        false -> {volume_before_mute, volume_before_mute}
       end
 
-    volume_icon = get_volume_icon(volume_level)
+    volume_icon = get_volume_icon(new_volume_level)
 
-    params = %{
+    update_params = %{
       is_muted: !is_muted,
-      volume_icon: volume_icon
+      volume_icon: volume_icon,
+      volume_before_mute: before_mute_volume_level,
+      volume_level: new_volume_level
     }
 
-    volume_controls = update_controls(volume_controls, params)
+    volume_controls = update_controls(volume_controls, update_params)
     socket = assign(socket, :volume_controls, volume_controls)
 
     send_update_controls(volume_controls)
@@ -94,14 +97,15 @@ defmodule DjRumbleWeb.Live.Components.VolumeControls do
 
   defp compute_volume(volume_controls) do
     case volume_controls.is_muted do
-      true -> 0
-      false -> volume_controls.volume_level
+      true -> "0"
+      false -> "#{volume_controls.volume_level}"
     end
   end
 
   def get_initial_state do
     %{
       volume_level: 100,
+      volume_before_mute: 100,
       is_muted: false,
       volume_icon: "speaker-4"
     }

@@ -29,11 +29,11 @@
         progressive-slider p-4
         w-full
       ",
-      value: compute_volume(@volume_controls),
+      value: String.to_integer(compute_volume(@volume_controls)),
       id: "volume-control",
-      phx_debounce: 500,
+      phx_debounce: 1,
       min: 0,
-      mx: 100,
+      max: 100,
       step: 1
     %>
   </form>
