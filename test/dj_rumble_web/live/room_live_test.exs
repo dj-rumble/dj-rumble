@@ -627,7 +627,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
       assert view |> element(@volume_slider_id) |> has_element?()
       # Volume is at it's maximum level by default, so that we assert the
       # speaker-4 class is used.
-      Process.sleep(200)
+      Process.sleep(500)
 
       assert view |> element(@rendered_target) |> render() =~ "speaker-4"
       # Changes the volume level to 70
@@ -636,7 +636,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
         |> element(@volume_slider_id)
         |> render_change(%{"volume" => %{"change" => 70}})
 
-      Process.sleep(200)
+      Process.sleep(500)
 
       # Volume lowered to 70 so that we assert the speaker-3 class is used
       refute rendered_view =~ "speaker-4"
@@ -648,7 +648,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
         |> element(@volume_slider_id)
         |> render_change(%{"volume" => %{"change" => 40}})
 
-      Process.sleep(200)
+      Process.sleep(500)
 
       # Volume lowered to 69 so that we assert the speaker-2 class is used
       refute rendered_view =~ "speaker-3"
@@ -660,7 +660,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
         |> element(@volume_slider_id)
         |> render_change(%{"volume" => %{"change" => 10}})
 
-      Process.sleep(200)
+      Process.sleep(500)
 
       # Volume lowered to 10 so that we assert the speaker-1 class is used
       refute rendered_view =~ "speaker-2"
@@ -672,7 +672,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
         |> element(@volume_slider_id)
         |> render_change(%{"volume" => %{"change" => 0}})
 
-      Process.sleep(200)
+      Process.sleep(500)
 
       # Volume lowered to 0 so that we assert the speaker-0 class is used
       refute rendered_view =~ "speaker-1"
@@ -684,7 +684,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
         |> element(@volume_slider_id)
         |> render_change(%{"volume" => %{"change" => 70}})
 
-      Process.sleep(200)
+      Process.sleep(500)
 
       # Volume lowered to 70 so that we assert the speaker-3 class is used
       refute rendered_view =~ "speaker-4"
@@ -703,7 +703,7 @@ defmodule DjRumbleWeb.RoomLiveTest do
         |> element(@volume_slider_id)
         |> render_change(%{"volume" => %{"change" => 70}})
 
-      Process.sleep(200)
+      Process.sleep(500)
 
       # Volume lowered to 70 so that we assert the speaker-3 class is used
       refute rendered_view =~ "speaker-4"
