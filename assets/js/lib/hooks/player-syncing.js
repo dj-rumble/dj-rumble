@@ -135,10 +135,11 @@ const PlayerSyncing = initPlayer => ({
      */
     this.handleEvent('receive_player_state', ({
       time = 0,
-      videoId = ''
+      videoId = '',
+      isMuted = false
     }) => {
       player.loadVideoById({ startSeconds: time, videoId })
-      player.unMute()
+      !isMuted && player.unMute()
       player.playVideo()
       player.set
       updateTimeDisplays(
@@ -147,6 +148,34 @@ const PlayerSyncing = initPlayer => ({
         timeSliderElem,
         player
       )
+    })
+
+    /**
+     * receive_player_volume
+     *
+     * Receives a volume value from a slider
+     */
+    this.handleEvent('receive_player_volume', ({level: volumeLevel}) => {
+      player.setVolume(volumeLevel)
+    })
+
+    /**
+     * receive_mute_signal
+     *
+     * Mutes the player
+     */
+    this.handleEvent('receive_mute_signal', () => {
+      player.mute()
+    })
+
+
+    /**
+     * receive_unmute_signal
+     *
+     * Unmutes the player
+     */
+    this.handleEvent('receive_unmute_signal', () => {
+      player.unMute()
     })
   }
 })

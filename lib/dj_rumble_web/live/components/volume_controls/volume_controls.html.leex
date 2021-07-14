@@ -1,0 +1,34 @@
+<div
+  class="inline-flex items-center justify-center p-1 w-full"
+>
+  <div class="p-1">
+    <a id="volume-controls-toggle"
+      phx-click="player_signal_toggle_volume" phx-target="<%= @myself %>"
+    >
+      <%= PhoenixInlineSvg.Helpers.svg_image(
+        DjRumbleWeb.Endpoint,
+        "icons/volume/#{@volume_controls.volume_icon}",
+        class:
+          "h-9 w-9 fill-current	text-gray-400 hover:text-pink-400 cursor-pointer")
+      %>
+    </a>
+  </div>
+  <form id="volume-controls-slider" class="slider-form"
+    phx-target="<%= @myself %>" phx-change="volume_level_changed"
+  >
+    <%=
+      range_input :volume,
+      :change,
+      class: "
+        progressive-slider p-4
+        w-full
+      ",
+      value: compute_volume(@volume_controls),
+      id: "volume-control",
+      phx_debounce: 500,
+      min: 0,
+      mx: 100,
+      step: 1
+    %>
+  </form>
+</div>

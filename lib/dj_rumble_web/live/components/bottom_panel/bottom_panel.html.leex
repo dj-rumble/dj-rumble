@@ -47,36 +47,65 @@
   </div>
 
   <div class="
-    col-start-3      col-end-5      row-start-2     row-end-3
-    sm:col-start-10  sm:col-end-11  sm:row-start-1  sm:row-end-2
-    md:col-start-10  md:col-end-11  md:row-start-1  md:row-end-2
-    lg:col-start-10  lg:col-end-11  lg:row-start-1  lg:row-end-2
-    xl:col-start-10  xl:col-end-11  xl:row-start-1  xl:row-end-2
-    2xl:col-start-10 2xl:col-end-11 2xl:row-start-1 2xl:row-end-2
+    col-start-3      col-end-11     row-start-2     row-end-3
+    sm:col-start-10  sm:col-end-13  sm:row-start-1  sm:row-end-2
+    md:col-start-10  md:col-end-13  md:row-start-1  md:row-end-2
+    lg:col-start-10  lg:col-end-13  lg:row-start-1  lg:row-end-2
+    xl:col-start-10  xl:col-end-13  xl:row-start-1  xl:row-end-2
+    2xl:col-start-10 2xl:col-end-13 2xl:row-start-1 2xl:row-end-2
 
-    self-center justify-self-end
-    p-4
+    self-center justify-center
+    h-full
+    p-2
   ">
-    <%= live_component DjRumbleWeb.Live.Components.ConfettiFab,
-      id: "djrumble-confetti-button"
-    %>
-  </div>
 
-  <div class="
-    col-start-9      col-end-11     row-start-2     row-end-3
-    sm:col-start-11  sm:col-end-12  sm:row-start-1  sm:row-end-2
-    md:col-start-11  md:col-end-12  md:row-start-1  md:row-end-2
-    lg:col-start-11  lg:col-end-12  lg:row-start-1  lg:row-end-2
-    xl:col-start-11  xl:col-end-12  xl:row-start-1  xl:row-end-2
-    2xl:col-start-11 2xl:col-end-12 2xl:row-start-1 2xl:row-end-2
+    <div class="
+      grid grid-cols-4 grid-rows-2 h-full
+    ">
 
-    flex
-    self-center justify-self-start
-    p-4
-  ">
-    <%= live_component DjRumbleWeb.Live.Components.SearchFab,
-      id: "djrumble-searchbox-modal-button-1",
-      is_search_enabled: !@visitor
-    %>
+      <div class="
+        col-start-1 col-end-2 row-start-1 row-end-2
+        justify-self-center self-center
+      ">
+        <%= live_component DjRumbleWeb.Live.Components.ConfettiFab,
+          id: "djrumble-confetti-button"
+        %>
+      </div>
+
+      <div class="
+        col-start-4 col-end-5 row-start-1 row-end-2
+
+        sm:col-start-3  sm:col-end-4  sm:row-start-1  sm:row-end-2
+        md:col-start-3  md:col-end-4  md:row-start-1  md:row-end-2
+        lg:col-start-2  lg:col-end-3  lg:row-start-1  lg:row-end-2
+        xl:col-start-2  xl:col-end-3  xl:row-start-1  xl:row-end-2
+        2xl:col-start-2 2xl:col-end-3 2xl:row-start-1 2xl:row-end-2
+
+        justify-self-center self-center
+      ">
+        <%= live_component DjRumbleWeb.Live.Components.SearchFab,
+          id: "djrumble-searchbox-modal-button-1",
+          is_search_enabled: !@visitor
+        %>
+      </div>
+
+      <div class="
+        col-start-1 col-end-5 row-start-2 row-end-2
+        sm:col-start-1  sm:col-end-4  sm:row-start-2  sm:row-end-2
+        md:col-start-1  md:col-end-4  md:row-start-2  md:row-end-2
+        lg:col-start-1  lg:col-end-3  lg:row-start-2  lg:row-end-2
+        xl:col-start-1  xl:col-end-3  xl:row-start-2  xl:row-end-2
+        2xl:col-start-1 2xl:col-end-3 2xl:row-start-2 2xl:row-end-2
+
+        justify-self-center self-center pt-6
+      ">
+        <%= live_component @socket, DjRumbleWeb.Live.Components.VolumeControls,
+          id: "dj-rumble-volume-controls",
+          volume_controls: @volume_controls
+        %>
+      </div>
+
+    </div>
+
   </div>
 </div>

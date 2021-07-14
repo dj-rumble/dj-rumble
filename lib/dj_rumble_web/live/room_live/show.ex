@@ -13,6 +13,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
   alias DjRumble.Rooms.{MatchmakingSupervisor, RoomServer, RoomSupervisor}
   alias DjRumble.Rounds.Round
   alias DjRumbleWeb.Channels
+  alias DjRumbleWeb.Live.Components.VolumeControls
   alias DjRumbleWeb.Presence
   alias Faker
 
@@ -76,6 +77,7 @@ defmodule DjRumbleWeb.RoomLive.Show do
              |> assign(:searchbox_state, "CLOSED")
              |> assign(:register_modal_state, "CLOSED")
              |> assign(:show_search_modal, false)
+             |> assign(:volume_controls, VolumeControls.get_initial_state())
              |> assign_chat(room)}
         end
 
@@ -132,6 +134,13 @@ defmodule DjRumbleWeb.RoomLive.Show do
       )
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:update_volume_controls, volume_controls}, socket) do
+    {:noreply,
+     socket
+     |> assign(:volume_controls, volume_controls)}
   end
 
   @impl true
@@ -269,11 +278,14 @@ defmodule DjRumbleWeb.RoomLive.Show do
   * **Args:** `%{video_details: %{videoId: String.t(), time: non_neg_integer(), title: String.t()}, round: %Round.InProgress{}, video: %Video{}, added_by: %User{}}`
   """
   def handle_playback_details(params, socket) do
+    %{volume_controls: volume_controls} = socket.assigns
     %{video: video, video_details: video_details, added_by: user, round: round} = params
 
     Logger.info(fn ->
       "Received video details: #{inspect(video_details)}, added by: #{inspect(user)}"
     end)
+
+    video_details = Map.merge(video_details, %{isMuted: volume_controls.is_muted})
 
     {:noreply,
      socket
@@ -371,6 +383,10 @@ defmodule DjRumbleWeb.RoomLive.Show do
         socket
       ) do
     Logger.info(fn -> "Round Started: #{inspect(round)}, added by #{inspect(user)}" end)
+
+    %{volume_controls: volume_controls} = socket.assigns
+
+    video_details = Map.merge(video_details, %{isMuted: volume_controls.is_muted})
 
     {:noreply,
      socket
