@@ -99,7 +99,7 @@
 
         justify-self-center self-center pt-6
       ">
-        <%= live_component @socket, DjRumbleWeb.Live.Components.VolumeControls,
+        <%= live_component DjRumbleWeb.Live.Components.VolumeControls,
           id: "dj-rumble-volume-controls",
           volume_controls: @volume_controls
         %>
