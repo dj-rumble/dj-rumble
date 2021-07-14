@@ -168,7 +168,6 @@ const PlayerSyncing = initPlayer => ({
       player.mute()
     })
 
-
     /**
      * receive_unmute_signal
      *
@@ -176,6 +175,24 @@ const PlayerSyncing = initPlayer => ({
      */
     this.handleEvent('receive_unmute_signal', () => {
       player.unMute()
+    })
+
+    /**
+     * fullscreen
+     *
+     * Switches to fullscreen mode
+     */
+    this.handleEvent('fullscreen', () => {
+      const videoIframe = player.h
+
+      const requestFullScreen =
+        videoIframe.requestFullScreen
+        || videoIframe.mozRequestFullScreen
+        || videoIframe.webkitRequestFullScreen
+
+      if (requestFullScreen) {
+        requestFullScreen.bind(videoIframe)();
+      }
     })
   }
 })
