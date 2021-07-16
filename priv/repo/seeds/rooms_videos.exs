@@ -14,14 +14,15 @@ try do
   with {:ok, body} <- File.read(json_file),
     {:ok, rooms_videos} <- Jason.decode(body, keys: :atoms) do
 
-    user_id = Repo.get!(User, 1).id
+    user_ids = Repo.all(User)
+    |> Enum.map(& &1.id)
 
     for %{room: room, videos: videos} <- rooms_videos do
       room_id = Utils.create_room(room).id
       videos_ids = Utils.create_videos(videos)
       |> Enum.map(& &1.id)
 
-      Utils.create_user_room_videos(user_id, room_id, videos_ids)
+      Utils.create_user_room_videos(user_ids, room_id, videos_ids)
 
       {1, length(videos_ids)}
     end

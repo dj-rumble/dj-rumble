@@ -36,9 +36,10 @@ defmodule DjRumble.Seeds.Utils do
     end
   end
 
-  def create_user_room_videos(user_id, room_id, videos_ids) do
+  def create_user_room_videos(user_ids, room_id, videos_ids) do
     for video_id <- videos_ids do
-      {:ok, user_room_video} = Collections.create_user_room_video(%{room_id: room_id, user_id: user_id, video_id: video_id})
+      random_user_id = Enum.at(user_ids, Enum.random(0..(length(user_ids) - 1)))
+      {:ok, user_room_video} = Collections.create_user_room_video(%{room_id: room_id, user_id: random_user_id, video_id: video_id})
       user_room_video
     end
   end
